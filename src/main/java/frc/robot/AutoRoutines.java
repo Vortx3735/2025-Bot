@@ -5,11 +5,14 @@ import choreo.auto.AutoFactory;
 import choreo.auto.AutoRoutine;
 import choreo.auto.AutoTrajectory;
 import choreo.trajectory.*;
-import choreo.trajectory.SwerveSample;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import frc.robot.commands.*;
 import java.util.Optional;
+
+import org.photonvision.targeting.PhotonPipelineResult;
+
+import frc.robot.RobotContainer;
 
 public class AutoRoutines {
   private final AutoFactory m_factory;
@@ -72,6 +75,19 @@ public class AutoRoutines {
     final AutoTrajectory testTraj = routine.trajectory("MainAuton");
 
     routine.active().onTrue(testTraj.resetOdometry().andThen(testTraj.cmd()));
+    return routine;
+  }
+
+  public AutoRoutine visionAutoRoutine() {
+    final AutoRoutine routine = m_factory.newRoutine("Vision Auton");
+    final AutoTrajectory StartToReef = routine.trajectory("VisionAuton");
+
+    routine.active().onTrue(
+      Commands.sequence(
+        StartToReef.resetOdometry(),
+        StartToReef.cmd()
+      )
+    );
     return routine;
   }
 }
