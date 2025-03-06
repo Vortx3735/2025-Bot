@@ -39,7 +39,7 @@ public class DefaultCoralIntakeCommand extends Command {
     //  m_CoralIntake.moveWristToHP();
     // }
 
-    m_CoralIntake.stopIntake();
+    // m_CoralIntake.stopIntake();
 
     m_CoralIntake.moveWristToPosition(m_CoralIntake.getWristPosition());
 
@@ -48,6 +48,8 @@ public class DefaultCoralIntakeCommand extends Command {
     // } else {
     //   m_CoralIntake.moveWristToPosition(m_CoralIntake.getWristPosition());
     // }
+
+    m_CoralIntake.stopIntake();
   }
 
   // Called once the command ends or is interrupted.

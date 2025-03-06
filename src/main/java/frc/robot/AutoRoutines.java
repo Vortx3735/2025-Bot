@@ -5,10 +5,10 @@ import choreo.auto.AutoFactory;
 import choreo.auto.AutoRoutine;
 import choreo.auto.AutoTrajectory;
 import choreo.trajectory.*;
+import choreo.trajectory.SwerveSample;
+import choreo.trajectory.Trajectory;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
-import frc.robot.commands.*;
-import java.util.Optional;
 
 public class AutoRoutines {
   private final AutoFactory m_factory;
@@ -42,9 +42,42 @@ public class AutoRoutines {
                         RobotContainer.coralIntake),
                     new RunCommand(
                         () -> RobotContainer.elevator.moveElevatorToPosition(0.22),
-                        RobotContainer.elevator)),
+                        RobotContainer.elevator),
+                    new RunCommand(
+                        () -> RobotContainer.coralIntake.intakeAtSpeed(-0.05),
+                        RobotContainer.coralIntake))));
+    return routine;
+  }
+
+  public AutoRoutine testAuto4() {
+    final AutoRoutine routine = m_factory.newRoutine("Test Auto 4");
+    final AutoTrajectory testTraj = routine.trajectory("TestReef");
+
+    routine
+        .active()
+        .onTrue(
+            Commands.sequence(
+                testTraj.resetOdometry(),
+                testTraj.cmd(),
+                // RobotContainer.elevator.moveElevatorToL2Auto(),
                 new RunCommand(
-                    () -> RobotContainer.coralIntake.outtake(), RobotContainer.coralIntake)));
+                    () -> RobotContainer.coralIntake.L2Auto(), RobotContainer.coralIntake)));
+    return routine;
+  }
+
+  public AutoRoutine moveCenter() {
+    final AutoRoutine routine = m_factory.newRoutine("moveCenter");
+    final AutoTrajectory testTraj = routine.trajectory("CenterReef");
+
+    routine
+        .active()
+        .onTrue(
+            Commands.sequence(
+                testTraj.resetOdometry(),
+                testTraj.cmd(),
+                // RobotContainer.elevator.moveElevatorToL2Auto(),
+                new RunCommand(
+                    () -> RobotContainer.coralIntake.L2Auto(), RobotContainer.coralIntake)));
     return routine;
   }
 
@@ -65,6 +98,28 @@ public class AutoRoutines {
   // return routine;
   // return routine;
   // }
+  public AutoRoutine centerRoutine() {
+    final AutoRoutine routine = m_factory.newRoutine("centerRoutine");
+    final AutoTrajectory testTraj = routine.trajectory("CenterReef");
+
+    routine
+        .active()
+        .onTrue(
+            Commands.sequence(
+                testTraj.resetOdometry(),
+                testTraj.cmd(),
+                Commands.parallel(
+                    new RunCommand(
+                        () -> RobotContainer.coralIntake.moveWristToPosition(-0.42),
+                        RobotContainer.coralIntake),
+                    new RunCommand(
+                        () -> RobotContainer.elevator.moveElevatorToPosition(0.1),
+                        RobotContainer.elevator)),
+                new RunCommand(
+                    () -> RobotContainer.coralIntake.intakeAtSpeed(-0.1),
+                    RobotContainer.coralIntake)));
+    return routine;
+  }
 
   public AutoRoutine mAutoRoutine() {
     final AutoRoutine routine = m_factory.newRoutine("Maine Auton");
