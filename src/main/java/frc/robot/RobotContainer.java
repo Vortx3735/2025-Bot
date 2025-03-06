@@ -78,11 +78,11 @@ public class RobotContainer {
   private final AutoRoutines autoRoutines;
   private final AutoChooser autoChooser = new AutoChooser();
 
-  public static PhotonCamera intakeCamera = new PhotonCamera("intakeCamera");
-  private PhotonCamera intakeCamera = new PhotonCamera("Arducam_5MP_Camera_Module");
+  public static PhotonCamera reefCamera = new PhotonCamera("reefCamera");
+  public static PhotonCamera hpCamera = new PhotonCamera("hpCamera");
 
-  private AutoAlignCommand autoAlignCommand = new AutoAlignCommand(drivetrain, intakeCamera);
-  private AutoAlignL2 autoAlignL2 = new AutoAlignL2(drivetrain, intakeCamera);
+  private AutoAlignCommand autoAlignCommand = new AutoAlignCommand(drivetrain, reefCamera);
+  private AutoAlignL2 autoAlignL2 = new AutoAlignL2(drivetrain, reefCamera);
 
   public RobotContainer() {
     configureBindings();
