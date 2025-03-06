@@ -1,10 +1,7 @@
 package frc.robot.commands;
 
-import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.CommandSwerveDrivetrain;
-
-import org.photonvision.PhotonCamera;
-
+import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -13,13 +10,12 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-
+import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.subsystems.CommandSwerveDrivetrain;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BooleanSupplier;
-
-import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
-import com.ctre.phoenix6.swerve.SwerveRequest;
+import org.photonvision.PhotonCamera;
 
 public class AutoAlignL2 extends Command {
   private final CommandSwerveDrivetrain drivetrain;
@@ -45,8 +41,7 @@ public class AutoAlignL2 extends Command {
   }
 
   @Override
-  public void initialize() {
-  }
+  public void initialize() {}
 
   @Override
   public void execute() {
@@ -79,9 +74,10 @@ public class AutoAlignL2 extends Command {
 
             // Create target pose in front of tag
             // The transform puts us TARGET_DISTANCE_METERS in front of the tag
-            Transform2d frontOfTag = new Transform2d(
-                new Translation2d(TARGET_DISTANCE_METERS, 0),
-                new Rotation2d(Math.PI)); // Face the tag
+            Transform2d frontOfTag =
+                new Transform2d(
+                    new Translation2d(TARGET_DISTANCE_METERS, 0),
+                    new Rotation2d(Math.PI)); // Face the tag
 
             Pose2d targetPose = tagPose.plus(frontOfTag);
 

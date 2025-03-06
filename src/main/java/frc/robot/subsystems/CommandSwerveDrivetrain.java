@@ -11,7 +11,6 @@ import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
-
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
@@ -29,10 +28,8 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.util.TunerConstants.TunerSwerveDrivetrain;
-
 import java.util.Optional;
 import java.util.function.Supplier;
-
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
@@ -124,10 +121,13 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   /* The SysId routine to test */
   private SysIdRoutine m_sysIdRoutineToApply = m_sysIdRoutineTranslation;
 
-  private final AprilTagFieldLayout aprilTagFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
-  private final PhotonPoseEstimator photonPoseEstimator = new PhotonPoseEstimator(aprilTagFieldLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, Constants.VisionConstants.CENTER_TO_CAMERA);
-
-
+  private final AprilTagFieldLayout aprilTagFieldLayout =
+      AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
+  private final PhotonPoseEstimator photonPoseEstimator =
+      new PhotonPoseEstimator(
+          aprilTagFieldLayout,
+          PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+          Constants.VisionConstants.CENTER_TO_CAMERA);
 
   /**
    * Constructs a CTRE SwerveDrivetrain using the specified constants.
@@ -331,17 +331,14 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     return maxSpeed;
   }
 
-  public void updatePoseWithVision(PhotonCamera camera){
+  public void updatePoseWithVision(PhotonCamera camera) {
     var result = camera.getLatestResult();
-        if (result.hasTargets()) {
-            Optional<EstimatedRobotPose> poseEstimate = photonPoseEstimator.update(result);
-            if (poseEstimate.isPresent()) {
-                this.addVisionMeasurement(
-                    poseEstimate.get().estimatedPose.toPose2d(),
-                    poseEstimate.get().timestampSeconds
-                );
-            }
-        }
+    if (result.hasTargets()) {
+      Optional<EstimatedRobotPose> poseEstimate = photonPoseEstimator.update(result);
+      if (poseEstimate.isPresent()) {
+        this.addVisionMeasurement(
+            poseEstimate.get().estimatedPose.toPose2d(), poseEstimate.get().timestampSeconds);
+      }
+    }
   }
-
 }

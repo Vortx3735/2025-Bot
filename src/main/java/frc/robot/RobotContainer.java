@@ -15,7 +15,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.AutoAlignCommand;
@@ -81,8 +80,7 @@ public class RobotContainer {
   public static PhotonCamera intakeCamera = new PhotonCamera("intakeCamera");
 
   private AutoAlignCommand autoAlignCommand = new AutoAlignCommand(drivetrain, intakeCamera);
-  private AutoAlignL2 autoAlignL2 =
-      new AutoAlignL2(drivetrain, intakeCamera);
+  private AutoAlignL2 autoAlignL2 = new AutoAlignL2(drivetrain, intakeCamera);
 
   public RobotContainer() {
     configureBindings();

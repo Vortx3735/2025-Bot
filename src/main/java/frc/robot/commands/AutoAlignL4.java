@@ -1,17 +1,15 @@
 package frc.robot.commands;
 
-import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.CommandSwerveDrivetrain;
-
-import org.photonvision.PhotonCamera;
-import org.photonvision.PhotonUtils;
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import java.util.Set;
-import java.util.function.BooleanSupplier;
-
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.subsystems.CommandSwerveDrivetrain;
+import java.util.Set;
+import java.util.function.BooleanSupplier;
+import org.photonvision.PhotonCamera;
+import org.photonvision.PhotonUtils;
 
 public class AutoAlignL4 extends Command {
   private final CommandSwerveDrivetrain drivetrain;
@@ -29,13 +27,12 @@ public class AutoAlignL4 extends Command {
     addRequirements(drivetrain);
   }
 
-  public BooleanSupplier isAligned(){
+  public BooleanSupplier isAligned() {
     return () -> isAligned;
   }
 
   @Override
-  public void initialize() {
-  }
+  public void initialize() {}
 
   @Override
   public void execute() {
@@ -53,18 +50,20 @@ public class AutoAlignL4 extends Command {
         // At least one AprilTag was seen by the camera
         for (var target : result.getTargets()) {
           // check if it is a reef apriltag
-          Set<Integer> reefTagIds = Set.of(6,7,8,9,10,11,17,18,19,20,21,22);
+          Set<Integer> reefTagIds = Set.of(6, 7, 8, 9, 10, 11, 17, 18, 19, 20, 21, 22);
           if (reefTagIds.contains(target.getFiducialId())) {
             // Found reef april tag
             targetYaw = target.getYaw();
-            targetRange = PhotonUtils.calculateDistanceToTargetMeters(
-                0.5, // Measured with a tape measure, or in CAD.
-                0.2225, // From 2025 game manual
-                Units.degreesToRadians(-30.0), // Measured with a protractor, or in CAD.
-                Units.degreesToRadians(target.getPitch()));
+            targetRange =
+                PhotonUtils.calculateDistanceToTargetMeters(
+                    0.5, // Measured with a tape measure, or in CAD.
+                    0.2225, // From 2025 game manual
+                    Units.degreesToRadians(-30.0), // Measured with a protractor, or in CAD.
+                    Units.degreesToRadians(target.getPitch()));
             targetVisible = true;
 
-            distanceError = (TARGET_DISTANCE_METERS - targetRange) * kP_Drive; // u might need to increase kp
+            distanceError =
+                (TARGET_DISTANCE_METERS - targetRange) * kP_Drive; // u might need to increase kp
             yawError = kP_Yaw * targetYaw;
 
             drivetrain.setControl(

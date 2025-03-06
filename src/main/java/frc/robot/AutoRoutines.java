@@ -10,10 +10,6 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import frc.robot.commands.*;
 import java.util.Optional;
 
-import org.photonvision.targeting.PhotonPipelineResult;
-
-import frc.robot.RobotContainer;
-
 public class AutoRoutines {
   private final AutoFactory m_factory;
   private final Optional<Trajectory<SwerveSample>> testReef = Choreo.loadTrajectory("TestReef");
@@ -82,12 +78,7 @@ public class AutoRoutines {
     final AutoRoutine routine = m_factory.newRoutine("Vision Auton");
     final AutoTrajectory StartToReef = routine.trajectory("VisionAuton");
 
-    routine.active().onTrue(
-      Commands.sequence(
-        StartToReef.resetOdometry(),
-        StartToReef.cmd()
-      )
-    );
+    routine.active().onTrue(Commands.sequence(StartToReef.resetOdometry(), StartToReef.cmd()));
     return routine;
   }
 }

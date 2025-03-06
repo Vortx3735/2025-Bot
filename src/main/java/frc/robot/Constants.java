@@ -94,6 +94,11 @@ public final class Constants {
   }
 
   public static final class VisionConstants {
-    public static final Transform3d CENTER_TO_CAMERA = new Transform3d(0.0, 0.0, 0.0, new Rotation3d(0, 30, 0)); // x = center to front, y = center to left, z = center to top
+    public static final Transform3d CENTER_TO_CAMERA =
+        new Transform3d(
+            0.0,
+            0.0,
+            0.0,
+            new Rotation3d(0, 30, 0)); // x = center to front, y = center to left, z = center to top
   }
 }
