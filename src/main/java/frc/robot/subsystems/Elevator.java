@@ -1,7 +1,5 @@
 package frc.robot.subsystems;
 
-import java.util.function.BooleanSupplier;
-
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
@@ -10,11 +8,11 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
-
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import java.util.function.BooleanSupplier;
 
 public class Elevator extends SubsystemBase {
   public static TalonFX leftElevatorMotor;
@@ -94,7 +92,8 @@ public class Elevator extends SubsystemBase {
     leftElevatorMotor.setControl(m_request.withPosition(currentPos));
     rightElevatorMotor.setControl(m_request.withPosition(currentPos));
   }
-  public void zeroElevator(){
+
+  public void zeroElevator() {
     leftElevatorMotor.setPosition(0);
     rightElevatorMotor.setPosition(0);
   }
@@ -132,7 +131,8 @@ public class Elevator extends SubsystemBase {
 
   public Command moveElevatorToL2Auto() {
     double setpoint = 0.22;
-    return new RunCommand(()->moveElevatorToPosition(setpoint),this).until(() -> this.getPositionFinished(setpoint));
+    return new RunCommand(() -> moveElevatorToPosition(setpoint), this)
+        .until(() -> this.getPositionFinished(setpoint));
   }
 
   public void moveElevatorToL3() {
@@ -149,7 +149,7 @@ public class Elevator extends SubsystemBase {
     moveElevatorToPosition(0);
   }
 
-  public double getElevatorCoefficient(){
+  public double getElevatorCoefficient() {
     // if (position > positionCutoff){
     //   double a = maxPosition-positionCutoff;
     //   double b = position - positionCutoff;
@@ -161,7 +161,7 @@ public class Elevator extends SubsystemBase {
     //   }
     // }
     // else{
-      return(1.0);
+    return (1.0);
     // }
   }
 
@@ -202,7 +202,8 @@ public class Elevator extends SubsystemBase {
       stopElevator();
     }
   }
-  public BooleanSupplier atL4(){
+
+  public BooleanSupplier atL4() {
     return () -> position > 4.8;
   }
 

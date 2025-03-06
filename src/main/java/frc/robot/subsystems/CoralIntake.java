@@ -12,10 +12,8 @@ import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
@@ -26,7 +24,6 @@ public class CoralIntake extends SubsystemBase {
   public static SparkMax leftCoralMotor;
   public static SparkMax rightCoralMotor;
   public static SparkMax coralWrist;
-
 
   private final CANcoder wristEncoder;
   private double position;
@@ -45,7 +42,8 @@ public class CoralIntake extends SubsystemBase {
   public DigitalInput leftCoralBeamBreak = new DigitalInput(SensorConstants.CORAL_LEFT_BEAM_BREAK);
   public DigitalInput rightCoralBeamBreak =
       new DigitalInput(SensorConstants.CORAL_RIGHT_BEAM_BREAK);
-// aaron chang
+
+  // aaron chang
   /**
    * @param leftMotorId The CAN ID of the left intake motor.
    * @param rightMotorId The CAN ID of the right intake motor.
@@ -86,7 +84,7 @@ public class CoralIntake extends SubsystemBase {
         coralWristConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
-  public boolean getPositionFinished(){
+  public boolean getPositionFinished() {
     return coralPID.atSetpoint();
   }
 
@@ -102,14 +100,12 @@ public class CoralIntake extends SubsystemBase {
   //   }
   // }
   public void intake() {
-    if (rightCoralDetected()||leftCoralDetected()){
+    if (rightCoralDetected() || leftCoralDetected()) {
       CommandScheduler.getInstance()
           .schedule(
               new SequentialCommandGroup(
-                  new WaitCommand(0.125), new InstantCommand(() -> stopIntake()
-                  , this)));
-    }
-    else{
+                  new WaitCommand(0.125), new InstantCommand(() -> stopIntake(), this)));
+    } else {
       moveIntake();
     }
     // if (rightCoralDetected()){
@@ -119,36 +115,41 @@ public class CoralIntake extends SubsystemBase {
     //               new WaitCommand(0.125), new InstantCommand(() -> rightCoralMotor.set(0)
     //               , this)));
     //           // new InstantCommand(() -> stopIntake(), this));
-    // } 
+    // }
     // if(!rightCoralDetected()){
     //   moveRightIntake();
     // }
-    
+
     // if (leftCoralDetected()) {
     //   CommandScheduler.getInstance()
     //       .schedule(
     //           new SequentialCommandGroup(
     //               new WaitCommand(0.125), new InstantCommand(() -> leftCoralMotor.set(0)
-    //               , this)));      
+    //               , this)));
     // }
     // if(!leftCoralDetected()){
     //   moveLeftIntake();
     // }
   }
-  public void intakeAtSpeed(double speed){
+
+  public void intakeAtSpeed(double speed) {
     leftCoralMotor.set(speed);
     rightCoralMotor.set(speed);
   }
+
   public void moveIntake() {
     leftCoralMotor.set(intakeSpeed);
     rightCoralMotor.set(intakeSpeed);
   }
+
   public void moveLeftIntake() {
     leftCoralMotor.set(intakeSpeed);
   }
+
   public void moveRightIntake() {
     rightCoralMotor.set(intakeSpeed);
   }
+
   // returns true assuming beam break is broken
   public boolean hasCoral() {
     if (rightCoralBeamBreak.get() && leftCoralBeamBreak.get()) {
@@ -156,15 +157,17 @@ public class CoralIntake extends SubsystemBase {
     }
     return true;
   }
+
   // returns true assuming beam break is broken
   public boolean hasLeftCoral() {
-    if (rightCoralBeamBreak.get() && leftCoralBeamBreak.get()) { 
+    if (rightCoralBeamBreak.get() && leftCoralBeamBreak.get()) {
       return false;
     }
     return true;
   }
+
   public boolean hasRightCoral() {
-    if (rightCoralBeamBreak.get() && leftCoralBeamBreak.get()) { 
+    if (rightCoralBeamBreak.get() && leftCoralBeamBreak.get()) {
       return false;
     }
     return true;
@@ -213,7 +216,6 @@ public class CoralIntake extends SubsystemBase {
             0.3));
     return false;
   }
-  
 
   public boolean moveWristToHPandIntake() {
     intake();
@@ -228,9 +230,11 @@ public class CoralIntake extends SubsystemBase {
   public boolean moveWristToL2() {
     return moveWristToPosition(-0.38);
   }
+
   public void L2Auto() {
     // double setpoint = -0.34;
-    // return new RunCommand(()->moveWristToPosition(setpoint),this).until(() -> this.getPositionFinished());
+    // return new RunCommand(()->moveWristToPosition(setpoint),this).until(() ->
+    // this.getPositionFinished());
     this.moveWristToPosition(-0.45);
     this.intakeAtSpeed(-0.1);
   }

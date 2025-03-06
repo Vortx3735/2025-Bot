@@ -16,7 +16,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.AutoAlignCommand;
@@ -91,7 +90,7 @@ public class RobotContainer {
 
     autoChooser.addRoutine("Test Auto 4", autoRoutines::testAuto4);
     autoChooser.addRoutine("CenterReef", autoRoutines::centerRoutine);
-    
+
     SmartDashboard.putData("Auto Chooser", autoChooser);
 
     elevator.publishInitialValues();
@@ -127,11 +126,13 @@ public class RobotContainer {
                     drive // coefficients can be changed to driver preferences
                         .withVelocityX(
                             -driver.getLeftY()
-                                * drivetrain.getMaxSpeed() * elevator.getElevatorCoefficient()
+                                * drivetrain.getMaxSpeed()
+                                * elevator.getElevatorCoefficient()
                                 / 6) // divide drive speed by 4
                         .withVelocityY(
                             -driver.getLeftX()
-                                * drivetrain.getMaxSpeed() * elevator.getElevatorCoefficient()
+                                * drivetrain.getMaxSpeed()
+                                * elevator.getElevatorCoefficient()
                                 / 6) // divide drive speed by 4
                         .withRotationalRate(
                             -driver.getRightX()
@@ -141,23 +142,30 @@ public class RobotContainer {
                         ? drive
                             .withVelocityX(
                                 -driver.getLeftY()
-                                    * drivetrain.getMaxSpeed() * elevator.getElevatorCoefficient()
+                                    * drivetrain.getMaxSpeed()
+                                    * elevator.getElevatorCoefficient()
                                     / 3) // Drive forward with negative Y
                             // (forward)
                             .withVelocityY(
                                 -driver.getLeftX()
-                                    * drivetrain.getMaxSpeed() * elevator.getElevatorCoefficient()
+                                    * drivetrain.getMaxSpeed()
+                                    * elevator.getElevatorCoefficient()
                                     / 3) // Drive left with negative X (left)
                             .withRotationalRate(
                                 -driver.getRightX() * drivetrain.getMaxRotation() / 2)
                         : drive
                             .withVelocityX(
                                 -driver.getLeftY()
-                                    * drivetrain.getMaxSpeed() * elevator.getElevatorCoefficient()) // Drive forward with negative Y
+                                    * drivetrain.getMaxSpeed()
+                                    * elevator
+                                        .getElevatorCoefficient()) // Drive forward with negative Y
                             // (forward)
                             .withVelocityY(
                                 -driver.getLeftX()
-                                    * drivetrain.getMaxSpeed() * elevator.getElevatorCoefficient()) // Drive left with negative X (left)
+                                    * drivetrain.getMaxSpeed()
+                                    * elevator
+                                        .getElevatorCoefficient()) // Drive left with negative X
+                            // (left)
                             .withRotationalRate(
                                 -driver.getRightX()
                                     * drivetrain.getMaxRotation()) // Drive counterclockwise with
@@ -218,41 +226,40 @@ public class RobotContainer {
         Commands.parallel(
             new RunCommand(() -> coralIntake.moveWristToL2(), coralIntake),
             new RunCommand(() -> elevator.moveElevatorToL2(), elevator),
-            new RunCommand(() -> algaeIntake.stowWrist(), algaeIntake)
-        )
-    );
+            new RunCommand(() -> algaeIntake.stowWrist(), algaeIntake)));
     // L3
     operator.yButton.onTrue(
         Commands.parallel(
             new RunCommand(() -> coralIntake.moveWristToL3(), coralIntake),
             new RunCommand(() -> elevator.moveElevatorToL3(), elevator),
-            new RunCommand(() -> algaeIntake.intake(), algaeIntake)
-        )
-    );
-    
+            new RunCommand(() -> algaeIntake.intake(), algaeIntake)));
+
     // L4
     operator.bButton.onTrue(
         Commands.sequence(
             elevator.moveElevatorToL4(),
-            new RunCommand(() -> coralIntake.moveWristToL4(), coralIntake)
-        )
-    );
+            new RunCommand(() -> coralIntake.moveWristToL4(), coralIntake)));
 
     // Outake
-    operator.rt.and(coralDetected).whileTrue(
-        // Commands.parallel(
+    operator
+        .rt
+        .and(coralDetected)
+        .whileTrue(
+            // Commands.parallel(
             new RunCommand(() -> coralIntake.outtake(), coralIntake));
-            // new RunCommand(() -> algaeIntake.intake(), algaeIntake)));
-    
+    // new RunCommand(() -> algaeIntake.intake(), algaeIntake)));
 
     // Intake with Beam
-    operator.lt.whileTrue(new RunCommand(() -> coralIntake.intake(), coralIntake)).onFalse(new RunCommand(()->coralIntake.stopIntake(),coralIntake));
+    operator
+        .lt
+        .whileTrue(new RunCommand(() -> coralIntake.intake(), coralIntake))
+        .onFalse(new RunCommand(() -> coralIntake.stopIntake(), coralIntake));
     // Manual Intake (No Beam)
     operator.lb.whileTrue(
         // Commands.parallel(
         //     new RunCommand(()-> coralIntake.moveIntake(), coralIntake),
-            new RunCommand(()-> algaeIntake.intake(), algaeIntake));
-    //     )).onFalse(new RunCommand(()->coralIntake.stopIntake(),coralIntake));    
+        new RunCommand(() -> algaeIntake.intake(), algaeIntake));
+    //     )).onFalse(new RunCommand(()->coralIntake.stopIntake(),coralIntake));
     // operator.lb.and(algaeDetected).whileTrue(
     //         new RunCommand(()-> coralIntake.moveIntake(), coralIntake)
     // );
@@ -264,8 +271,7 @@ public class RobotContainer {
     operator.povDown.whileTrue(new RunCommand(() -> elevator.moveElevatorDown(), elevator));
     operator.rs.whileTrue(new RunCommand(() -> algaeIntake.moveWristDown(), algaeIntake));
     operator.ls.whileTrue(new RunCommand(() -> algaeIntake.moveWristUp(), algaeIntake));
-    operator.view.onTrue(new InstantCommand(()->elevator.zeroElevator(), elevator));
-    
+    operator.view.onTrue(new InstantCommand(() -> elevator.zeroElevator(), elevator));
   }
 
   public Command getAutonomousCommand() {

@@ -30,17 +30,22 @@ public class AutoRoutines {
     final AutoRoutine routine = m_factory.newRoutine("Test Auto 3");
     final AutoTrajectory testTraj = routine.trajectory("TestReef");
 
-    routine.active().onTrue(
-      Commands.sequence(
-        testTraj.resetOdometry(),
-        testTraj.cmd(),
-        Commands.parallel(
-          new RunCommand(() -> RobotContainer.coralIntake.moveWristToPosition(-0.38), RobotContainer.coralIntake),
-          new RunCommand(() -> RobotContainer.elevator.moveElevatorToPosition(0.22), RobotContainer.elevator),
-          new RunCommand(() -> RobotContainer.coralIntake.intakeAtSpeed(-0.05), RobotContainer.coralIntake)
-          )
-        )
-      );
+    routine
+        .active()
+        .onTrue(
+            Commands.sequence(
+                testTraj.resetOdometry(),
+                testTraj.cmd(),
+                Commands.parallel(
+                    new RunCommand(
+                        () -> RobotContainer.coralIntake.moveWristToPosition(-0.38),
+                        RobotContainer.coralIntake),
+                    new RunCommand(
+                        () -> RobotContainer.elevator.moveElevatorToPosition(0.22),
+                        RobotContainer.elevator),
+                    new RunCommand(
+                        () -> RobotContainer.coralIntake.intakeAtSpeed(-0.05),
+                        RobotContainer.coralIntake))));
     return routine;
   }
 
@@ -48,28 +53,31 @@ public class AutoRoutines {
     final AutoRoutine routine = m_factory.newRoutine("Test Auto 4");
     final AutoTrajectory testTraj = routine.trajectory("TestReef");
 
-    routine.active().onTrue(
-      Commands.sequence(
-        testTraj.resetOdometry(),
-        testTraj.cmd(),
-        // RobotContainer.elevator.moveElevatorToL2Auto(),
-        new RunCommand(() -> RobotContainer.coralIntake.L2Auto(), RobotContainer.coralIntake)
-      )
-    );
+    routine
+        .active()
+        .onTrue(
+            Commands.sequence(
+                testTraj.resetOdometry(),
+                testTraj.cmd(),
+                // RobotContainer.elevator.moveElevatorToL2Auto(),
+                new RunCommand(
+                    () -> RobotContainer.coralIntake.L2Auto(), RobotContainer.coralIntake)));
     return routine;
   }
-  public AutoRoutine moveCenter(){
+
+  public AutoRoutine moveCenter() {
     final AutoRoutine routine = m_factory.newRoutine("moveCenter");
     final AutoTrajectory testTraj = routine.trajectory("CenterReef");
 
-    routine.active().onTrue(
-      Commands.sequence(
-        testTraj.resetOdometry(),
-        testTraj.cmd(),
-        // RobotContainer.elevator.moveElevatorToL2Auto(),
-        new RunCommand(() -> RobotContainer.coralIntake.L2Auto(), RobotContainer.coralIntake)
-      )
-    );
+    routine
+        .active()
+        .onTrue(
+            Commands.sequence(
+                testTraj.resetOdometry(),
+                testTraj.cmd(),
+                // RobotContainer.elevator.moveElevatorToL2Auto(),
+                new RunCommand(
+                    () -> RobotContainer.coralIntake.L2Auto(), RobotContainer.coralIntake)));
     return routine;
   }
 
@@ -94,16 +102,22 @@ public class AutoRoutines {
     final AutoRoutine routine = m_factory.newRoutine("centerRoutine");
     final AutoTrajectory testTraj = routine.trajectory("CenterReef");
 
-    routine.active().onTrue(
-      Commands.sequence(
-        testTraj.resetOdometry(),
-        testTraj.cmd(),
-        Commands.parallel(
-          new RunCommand(() -> RobotContainer.coralIntake.moveWristToPosition(-0.42), RobotContainer.coralIntake),
-          new RunCommand(() -> RobotContainer.elevator.moveElevatorToPosition(0.1), RobotContainer.elevator)
-          ),
-          new RunCommand(()->RobotContainer.coralIntake.intakeAtSpeed(-0.1), RobotContainer.coralIntake)
-          ));
+    routine
+        .active()
+        .onTrue(
+            Commands.sequence(
+                testTraj.resetOdometry(),
+                testTraj.cmd(),
+                Commands.parallel(
+                    new RunCommand(
+                        () -> RobotContainer.coralIntake.moveWristToPosition(-0.42),
+                        RobotContainer.coralIntake),
+                    new RunCommand(
+                        () -> RobotContainer.elevator.moveElevatorToPosition(0.1),
+                        RobotContainer.elevator)),
+                new RunCommand(
+                    () -> RobotContainer.coralIntake.intakeAtSpeed(-0.1),
+                    RobotContainer.coralIntake)));
     return routine;
   }
 
