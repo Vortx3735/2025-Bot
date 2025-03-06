@@ -11,11 +11,6 @@ import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.config.ModuleConfig;
-import com.pathplanner.lib.config.PIDConstants;
-import com.pathplanner.lib.controllers.PPHolonomicDriveController;
-
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -31,7 +26,6 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.util.TunerConstants.TunerSwerveDrivetrain;
 import java.util.function.Supplier;
-import com.pathplanner.lib.config.RobotConfig;
 
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements Subsystem so it can easily
@@ -187,20 +181,25 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     if (Utils.isSimulation()) {
       startSimThread();
     }
-    
+
     // // Configure AutoBuilder last
     // AutoBuilder.configure(
     //         this::getPose, // Robot pose supplier
-    //         this::resetPose, // Method to reset odometry (will be called if your auto has a starting pose)
+    //         this::resetPose, // Method to reset odometry (will be called if your auto has a
+    // starting pose)
     //         this::getRobotRelativeSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
-    //         (speeds, feedforwards) -> driveRobotRelative(speeds), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module feedforwards
-    //         new PPHolonomicDriveController( // PPHolonomicController is the built in path following controller for holonomic drive trains
+    //         (speeds, feedforwards) -> driveRobotRelative(speeds), // Method that will drive the
+    // robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module
+    // feedforwards
+    //         new PPHolonomicDriveController( // PPHolonomicController is the built in path
+    // following controller for holonomic drive trains
     //                 new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
     //                 new PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
     //         ),
     //         config, // The robot configuration
     //         () -> {
-    //           // Boolean supplier that controls when the path will be mirrored for the red alliance
+    //           // Boolean supplier that controls when the path will be mirrored for the red
+    // alliance
     //           // This will flip the path being followed to the red side of the field.
     //           // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
 

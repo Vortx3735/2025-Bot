@@ -54,7 +54,6 @@ public final class Constants {
     public static final double WRIST_UPPER_LIMIT = Math.PI; // Define upper bound in radians
   }
 
-
   public static final class ElevatorConstants {
     public static final int ELEVATOR_LEFTMOTOR_ID = 24;
     public static final int ELEVATOR_RIGHTMOTOR_ID = 25;

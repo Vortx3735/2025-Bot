@@ -6,8 +6,6 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
-import org.photonvision.PhotonCamera;
-
 import choreo.auto.AutoChooser;
 import choreo.auto.AutoFactory;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
@@ -29,6 +27,7 @@ import frc.robot.subsystems.CoralIntake;
 import frc.robot.subsystems.Elevator;
 import frc.robot.util.TunerConstants;
 import frc.robot.util.VorTXControllerXbox;
+import org.photonvision.PhotonCamera;
 
 public class RobotContainer {
   private double MaxSpeed =
@@ -179,7 +178,6 @@ public class RobotContainer {
     Trigger algaeDetected = new Trigger(() -> algaeIntake.hasAlgae());
     Trigger algaeNotDetected = algaeDetected.negate();
 
-
     driver.aButton.whileTrue(drivetrain.applyRequest(() -> brake));
     driver.bButton.whileTrue(
         drivetrain.applyRequest(
@@ -198,10 +196,9 @@ public class RobotContainer {
     // reset the field-centric heading on menu button
     driver.menu.onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
-    //temp button binding for algae wrist
-    driver.povUp.whileTrue(new RunCommand(()->algaeIntake.stowWrist(), algaeIntake));
-    driver.povDown.whileTrue(new RunCommand(()->algaeIntake.unstowWrist(), algaeIntake));
-
+    // temp button binding for algae wrist
+    driver.povUp.whileTrue(new RunCommand(() -> algaeIntake.stowWrist(), algaeIntake));
+    driver.povDown.whileTrue(new RunCommand(() -> algaeIntake.unstowWrist(), algaeIntake));
 
     // OPERATOR
     operator.povLeft.whileTrue(new RunCommand(() -> coralIntake.moveWristUp(), coralIntake));
@@ -214,9 +211,7 @@ public class RobotContainer {
         Commands.parallel(
             new RunCommand(() -> coralIntake.moveWristToHPandIntake(), coralIntake),
             new RunCommand(() -> elevator.moveElevatorToHP(), elevator),
-            new RunCommand(() -> algaeIntake.stowWrist(), algaeIntake)
-            )
-        );
+            new RunCommand(() -> algaeIntake.stowWrist(), algaeIntake)));
 
     // L2
     operator.xButton.onTrue(

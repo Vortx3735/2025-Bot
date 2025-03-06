@@ -8,13 +8,11 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
-
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
 
 public class AlgaeIntake extends SubsystemBase {
 
@@ -52,7 +50,6 @@ public class AlgaeIntake extends SubsystemBase {
 
   public static boolean hasAlgae = false;
 
-
   /**
    * @param leftMotorID The CAN ID of the left intake motor.
    * @param rightMotorID The CAN ID of the right intake motor.
@@ -64,7 +61,6 @@ public class AlgaeIntake extends SubsystemBase {
     SparkMaxConfig algaeMotorConfig = new SparkMaxConfig();
     SparkMaxConfig algaeWristConfig = new SparkMaxConfig();
 
-
     // Initialize intake motors
     leftAlgaeMotor = new SparkMax(leftMotorID, MotorType.kBrushless);
     rightAlgaeMotor = new SparkMax(rightMotorID, MotorType.kBrushless);
@@ -73,7 +69,6 @@ public class AlgaeIntake extends SubsystemBase {
     algaeMotorConfig.inverted(true).idleMode(IdleMode.kBrake);
     algaeMotorConfig.secondaryCurrentLimit(currentLimit);
     leftAlgaeMotor.configure(
-
         algaeMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     rightAlgaeMotor.configure(
         algaeMotorConfig.inverted(false),
@@ -101,18 +96,20 @@ public class AlgaeIntake extends SubsystemBase {
 
     resetAlgae();
   }
-  public boolean hasAlgae(){
-    averageCurrent = (leftAlgaeMotor.getOutputCurrent()+rightAlgaeMotor.getOutputCurrent())/2;
+
+  public boolean hasAlgae() {
+    averageCurrent = (leftAlgaeMotor.getOutputCurrent() + rightAlgaeMotor.getOutputCurrent()) / 2;
     // averageCurrent += averageCurrent/2;
-    if(averageCurrent>=(currentLimit-5)){
+    if (averageCurrent >= (currentLimit - 5)) {
       hasAlgae = true;
     }
     return hasAlgae;
   }
 
-  public static void resetAlgae(){
+  public static void resetAlgae() {
     hasAlgae = false;
   }
+
   /**
    * @Param targetPos The target position to move the wrist to.
    */
@@ -131,10 +128,9 @@ public class AlgaeIntake extends SubsystemBase {
 
   public void intake() {
     unstowWrist();
-    if(hasAlgae()){
+    if (hasAlgae()) {
       stopIntake();
-    }
-    else{
+    } else {
       leftAlgaeMotor.set(intakeSpeed);
       rightAlgaeMotor.set(intakeSpeed);
     }
@@ -162,14 +158,14 @@ public class AlgaeIntake extends SubsystemBase {
   }
 
   public void stowWrist() {
-    if(!hasAlgae){
+    if (!hasAlgae) {
       stopIntake();
       moveWristToPosition(-0.42);
     }
   }
 
-  public void unstowWrist(){
-    if(Elevator.getPosition()>1){
+  public void unstowWrist() {
+    if (Elevator.getPosition() > 1) {
       moveWristToPosition(-0.64);
     }
   }
@@ -215,9 +211,8 @@ public class AlgaeIntake extends SubsystemBase {
     SmartDashboard.putNumber("AlgaeIntake/Wrist Up Speed", wristSpeedUp);
     SmartDashboard.putNumber("AlgaeIntake/Wrist Down Speed", wristSpeedDown);
     SmartDashboard.putNumber("AlgaeIntake/Wrist Error", error);
-    SmartDashboard.putNumber("AlgaeIntake/Left Intake Current",leftIntakeCurrent);
-    SmartDashboard.putNumber("AlgaeIntake/Right Intake Current",rightIntakeCurrent);
-
+    SmartDashboard.putNumber("AlgaeIntake/Left Intake Current", leftIntakeCurrent);
+    SmartDashboard.putNumber("AlgaeIntake/Right Intake Current", rightIntakeCurrent);
   }
 
   @Override
@@ -243,17 +238,18 @@ public class AlgaeIntake extends SubsystemBase {
 
     // Publish Wrist Position
     SmartDashboard.putNumber("AlgaeIntake/Wrist Position", position);
-    SmartDashboard.putNumber("AlgaeIntake/Left Max Intake Current",leftIntakeCurrent);
-    SmartDashboard.putNumber("AlgaeIntake/Right Max Intake Current",rightIntakeCurrent);
-    SmartDashboard.putNumber("AlgaeIntake/Left Intake Current",leftAlgaeMotor.getOutputCurrent());
-    SmartDashboard.putNumber("AlgaeIntake/Right Intake Current",rightAlgaeMotor.getOutputCurrent());
-    SmartDashboard.putBoolean("AlgaeIntake/Has Algae",hasAlgae);
-    SmartDashboard.putNumber("AlgaeIntake/Average Current",averageCurrent);
+    SmartDashboard.putNumber("AlgaeIntake/Left Max Intake Current", leftIntakeCurrent);
+    SmartDashboard.putNumber("AlgaeIntake/Right Max Intake Current", rightIntakeCurrent);
+    SmartDashboard.putNumber("AlgaeIntake/Left Intake Current", leftAlgaeMotor.getOutputCurrent());
+    SmartDashboard.putNumber(
+        "AlgaeIntake/Right Intake Current", rightAlgaeMotor.getOutputCurrent());
+    SmartDashboard.putBoolean("AlgaeIntake/Has Algae", hasAlgae);
+    SmartDashboard.putNumber("AlgaeIntake/Average Current", averageCurrent);
 
-    if (leftAlgaeMotor.getOutputCurrent()>leftIntakeCurrent){
+    if (leftAlgaeMotor.getOutputCurrent() > leftIntakeCurrent) {
       leftIntakeCurrent = leftAlgaeMotor.getOutputCurrent();
     }
-    if (rightAlgaeMotor.getOutputCurrent()>rightIntakeCurrent){
+    if (rightAlgaeMotor.getOutputCurrent() > rightIntakeCurrent) {
       rightIntakeCurrent = rightAlgaeMotor.getOutputCurrent();
     }
   }
