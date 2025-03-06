@@ -123,16 +123,27 @@ public class Elevator extends SubsystemBase {
     return position;
   }
 
-  public void moveElevatorToHP() {
-    moveElevatorToPosition(1.04);
+  public Command moveElevatorToBottom() {
+    double setpoint = 0;
+    return new RunCommand(() -> moveElevatorToPosition(setpoint))
+        .until(() -> this.getPositionFinished(setpoint));
   }
 
-  public void moveElevatorToL1() {
-    moveElevatorToPosition(0.8); // guess
+  public Command moveElevatorToHP() {
+    double setpoint = 1.04;
+    return new RunCommand(() -> moveElevatorToPosition(setpoint))
+        .until(() -> this.getPositionFinished(setpoint));
   }
 
-  public void moveElevatorToL2() {
-    moveElevatorToPosition(0.514);
+  public Command moveElevatorToL1() {
+    double setpoint = 0.18;
+    return new RunCommand(() -> moveElevatorToPosition(setpoint))
+        .until(() -> this.getPositionFinished(setpoint));
+  }
+  public Command moveElevatorToL2() {
+    double setpoint = 0.514;
+    return new RunCommand(() -> moveElevatorToPosition(setpoint))
+        .until(() -> this.getPositionFinished(setpoint));
   }
 
   public Command moveElevatorToL2Auto() {
@@ -141,22 +152,16 @@ public class Elevator extends SubsystemBase {
         .until(() -> this.getPositionFinished(setpoint));
   }
 
-  public void moveElevatorToL3() {
-    moveElevatorToPosition(1.94);
-  }
-
-  public void moveElevatorToGround() {
-    moveElevatorToPositionSlow(0);
+  public Command moveElevatorToL3() {
+    double setpoint = 1.94;
+    return new RunCommand(() -> moveElevatorToPosition(setpoint))
+        .until(() -> this.getPositionFinished(setpoint));
   }
 
   public Command moveElevatorToL4() {
     double setpoint = 4.9;
     return new RunCommand(() -> moveElevatorToPosition(setpoint))
         .until(() -> this.getPositionFinished(setpoint));
-  }
-
-  public void moveElevatorToBottom() {
-    moveElevatorToPosition(0);
   }
 
   public double getElevatorCoefficient() {
