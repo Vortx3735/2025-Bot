@@ -12,11 +12,7 @@ import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants.SensorConstants;
 
 public class CoralIntake extends SubsystemBase {
@@ -88,48 +84,40 @@ public class CoralIntake extends SubsystemBase {
     return coralPID.atSetpoint();
   }
 
-  // public void intake() {
-  //   if (rightCoralDetected()|| leftCoralDetected()){
-  //     CommandScheduler.getInstance()
-  //         .schedule(
-  //             new SequentialCommandGroup(
-  //                 new WaitCommand(0.125), new InstantCommand(() -> stopIntake(), this)));
-  //             // new InstantCommand(() -> stopIntake(), this));
-  //   } else {
-  //     moveIntake();
-  //   }
-  // }
-  public void intake() {
-    if (rightCoralDetected() || leftCoralDetected()) {
-      CommandScheduler.getInstance()
-          .schedule(
-              new SequentialCommandGroup(
-                  new WaitCommand(0.125), new InstantCommand(() -> stopIntake(), this)));
-    } else {
-      moveIntake();
+  // returns true assuming beam break is broken
+  public boolean hasCoral() {
+    if (leftCoralBeamBreak.get() && rightCoralBeamBreak.get()) {
+      return false;
     }
-    // if (rightCoralDetected()){
-    //   CommandScheduler.getInstance()
-    //       .schedule(
-    //           new SequentialCommandGroup(
-    //               new WaitCommand(0.125), new InstantCommand(() -> rightCoralMotor.set(0)
-    //               , this)));
-    //           // new InstantCommand(() -> stopIntake(), this));
-    // }
-    // if(!rightCoralDetected()){
-    //   moveRightIntake();
-    // }
+    return true;
+  }
 
-    // if (leftCoralDetected()) {
-    //   CommandScheduler.getInstance()
-    //       .schedule(
-    //           new SequentialCommandGroup(
-    //               new WaitCommand(0.125), new InstantCommand(() -> leftCoralMotor.set(0)
-    //               , this)));
-    // }
-    // if(!leftCoralDetected()){
-    //   moveLeftIntake();
-    // }
+  public boolean hasLeftCoral() {
+    if (leftCoralBeamBreak.get()) {
+      return false;
+    }
+    return true;
+  }
+
+  public boolean hasRightCoral() {
+    if (rightCoralBeamBreak.get()) {
+      return false;
+    }
+    return true;
+  }
+
+  public void intake() {
+    if (!rightCoralDetected()) {
+      rightCoralMotor.set(intakeSpeed);
+    }
+    if (!leftCoralDetected()) {
+      leftCoralMotor.set(intakeSpeed);
+    }
+  }
+
+  public void outtake() {
+    leftCoralMotor.set(-intakeSpeed - 0.1);
+    rightCoralMotor.set(-intakeSpeed - 0.1);
   }
 
   public void intakeAtSpeed(double speed) {
@@ -140,42 +128,6 @@ public class CoralIntake extends SubsystemBase {
   public void moveIntake() {
     leftCoralMotor.set(intakeSpeed);
     rightCoralMotor.set(intakeSpeed);
-  }
-
-  public void moveLeftIntake() {
-    leftCoralMotor.set(intakeSpeed);
-  }
-
-  public void moveRightIntake() {
-    rightCoralMotor.set(intakeSpeed);
-  }
-
-  // returns true assuming beam break is broken
-  public boolean hasCoral() {
-    if (rightCoralBeamBreak.get() && leftCoralBeamBreak.get()) {
-      return false;
-    }
-    return true;
-  }
-
-  // returns true assuming beam break is broken
-  public boolean hasLeftCoral() {
-    if (rightCoralBeamBreak.get() && leftCoralBeamBreak.get()) {
-      return false;
-    }
-    return true;
-  }
-
-  public boolean hasRightCoral() {
-    if (rightCoralBeamBreak.get() && leftCoralBeamBreak.get()) {
-      return false;
-    }
-    return true;
-  }
-
-  public void outtake() {
-    leftCoralMotor.set(-intakeSpeed - 0.1);
-    rightCoralMotor.set(-intakeSpeed - 0.1);
   }
 
   public void stopIntake() {
@@ -281,13 +233,14 @@ public class CoralIntake extends SubsystemBase {
     wristSpeedUp = SmartDashboard.getNumber("CoralIntake/Wrist Up Speed", wristSpeedUp);
     wristSpeedDown = SmartDashboard.getNumber("CoralIntake/Wrist Down Speed", wristSpeedDown);
 
-    SmartDashboard.putBoolean("CoralIntake/Left Beam Break", leftCoralBeamBreak.get());
-    SmartDashboard.putBoolean("CoralIntake/Right Beam Break", rightCoralBeamBreak.get());
+    SmartDashboard.putBoolean("CoralIntake/Left Coral", hasLeftCoral());
+    SmartDashboard.putBoolean("CoralIntake/Right Coral", hasRightCoral());
 
     // Update intake speed
     intakeSpeed = SmartDashboard.getNumber("CoralIntake/intakeSpeed", intakeSpeed);
 
     // Publish Wrist Position
+    SmartDashboard.putNumber("CoralIntake/Wrist Position", position);
     SmartDashboard.putNumber("CoralIntake/Wrist Position", position);
   }
 }
