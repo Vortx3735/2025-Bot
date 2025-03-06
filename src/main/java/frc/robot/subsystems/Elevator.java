@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import java.util.function.BooleanSupplier;
+
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
@@ -8,6 +10,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
+
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -27,6 +30,8 @@ public class Elevator extends SubsystemBase {
   // Define soft limits
   public static double LOWER_LIMIT = 0;
   public static double UPPER_LIMIT = 5;
+  public static double maxPosition = 0;
+  public static double positionCutoff = 2;
 
   /**
    * @param encoderID CAN ID of the CANcoder.
@@ -41,7 +46,7 @@ public class Elevator extends SubsystemBase {
     configureCANcoder();
     configureTalonFX();
 
-    elevatorSpeed = 0.07;
+    elevatorSpeed = 0.15;
   }
 
   /**
@@ -89,6 +94,10 @@ public class Elevator extends SubsystemBase {
     leftElevatorMotor.setControl(m_request.withPosition(currentPos));
     rightElevatorMotor.setControl(m_request.withPosition(currentPos));
   }
+  public void zeroElevator(){
+    leftElevatorMotor.setPosition(0);
+    rightElevatorMotor.setPosition(0);
+  }
 
   /**
    * Moves the elevator to the specified position using Motion Magic control
@@ -110,7 +119,7 @@ public class Elevator extends SubsystemBase {
   }
 
   public void moveElevatorToHP() {
-    moveElevatorToPosition(.88);
+    moveElevatorToPosition(1.04);
   }
 
   public void moveElevatorToL1() {
@@ -119,6 +128,11 @@ public class Elevator extends SubsystemBase {
 
   public void moveElevatorToL2() {
     moveElevatorToPosition(0.514); 
+  }
+
+  public Command moveElevatorToL2Auto() {
+    double setpoint = 0.22;
+    return new RunCommand(()->moveElevatorToPosition(setpoint),this).until(() -> this.getPositionFinished(setpoint));
   }
 
   public void moveElevatorToL3() {
@@ -132,6 +146,22 @@ public class Elevator extends SubsystemBase {
 
   public void moveElevatorToBottom() {
     moveElevatorToPosition(0);
+  }
+
+  public double getElevatorCoefficient(){
+    // if (position > positionCutoff){
+    //   double a = maxPosition-positionCutoff;
+    //   double b = position - positionCutoff;
+    //   if ((a-b)<0.125){
+    //     return(0.125);
+    //   }
+    //   else{
+    //     return ((a-b)/a);
+    //   }
+    // }
+    // else{
+      return(1.0);
+    // }
   }
 
   public void moveElevatorUp() {
@@ -169,6 +199,9 @@ public class Elevator extends SubsystemBase {
     } else {
       stopElevator();
     }
+  }
+  public BooleanSupplier atL4(){
+    return () -> position > 4.8;
   }
 
   public void setElevatorSpeed(double speed) {
