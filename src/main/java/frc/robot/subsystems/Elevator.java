@@ -109,6 +109,12 @@ public class Elevator extends SubsystemBase {
     rightElevatorMotor.setControl(m_request.withPosition(targetPos));
   }
 
+  public void moveElevatorToPositionSlow(double targetPos) {
+    // Prevent moving past soft limits
+    leftElevatorMotor.setControl(m_request.withPosition(targetPos));
+    rightElevatorMotor.setControl(m_request.withPosition(targetPos));
+  }
+
   public boolean getPositionFinished(double setpoint) {
     return Math.abs(setpoint - position) < .025;
   }
@@ -137,6 +143,10 @@ public class Elevator extends SubsystemBase {
 
   public void moveElevatorToL3() {
     moveElevatorToPosition(1.94);
+  }
+
+  public void moveElevatorToGround() {
+    moveElevatorToPositionSlow(0);
   }
 
   public Command moveElevatorToL4() {

@@ -9,6 +9,7 @@ import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
+import java.util.Optional;
 
 public class AutoRoutines {
   private final AutoFactory m_factory;
@@ -126,6 +127,14 @@ public class AutoRoutines {
     final AutoTrajectory testTraj = routine.trajectory("MainAuton");
 
     routine.active().onTrue(testTraj.resetOdometry().andThen(testTraj.cmd()));
+    return routine;
+  }
+
+  public AutoRoutine visionAutoRoutine() {
+    final AutoRoutine routine = m_factory.newRoutine("Vision Auton");
+    final AutoTrajectory StartToReef = routine.trajectory("VisionAuton");
+
+    routine.active().onTrue(Commands.sequence(StartToReef.resetOdometry(), StartToReef.cmd()));
     return routine;
   }
 }

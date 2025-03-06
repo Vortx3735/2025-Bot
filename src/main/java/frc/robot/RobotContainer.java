@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.AutoAlignCommand;
+import frc.robot.commands.AutoAlignL2;
 import frc.robot.commands.defaultcommands.*;
 import frc.robot.subsystems.AlgaeIntake;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -77,9 +78,11 @@ public class RobotContainer {
   private final AutoRoutines autoRoutines;
   private final AutoChooser autoChooser = new AutoChooser();
 
-  private PhotonCamera intakeCamera = new PhotonCamera("Arducam_5MP_Camera_Module");
+  public static PhotonCamera reefCamera = new PhotonCamera("reefCamera");
+  public static PhotonCamera hpCamera = new PhotonCamera("hpCamera");
 
-  private AutoAlignCommand autoAlignCommand = new AutoAlignCommand(drivetrain, intakeCamera);
+  private AutoAlignCommand autoAlignCommand = new AutoAlignCommand(drivetrain, reefCamera);
+  private AutoAlignL2 autoAlignL2 = new AutoAlignL2(drivetrain, reefCamera);
 
   public RobotContainer() {
     configureBindings();
@@ -192,7 +195,21 @@ public class RobotContainer {
             () ->
                 point.withModuleDirection(new Rotation2d(-driver.getLeftY(), -driver.getLeftX()))));
 
-    driver.xButton.whileTrue(autoAlignCommand);
+    // driver.xButton.whileTrue(autoAlignCommand);
+
+    driver.xButton.whileTrue(autoAlignL2);
+
+    // test whiletrue first then this
+    // driver.xButton.onTrue(
+    //     Commands.sequence(
+    //         autoAlignL2.until(autoAlignL2.isAligned()),
+    //         Commands.parallel(
+    //             new RunCommand(() -> coralIntake.moveWristToL2(), coralIntake),
+    //             new RunCommand(() -> elevator.moveElevatorToL2(), elevator),
+    //             new RunCommand(() -> algaeIntake.stowWrist(), algaeIntake)
+    //         )
+    //     )
+    // );
 
     // Run SysId routines when holding back/start and X/Y.
     // Note that each routine should be run exactly once in a single log.

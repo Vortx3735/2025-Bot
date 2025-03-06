@@ -10,7 +10,7 @@ import org.photonvision.targeting.PhotonPipelineResult;
 
 public class AutoAlignCommand extends Command {
   private final CommandSwerveDrivetrain drivetrain;
-  private final PhotonCamera intake;
+  private final PhotonCamera intakeCamera;
 
   // PID constants for alignment
   private static final double kP_Yaw = 0.2; // Proportional constant for yaw correction
@@ -18,16 +18,16 @@ public class AutoAlignCommand extends Command {
   private static final double YAW_THRESHOLD = 1.0; // Degrees threshold for alignment
   private static final double DISTANCE_THRESHOLD = 0.1; // Meters threshold for alignment
 
-  public AutoAlignCommand(CommandSwerveDrivetrain drivetrain, PhotonCamera intake) {
+  public AutoAlignCommand(CommandSwerveDrivetrain drivetrain, PhotonCamera intakeCamera) {
     this.drivetrain = drivetrain;
-    this.intake = intake;
+    this.intakeCamera = intakeCamera;
     addRequirements(drivetrain);
   }
 
   @Override
   public void execute() {
     // Get the latest result from the camera
-    PhotonPipelineResult result = intake.getLatestResult();
+    PhotonPipelineResult result = intakeCamera.getLatestResult();
 
     if (result.hasTargets()) {
       System.out.println("yay");

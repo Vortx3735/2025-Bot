@@ -11,6 +11,8 @@ import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -24,8 +26,14 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.Constants;
 import frc.robot.util.TunerConstants.TunerSwerveDrivetrain;
+import java.util.Optional;
 import java.util.function.Supplier;
+import org.photonvision.EstimatedRobotPose;
+import org.photonvision.PhotonCamera;
+import org.photonvision.PhotonPoseEstimator;
+import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements Subsystem so it can easily
@@ -113,6 +121,14 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   /* The SysId routine to test */
   private SysIdRoutine m_sysIdRoutineToApply = m_sysIdRoutineTranslation;
 
+  private final AprilTagFieldLayout aprilTagFieldLayout =
+      AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
+  private final PhotonPoseEstimator photonPoseEstimator =
+      new PhotonPoseEstimator(
+          aprilTagFieldLayout,
+          PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+          Constants.VisionConstants.CENTER_TO_CAMERA);
+
   /**
    * Constructs a CTRE SwerveDrivetrain using the specified constants.
    *
@@ -181,36 +197,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     if (Utils.isSimulation()) {
       startSimThread();
     }
-
-    // // Configure AutoBuilder last
-    // AutoBuilder.configure(
-    //         this::getPose, // Robot pose supplier
-    //         this::resetPose, // Method to reset odometry (will be called if your auto has a
-    // starting pose)
-    //         this::getRobotRelativeSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
-    //         (speeds, feedforwards) -> driveRobotRelative(speeds), // Method that will drive the
-    // robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module
-    // feedforwards
-    //         new PPHolonomicDriveController( // PPHolonomicController is the built in path
-    // following controller for holonomic drive trains
-    //                 new PIDConstants(5.0, 0.0, 0.0), // Translation PID constants
-    //                 new PIDConstants(5.0, 0.0, 0.0) // Rotation PID constants
-    //         ),
-    //         config, // The robot configuration
-    //         () -> {
-    //           // Boolean supplier that controls when the path will be mirrored for the red
-    // alliance
-    //           // This will flip the path being followed to the red side of the field.
-    //           // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
-
-    //           var alliance = DriverStation.getAlliance();
-    //           if (alliance.isPresent()) {
-    //             return alliance.get() == DriverStation.Alliance.Red;
-    //           }
-    //           return false;
-    //         },
-    //         this // Reference to this subsystem to set requirements
-    // );
   }
 
   /**
@@ -343,5 +329,16 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             .getEntry("maxRotation")
             .getDouble(3.14);
     return maxSpeed;
+  }
+
+  public void updatePoseWithVision(PhotonCamera camera) {
+    var result = camera.getLatestResult();
+    if (result.hasTargets()) {
+      Optional<EstimatedRobotPose> poseEstimate = photonPoseEstimator.update(result);
+      if (poseEstimate.isPresent()) {
+        this.addVisionMeasurement(
+            poseEstimate.get().estimatedPose.toPose2d(), poseEstimate.get().timestampSeconds);
+      }
+    }
   }
 }
