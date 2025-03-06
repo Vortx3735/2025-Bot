@@ -18,8 +18,8 @@ public class AutoAlignL3 extends Command {
   private static boolean isAligned = false;
 
   private static final double TARGET_DISTANCE_METERS = 0.1143;
-  private static final double kP_Yaw = 0.2;
-  private static final double kP_Drive = 0.3; // tune this kp so robot dont tip when elevator up
+  private static final double kP_Yaw = 0.05;
+  private static final double kP_Drive = 0.2; // tune this kp so robot dont tip when elevator up
 
   public AutoAlignL3(CommandSwerveDrivetrain drivetrain, PhotonCamera camera) {
     this.drivetrain = drivetrain;
@@ -69,7 +69,7 @@ public class AutoAlignL3 extends Command {
             drivetrain.setControl(
                 new SwerveRequest.FieldCentric()
                     .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
-                    .withVelocityX(distanceError)
+                    .withVelocityX(0.3)
                     .withVelocityY(0)
                     .withRotationalRate(-yawError));
           }
