@@ -7,6 +7,7 @@ import choreo.auto.AutoTrajectory;
 import choreo.trajectory.*;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
+import java.util.Optional;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 
