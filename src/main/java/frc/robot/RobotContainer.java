@@ -250,9 +250,9 @@ public class RobotContainer {
     // Coral Intake with Beam
     operator.lt.whileTrue(new RunCommand(() -> coralIntake.intake(), coralIntake));
     leftCoralDetected.onTrue(
-        new WaitCommand(.2).andThen(new RunCommand(() -> coralIntake.stopIntake(), coralIntake)));
+        new WaitCommand(.2).andThen(new InstantCommand(() -> coralIntake.stopIntake(), coralIntake)));
     rightCoralDetected.onTrue(
-        new WaitCommand(.2).andThen(new RunCommand(() -> coralIntake.stopIntake(), coralIntake)));
+        new WaitCommand(.2).andThen(new InstantCommand(() -> coralIntake.stopIntake(), coralIntake)));
 
     // Coral Outtake
     operator.rt.whileTrue(new RunCommand(() -> coralIntake.outtake(), coralIntake));
