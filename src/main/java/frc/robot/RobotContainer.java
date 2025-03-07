@@ -19,8 +19,6 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.AutoAlignCommand;
-import frc.robot.commands.AutoAlignL2;
-import frc.robot.commands.AutoAlignL3;
 import frc.robot.commands.defaultcommands.*;
 import frc.robot.subsystems.AlgaeIntake;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -83,8 +81,6 @@ public class RobotContainer {
   public static PhotonCamera hpCamera = new PhotonCamera("hpCamera");
 
   private AutoAlignCommand autoAlignCommand = new AutoAlignCommand(drivetrain, reefCamera);
-  private AutoAlignL2 autoAlignL2 = new AutoAlignL2(drivetrain, reefCamera);
-  private AutoAlignL3 autoAlignL3 = new AutoAlignL3(drivetrain, reefCamera);
 
   public RobotContainer() {
     configureBindings();
@@ -200,7 +196,7 @@ public class RobotContainer {
 
     // driver.xButton.whileTrue(autoAlignCommand);
 
-    driver.xButton.whileTrue(autoAlignCommand);
+    driver.xButton.onTrue(autoAlignCommand);
 
     // test whiletrue first then this
     // driver.xButton.onTrue(
