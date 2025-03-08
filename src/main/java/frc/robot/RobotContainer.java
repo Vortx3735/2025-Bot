@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.AutoAlignCommand;
@@ -178,25 +179,17 @@ public class RobotContainer {
             ));
 
     Trigger coralDetected = new Trigger(() -> coralIntake.hasCoral());
+    Trigger leftCoralDetected = new Trigger(() -> coralIntake.hasLeftCoral());
+    Trigger rightCoralDetected = new Trigger(() -> coralIntake.hasRightCoral());
+
     Trigger coralNotDetected = coralDetected.negate();
     coralNotDetected.whileTrue(new RunCommand(() -> coralIntake.moveWristToHP(), coralIntake));
-
-    Trigger coralLeftDetected = new Trigger(() -> coralIntake.hasCoral());
-    coralNotDetected.whileTrue(new RunCommand(() -> coralIntake.moveWristToHP(), coralIntake));
-
-    Trigger coralRightDetected = new Trigger(() -> coralIntake.hasCoral());
-    coralNotDetected.whileTrue(new RunCommand(() -> coralIntake.moveWristToHP(), coralIntake));
-
-    Trigger algaeDetected = new Trigger(() -> algaeIntake.hasAlgae());
-    Trigger algaeNotDetected = algaeDetected.negate();
 
     driver.aButton.whileTrue(drivetrain.applyRequest(() -> brake));
     driver.bButton.whileTrue(
         drivetrain.applyRequest(
             () ->
                 point.withModuleDirection(new Rotation2d(-driver.getLeftY(), -driver.getLeftX()))));
-
-    // driver.xButton.whileTrue(autoAlignCommand);
 
     driver.xButton.onTrue(autoAlignCommand);
     driver.yButton.whileTrue(autoAlignL4);
@@ -239,7 +232,6 @@ public class RobotContainer {
             new RunCommand(() -> coralIntake.moveWristToHPandIntake(), coralIntake),
             new RunCommand(() -> elevator.moveElevatorToHP(), elevator),
             new RunCommand(() -> algaeIntake.stowWrist(), algaeIntake)));
-
     // L2
     operator.xButton.onTrue(
         Commands.parallel(
@@ -252,42 +244,33 @@ public class RobotContainer {
             new RunCommand(() -> coralIntake.moveWristToL3(), coralIntake),
             new RunCommand(() -> elevator.moveElevatorToL3(), elevator),
             new RunCommand(() -> algaeIntake.intake(), algaeIntake)));
-
     // L4
     operator.bButton.onTrue(
         Commands.sequence(
             elevator.moveElevatorToL4(),
             new RunCommand(() -> coralIntake.moveWristToL4(), coralIntake)));
 
-    // Outake
-    operator
-        .rt
-        .and(coralDetected)
-        .whileTrue(
-            // Commands.parallel(
-            new RunCommand(() -> coralIntake.outtake(), coralIntake));
-    // new RunCommand(() -> algaeIntake.intake(), algaeIntake)));
+    // Coral Intake with Beam
+    operator.lt.whileTrue(new RunCommand(() -> coralIntake.intake(), coralIntake));
+    leftCoralDetected.onTrue(
+        new WaitCommand(.2)
+            .andThen(new InstantCommand(() -> coralIntake.stopIntake(), coralIntake)));
+    rightCoralDetected.onTrue(
+        new WaitCommand(.2)
+            .andThen(new InstantCommand(() -> coralIntake.stopIntake(), coralIntake)));
 
-    // Intake with Beam
-    operator
-        .lt
-        .whileTrue(new RunCommand(() -> coralIntake.intake(), coralIntake))
-        .onFalse(new RunCommand(() -> coralIntake.stopIntake(), coralIntake));
-    // Manual Intake (No Beam)
-    operator.lb.whileTrue(
-        // Commands.parallel(
-        //     new RunCommand(()-> coralIntake.moveIntake(), coralIntake),
-        new RunCommand(() -> algaeIntake.intake(), algaeIntake));
-    //     )).onFalse(new RunCommand(()->coralIntake.stopIntake(),coralIntake));
-    // operator.lb.and(algaeDetected).whileTrue(
-    //         new RunCommand(()-> coralIntake.moveIntake(), coralIntake)
-    // );
-    // algae outtake
+    // Coral Outtake
+    operator.rt.whileTrue(new RunCommand(() -> coralIntake.outtake(), coralIntake));
+    // Algae Intake
+    operator.lb.whileTrue(new RunCommand(() -> algaeIntake.intake(), algaeIntake));
+    // Algae Outtake
     operator.rb.whileTrue(new RunCommand(() -> algaeIntake.outtake(), algaeIntake));
+
     // elevator up
     operator.povUp.whileTrue(new RunCommand(() -> elevator.moveElevatorUp(), elevator));
     // elevator down
     operator.povDown.whileTrue(new RunCommand(() -> elevator.moveElevatorDown(), elevator));
+
     operator.rs.whileTrue(new RunCommand(() -> algaeIntake.moveWristDown(), algaeIntake));
     operator.ls.whileTrue(new RunCommand(() -> algaeIntake.moveWristUp(), algaeIntake));
     operator.view.onTrue(new InstantCommand(() -> elevator.zeroElevator(), elevator));
