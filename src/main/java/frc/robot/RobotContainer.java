@@ -230,19 +230,19 @@ public class RobotContainer {
     operator.aButton.whileTrue(
         Commands.parallel(
             new RunCommand(() -> coralIntake.moveWristToHPandIntake(), coralIntake),
-            new RunCommand(() -> elevator.moveElevatorToHP(), elevator),
+            elevator.moveElevatorToHP(),
             new RunCommand(() -> algaeIntake.stowWrist(), algaeIntake)));
     // L2
     operator.xButton.onTrue(
         Commands.parallel(
             new RunCommand(() -> coralIntake.moveWristToL2(), coralIntake),
-            new RunCommand(() -> elevator.moveElevatorToL2(), elevator),
+            elevator.moveElevatorToL2(),
             new RunCommand(() -> algaeIntake.stowWrist(), algaeIntake)));
     // L3
     operator.yButton.onTrue(
         Commands.parallel(
             new RunCommand(() -> coralIntake.moveWristToL3(), coralIntake),
-            new RunCommand(() -> elevator.moveElevatorToL3(), elevator),
+            elevator.moveElevatorToL3(),
             new RunCommand(() -> algaeIntake.intake(), algaeIntake)));
     // L4
     operator.bButton.onTrue(
