@@ -2,108 +2,125 @@ package frc.robot.commands;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
-import edu.wpi.first.math.util.Units;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-import java.util.Set;
-import java.util.function.BooleanSupplier;
 import org.photonvision.PhotonCamera;
-import org.photonvision.PhotonUtils;
+import org.photonvision.targeting.PhotonPipelineResult;
 
 public class AutoAlignL4 extends Command {
   private final CommandSwerveDrivetrain drivetrain;
-  private final PhotonCamera camera;
+  private final PhotonCamera intakeCamera;
 
-  private static boolean isAligned = false;
+  // PID constants for alignment
+  private static PIDController rotationPidController;
+  private static PIDController drivePidControllerX;
+  private static PIDController drivePidControllerY;
 
-  private static final double TARGET_DISTANCE_METERS = 0.2032;
-  private static final double kP_Yaw = 0.2;
-  private static final double kP_Drive = 0.3; // tune this kp so robot dont tip when elevator up
+  private static final double kP_Yaw = 0.4; // Proportional constant for yaw correction
+  private static final double kP_Distance = 0.5; // Proportional constant for distance correction
+  private static final double YAW_THRESHOLD = .01; // Degrees threshold for alignment
+  private static final double X_THRESHOLD = 0.1; // Meters threshold for alignment
+  private static final double Y_THRESHOLD = 0.1; // Meters threshold for alignment
+  private static final double TARGET_DISTANCE_METERS = 0.203;  // L2
 
-  public AutoAlignL4(CommandSwerveDrivetrain drivetrain, PhotonCamera camera) {
+  public double yawAdjustment;
+  public double xAdjustment;
+  public double yAdjustment;
+
+  public AutoAlignL4(CommandSwerveDrivetrain drivetrain, PhotonCamera intakeCamera) {
     this.drivetrain = drivetrain;
-    this.camera = camera;
+    this.intakeCamera = intakeCamera;
+    rotationPidController = new PIDController(kP_Yaw, 0, 0);
+    drivePidControllerX = new PIDController(2.6, 0, 0);
+    drivePidControllerY = new PIDController(1.5, 0, 0);
+
+    rotationPidController.setSetpoint(Math.PI);
+    drivePidControllerX.setSetpoint(TARGET_DISTANCE_METERS);
+    rotationPidController.setTolerance(0.0001);
+
     addRequirements(drivetrain);
   }
 
-  public BooleanSupplier isAligned() {
-    return () -> isAligned;
+  public boolean isXAligned() {
+    return Math.abs(xAdjustment) < X_THRESHOLD;
+  }
+
+  public boolean isYAligned() {
+    return Math.abs(yAdjustment) < Y_THRESHOLD;
+  }
+
+  public boolean isYawAligned() {
+    System.out.println(yawAdjustment);
+    return Math.abs(yawAdjustment) < YAW_THRESHOLD;
+  }
+
+  public boolean isAligned() {
+    return isXAligned() && isYAligned() && isYawAligned();
   }
 
   @Override
-  public void initialize() {}
-
-  @Override
   public void execute() {
-    var results = camera.getAllUnreadResults();
-    boolean targetVisible = false;
-    double targetYaw = 0.0;
-    double targetRange = 0.0;
+    // Get the latest result from the camera
+    PhotonPipelineResult result = intakeCamera.getLatestResult();
 
-    double distanceError = 0.0;
-    double yawError = 0.0;
+    if (result.hasTargets()) {
+      var target = result.getBestTarget();
+      // double yaw = target.getYaw(); // Horizontal offset to the AprilTag
+      double distanceX = target.getBestCameraToTarget().getX(); // Distance to the tag (forward)
+      double yaw = target.getBestCameraToTarget().getRotation().getZ();
+      double distanceY = target.getBestCameraToTarget().getY();
+      SmartDashboard.putNumber("vision/Distance", distanceX);
+      SmartDashboard.putNumber("vision/Yaw", yaw);
 
-    if (!results.isEmpty()) {
-      var result = results.get(results.size() - 1);
-      if (result.hasTargets()) {
-        // At least one AprilTag was seen by the camera
-        for (var target : result.getTargets()) {
-          // check if it is a reef apriltag
-          Set<Integer> reefTagIds = Set.of(6, 7, 8, 9, 10, 11, 17, 18, 19, 20, 21, 22);
-          if (reefTagIds.contains(target.getFiducialId())) {
-            // Found reef april tag
-            targetYaw = target.getYaw();
-            targetRange =
-                PhotonUtils.calculateDistanceToTargetMeters(
-                    0.5, // Measured with a tape measure, or in CAD.
-                    0.2225, // From 2025 game manual
-                    Units.degreesToRadians(-30.0), // Measured with a protractor, or in CAD.
-                    Units.degreesToRadians(target.getPitch()));
-            targetVisible = true;
+      // Calculate adjustments for yaw and forward movement
+      yawAdjustment = rotationPidController.calculate(yaw);
+      xAdjustment = drivePidControllerX.calculate(distanceX, TARGET_DISTANCE_METERS);
+      yAdjustment = drivePidControllerY.calculate(distanceY, 0.02);
 
-            distanceError =
-                (TARGET_DISTANCE_METERS - targetRange) * kP_Drive; // u might need to increase kp
-            yawError = kP_Yaw * targetYaw;
+      SmartDashboard.putNumber("vision/xAdjustment", xAdjustment);
+      SmartDashboard.putNumber("vision/yAdjustment", yAdjustment);
+      SmartDashboard.putNumber("vision/rotationAdjustment", yawAdjustment);
 
-            drivetrain.setControl(
-                new SwerveRequest.FieldCentric()
-                    .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
-                    .withVelocityX(distanceError)
-                    .withVelocityY(0)
-                    .withRotationalRate(-yawError));
-          }
-        }
+      SmartDashboard.putBoolean("vision/isAligned", isAligned());
+      SmartDashboard.putBoolean("vision/isYawAligned", isYawAligned());
+      SmartDashboard.putBoolean("vision/isXAligned", isXAligned());
+      SmartDashboard.putBoolean("vision/isYAligned", isYAligned());
 
-        // use this to end the command
-        if (distanceError < 0.05) {
-          isAligned = true;
-        }
-      }
-    } else {
+      // if (rotationPidController.atSetpoint()) {
+      //   yawAdjustment = 0;
+      // }
+
+      // Apply swerve drive request
       drivetrain.setControl(
           new SwerveRequest.FieldCentric()
               .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
-              .withVelocityX(0)
-              .withVelocityY(0)
-              .withRotationalRate(0));
+              .withVelocityX(-xAdjustment)
+              .withVelocityY(-yAdjustment) // No lateral movement for alignment
+              .withRotationalRate(yawAdjustment));
+    } else {
+      // Stop the robot if no targets are found
+      drivetrain.setControl(
+          new SwerveRequest.FieldCentric()
+              .withVelocityX(0.0)
+              .withVelocityY(0.0)
+              .withRotationalRate(0.0));
     }
-
-    SmartDashboard.putBoolean("photonvision/targetVisible", targetVisible);
   }
 
   @Override
   public boolean isFinished() {
-    return false;
+    return isAligned();
   }
 
   @Override
   public void end(boolean interrupted) {
+    // Stop the robot
     drivetrain.setControl(
         new SwerveRequest.FieldCentric()
-            .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
-            .withVelocityX(0)
-            .withVelocityY(0)
-            .withRotationalRate(0));
+            .withVelocityX(0.0)
+            .withVelocityY(0.0)
+            .withRotationalRate(0.0));
   }
 }

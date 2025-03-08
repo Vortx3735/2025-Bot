@@ -18,27 +18,24 @@ public class AutoAlignCommand extends Command {
   private static PIDController drivePidControllerX;
   private static PIDController drivePidControllerY;
 
-  private static final double kP_Yaw = 0.07; // Proportional constant for yaw correction
-  private static final double kP_Distance = 0.5; // Proportional constant for distance correction
-  private static final double YAW_THRESHOLD = .01; // Degrees threshold for alignment
-  private static final double X_THRESHOLD = 0.1; // Meters threshold for alignment
+  private static final double kP_Yaw = 0.04; // Proportional constant for yaw correction
+  private static final double YAW_THRESHOLD = 0.1; // Degrees threshold for alignment
+  private static final double X_THRESHOLD = 0.04; // Meters threshold for alignment
   private static final double Y_THRESHOLD = 0.1; // Meters threshold for alignment
   private static final double TARGET_DISTANCE_METERS = 0.36; // L2
 
   public double yawAdjustment;
   public double xAdjustment;
   public double yAdjustment;
-
+  public double yaw;
   public AutoAlignCommand(CommandSwerveDrivetrain drivetrain, PhotonCamera intakeCamera) {
     this.drivetrain = drivetrain;
     this.intakeCamera = intakeCamera;
     rotationPidController = new PIDController(kP_Yaw, 0, 0);
     drivePidControllerX = new PIDController(2.6, 0, 0);
-    drivePidControllerY = new PIDController(1.5, 0, 0);
+    drivePidControllerY = new PIDController(1.8, 0, 0);
 
-    rotationPidController.setSetpoint(Math.PI);
-    drivePidControllerX.setSetpoint(TARGET_DISTANCE_METERS);
-    rotationPidController.setTolerance(0.005);
+    rotationPidController.setTolerance(YAW_THRESHOLD);
 
     addRequirements(drivetrain);
   }
@@ -52,7 +49,6 @@ public class AutoAlignCommand extends Command {
   }
 
   public boolean isYawAligned() {
-    System.out.println(yawAdjustment);
     return Math.abs(yawAdjustment) < YAW_THRESHOLD;
   }
 
@@ -69,17 +65,25 @@ public class AutoAlignCommand extends Command {
       var target = result.getBestTarget();
       // double yaw = target.getYaw(); // Horizontal offset to the AprilTag
       double distanceX = target.getBestCameraToTarget().getX(); // Distance to the tag (forward)
-      double yaw = target.getBestCameraToTarget().getRotation().getZ();
+      yaw = (target.getBestCameraToTarget().getRotation().getZ())*(180/Math.PI);
+
+      if(yaw < 0){
+        yaw += 180;
+      } else {
+        yaw -= 180;
+      }
+
       double distanceY = target.getBestCameraToTarget().getY();
       SmartDashboard.putNumber("vision/Distance", distanceX);
       SmartDashboard.putNumber("vision/Yaw", yaw);
 
       // Calculate adjustments for yaw and forward movement
-      yawAdjustment = rotationPidController.calculate(yaw);
+      yawAdjustment = rotationPidController.calculate(yaw, -10);
       xAdjustment = drivePidControllerX.calculate(distanceX, TARGET_DISTANCE_METERS);
-      yAdjustment = drivePidControllerY.calculate(distanceY, 0.02);
+      yAdjustment = drivePidControllerY.calculate(distanceY, -.06);
 
       SmartDashboard.putNumber("vision/xAdjustment", xAdjustment);
+      SmartDashboard.putNumber("vision/yaw", yaw);
       SmartDashboard.putNumber("vision/yAdjustment", yAdjustment);
       SmartDashboard.putNumber("vision/rotationAdjustment", yawAdjustment);
 
@@ -88,17 +92,17 @@ public class AutoAlignCommand extends Command {
       SmartDashboard.putBoolean("vision/isXAligned", isXAligned());
       SmartDashboard.putBoolean("vision/isYAligned", isYAligned());
 
-      if (rotationPidController.atSetpoint()) {
-        yawAdjustment = 0;
-      }
+      // if (rotationPidController.atSetpoint()) {
+      //   yawAdjustment = 0;
+      // }
 
       // Apply swerve drive request
       drivetrain.setControl(
           new SwerveRequest.FieldCentric()
               .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
-              .withVelocityX(xAdjustment)
+              .withVelocityX(-xAdjustment)
               .withVelocityY(-yAdjustment) // No lateral movement for alignment
-              .withRotationalRate(yawAdjustment));
+              .withRotationalRate(-yawAdjustment));
     } else {
       // Stop the robot if no targets are found
       drivetrain.setControl(

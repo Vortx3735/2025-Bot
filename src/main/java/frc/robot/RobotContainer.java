@@ -27,6 +27,7 @@ import frc.robot.subsystems.Elevator;
 import frc.robot.util.TunerConstants;
 import frc.robot.util.VorTXControllerXbox;
 import org.photonvision.PhotonCamera;
+import frc.robot.commands.AutoAlignL4;
 
 public class RobotContainer {
   private double MaxSpeed =
@@ -81,6 +82,7 @@ public class RobotContainer {
   public static PhotonCamera hpCamera = new PhotonCamera("hpCamera");
 
   private AutoAlignCommand autoAlignCommand = new AutoAlignCommand(drivetrain, reefCamera);
+  private AutoAlignL4 autoAlignL4 = new AutoAlignL4(drivetrain, reefCamera);
 
   public RobotContainer() {
     configureBindings();
@@ -197,6 +199,8 @@ public class RobotContainer {
     // driver.xButton.whileTrue(autoAlignCommand);
 
     driver.xButton.onTrue(autoAlignCommand);
+    driver.yButton.whileTrue(autoAlignL4);
+
 
     // test whiletrue first then this
     // driver.xButton.onTrue(
