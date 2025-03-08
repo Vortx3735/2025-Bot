@@ -14,6 +14,10 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.SensorConstants;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 
 public class CoralIntake extends SubsystemBase {
 
@@ -80,10 +84,10 @@ public class CoralIntake extends SubsystemBase {
         coralWristConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
-  public boolean getPositionFinished() {
-    return coralPID.atSetpoint();
+  public boolean getPositionFinished(double setpoint, double currentPos) {
+    return (Math.abs(setpoint - currentPos) < 0.03);
   }
-
+  
   // returns true assuming beam break is broken
   public boolean hasCoral() {
     if (leftCoralBeamBreak.get() && rightCoralBeamBreak.get()) {
@@ -174,6 +178,10 @@ public class CoralIntake extends SubsystemBase {
     return moveWristToPosition(-0.34);
   }
 
+  public Command moveWristToHpCom(){
+    return Commands.run(() -> this.moveWristToHPandIntake(), this).until(() -> this.getPositionFinished(-0.34, position));
+  }
+
   public boolean moveWristToHP() {
     AlgaeIntake.resetAlgae();
     return moveWristToPosition(-0.34);
@@ -181,6 +189,10 @@ public class CoralIntake extends SubsystemBase {
 
   public boolean moveWristToL2() {
     return moveWristToPosition(-0.38);
+  }
+
+  public Command moveWristToL2Com(){
+    return new RunCommand(() -> this.moveWristToL2(), this).until(() -> this.getPositionFinished(-0.38, position)).andThen(new InstantCommand(() -> stopWrist()));
   }
 
   public void L2Auto() {
@@ -233,8 +245,8 @@ public class CoralIntake extends SubsystemBase {
     wristSpeedUp = SmartDashboard.getNumber("CoralIntake/Wrist Up Speed", wristSpeedUp);
     wristSpeedDown = SmartDashboard.getNumber("CoralIntake/Wrist Down Speed", wristSpeedDown);
 
-    SmartDashboard.putBoolean("CoralIntake/Left Coral", hasLeftCoral());
-    SmartDashboard.putBoolean("CoralIntake/Right Coral", hasRightCoral());
+    SmartDashboard.putBoolean("CoralIntake/Left Coral", leftCoralBeamBreak.get());
+    SmartDashboard.putBoolean("CoralIntake/Right Coral", rightCoralBeamBreak.get());
 
     // Update intake speed
     intakeSpeed = SmartDashboard.getNumber("CoralIntake/intakeSpeed", intakeSpeed);
@@ -242,5 +254,6 @@ public class CoralIntake extends SubsystemBase {
     // Publish Wrist Position
     SmartDashboard.putNumber("CoralIntake/Wrist Position", position);
     SmartDashboard.putNumber("CoralIntake/Wrist Position", position);
+    SmartDashboard.putBoolean("CoralIntake/Wristbooleanfinished", getPositionFinished(-0.38, position));
   }
 }

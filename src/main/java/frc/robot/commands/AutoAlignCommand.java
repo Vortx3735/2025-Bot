@@ -17,11 +17,10 @@ public class AutoAlignCommand extends Command {
   private static PIDController rotationPidController;
   private static PIDController drivePidControllerX;
   private static PIDController drivePidControllerY;
-
-  private static final double kP_Yaw = 0.04; // Proportional constant for yaw correction
+  private static final double kP_Yaw = 0.06; // Proportional constant for yaw correction
   private static final double YAW_THRESHOLD = 0.1; // Degrees threshold for alignment
-  private static final double X_THRESHOLD = 0.04; // Meters threshold for alignment
-  private static final double Y_THRESHOLD = 0.1; // Meters threshold for alignment
+  private static final double X_THRESHOLD = 0.07; // Meters threshold for alignment
+  private static final double Y_THRESHOLD = 0.04; // Meters threshold for alignment
   private static final double TARGET_DISTANCE_METERS = 0.36; // L2
 
   public double yawAdjustment;

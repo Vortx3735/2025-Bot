@@ -24,7 +24,7 @@ public class DefaultCoralIntakeCommand extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    // // m_CoralIntake.hold();
+    m_CoralIntake.hold();
 
     // if (!m_CoralIntake.getCoralIntakeBeam().getAsBoolean()) {
     //   m_CoralIntake.stopIntake();
@@ -41,7 +41,7 @@ public class DefaultCoralIntakeCommand extends Command {
 
     // m_CoralIntake.stopIntake();
 
-    m_CoralIntake.moveWristToPosition(m_CoralIntake.getWristPosition());
+    // m_CoralIntake.moveWristToPosition(m_CoralIntake.getWristPosition());
 
     // if (m_CoralIntake.getWristPosition() > -0.36) {
     //   m_CoralIntake.stopWrist();

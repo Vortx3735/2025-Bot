@@ -69,8 +69,8 @@ public final class Constants {
   }
 
   public static final class SensorConstants {
-    public static final int CORAL_LEFT_BEAM_BREAK = 2;
-    public static final int CORAL_RIGHT_BEAM_BREAK = 0;
+    public static final int CORAL_LEFT_BEAM_BREAK = 0;
+    public static final int CORAL_RIGHT_BEAM_BREAK = 3;
     public static final int ALGAE_BEAM_BREAK = 5;
   }
 

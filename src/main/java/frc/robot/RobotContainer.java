@@ -234,10 +234,17 @@ public class RobotContainer {
             new RunCommand(() -> algaeIntake.stowWrist(), algaeIntake)));
     // L2
     operator.xButton.onTrue(
-        Commands.parallel(
-            new RunCommand(() -> coralIntake.moveWristToL2(), coralIntake),
-            elevator.moveElevatorToL2(),
-            new RunCommand(() -> algaeIntake.stowWrist(), algaeIntake)));
+        Commands.sequence(
+            Commands.parallel(
+                // elevator.moveElevatorToL2(),
+                new RunCommand(() -> algaeIntake.stowWrist(), algaeIntake),
+                coralIntake.moveWristToL2Com()
+            ),
+            Commands.parallel(
+                new RunCommand(() -> coralIntake.outtake(), coralIntake)),
+                coralIntake.moveWristToL2Com()
+            )
+        );
     // L3
     operator.yButton.onTrue(
         Commands.parallel(
@@ -261,6 +268,13 @@ public class RobotContainer {
 
     // Coral Outtake
     operator.rt.whileTrue(new RunCommand(() -> coralIntake.outtake(), coralIntake));
+    leftCoralDetected.onFalse(
+        new WaitCommand(.4)
+            .andThen(new InstantCommand(() -> coralIntake.stopIntake(), coralIntake)));
+    rightCoralDetected.onFalse(
+        new WaitCommand(.4)
+            .andThen(new InstantCommand(() -> coralIntake.stopIntake(), coralIntake)));
+
     // Algae Intake
     operator.lb.whileTrue(new RunCommand(() -> algaeIntake.intake(), algaeIntake));
     // Algae Outtake
