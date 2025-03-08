@@ -28,6 +28,7 @@ public class AutoAlignCommand extends Command {
   public double xAdjustment;
   public double yAdjustment;
   public double yaw;
+
   public AutoAlignCommand(CommandSwerveDrivetrain drivetrain, PhotonCamera intakeCamera) {
     this.drivetrain = drivetrain;
     this.intakeCamera = intakeCamera;
@@ -65,9 +66,9 @@ public class AutoAlignCommand extends Command {
       var target = result.getBestTarget();
       // double yaw = target.getYaw(); // Horizontal offset to the AprilTag
       double distanceX = target.getBestCameraToTarget().getX(); // Distance to the tag (forward)
-      yaw = (target.getBestCameraToTarget().getRotation().getZ())*(180/Math.PI);
+      yaw = (target.getBestCameraToTarget().getRotation().getZ()) * (180 / Math.PI);
 
-      if(yaw < 0){
+      if (yaw < 0) {
         yaw += 180;
       } else {
         yaw -= 180;

@@ -23,7 +23,7 @@ public class AutoAlignL4 extends Command {
   private static final double YAW_THRESHOLD = .01; // Degrees threshold for alignment
   private static final double X_THRESHOLD = 0.1; // Meters threshold for alignment
   private static final double Y_THRESHOLD = 0.1; // Meters threshold for alignment
-  private static final double TARGET_DISTANCE_METERS = 0.203;  // L2
+  private static final double TARGET_DISTANCE_METERS = 0.203; // L2
 
   public double yawAdjustment;
   public double xAdjustment;

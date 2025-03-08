@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.AutoAlignCommand;
+import frc.robot.commands.AutoAlignL4;
 import frc.robot.commands.defaultcommands.*;
 import frc.robot.subsystems.AlgaeIntake;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -27,7 +28,6 @@ import frc.robot.subsystems.Elevator;
 import frc.robot.util.TunerConstants;
 import frc.robot.util.VorTXControllerXbox;
 import org.photonvision.PhotonCamera;
-import frc.robot.commands.AutoAlignL4;
 
 public class RobotContainer {
   private double MaxSpeed =
@@ -200,7 +200,6 @@ public class RobotContainer {
 
     driver.xButton.onTrue(autoAlignCommand);
     driver.yButton.whileTrue(autoAlignL4);
-
 
     // test whiletrue first then this
     // driver.xButton.onTrue(
