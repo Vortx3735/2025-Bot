@@ -10,6 +10,7 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.util.function.BooleanConsumer;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -18,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 
 public class CoralIntake extends SubsystemBase {
 
@@ -161,10 +163,6 @@ public class CoralIntake extends SubsystemBase {
    * @Param targetPos The target position to move the wrist to.
    */
   public boolean moveWristToPosition(double targetPos) {
-    if (Math.abs(targetPos - position) < .005) {
-      stopWrist();
-      return true;
-    }
     coralWrist.set(
         MathUtil.clamp(
             coralPID.calculate(position, targetPos) + coralFF.calculate(position, targetPos),
@@ -176,6 +174,14 @@ public class CoralIntake extends SubsystemBase {
   public boolean moveWristToHPandIntake() {
     intake();
     return moveWristToPosition(-0.34);
+  }
+
+  public Boolean stopWristIfAtBoolean(double targetPos) {
+    if (Math.abs(targetPos - position) < .005) {
+      stopWrist();
+      return true;
+    }
+    return false;
   }
 
   public Command moveWristToHpCom(){
@@ -192,7 +198,11 @@ public class CoralIntake extends SubsystemBase {
   }
 
   public Command moveWristToL2Com(){
-    return new RunCommand(() -> this.moveWristToL2(), this).until(() -> this.getPositionFinished(-0.38, position)).andThen(new InstantCommand(() -> stopWrist()));
+    return new FunctionalCommand(() -> System.out.println("INTIALIZED"), () -> this.moveWristToL2(), (x)->this.hold(), () -> this.stopWristIfAtBoolean(-0.38), this);
+  }
+
+  public Command moveWristToL4Com(){
+    return new RunCommand(() -> this.moveWristToL4(), this).until(() -> this.getPositionFinished(-0.48, position)).andThen(new InstantCommand(() -> stopWrist()));
   }
 
   public void L2Auto() {

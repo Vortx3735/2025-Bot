@@ -83,6 +83,8 @@ public class RobotContainer {
   public static PhotonCamera hpCamera = new PhotonCamera("hpCamera");
 
   private AutoAlignCommand autoAlignCommand = new AutoAlignCommand(drivetrain, reefCamera);
+  private AutoAlignCommand autoAlignHP = new AutoAlignCommand(drivetrain, hpCamera);
+
   private AutoAlignL4 autoAlignL4 = new AutoAlignL4(drivetrain, reefCamera);
 
   public RobotContainer() {
@@ -95,6 +97,7 @@ public class RobotContainer {
 
     autoChooser.addRoutine("Test Auto 4", autoRoutines::testAuto4);
     autoChooser.addRoutine("CenterReef", autoRoutines::centerRoutine);
+    autoChooser.addRoutine("VisionAuton", autoRoutines::visionAutoRoutine);
 
     SmartDashboard.putData("Auto Chooser", autoChooser);
 
@@ -192,7 +195,7 @@ public class RobotContainer {
                 point.withModuleDirection(new Rotation2d(-driver.getLeftY(), -driver.getLeftX()))));
 
     driver.xButton.onTrue(autoAlignCommand);
-    driver.yButton.whileTrue(autoAlignL4);
+    driver.yButton.whileTrue(autoAlignHP);
 
     // test whiletrue first then this
     // driver.xButton.onTrue(

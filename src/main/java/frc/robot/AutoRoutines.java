@@ -9,6 +9,8 @@ import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
+import frc.robot.commands.AutoAlignCommand;
+
 import java.util.Optional;
 
 public class AutoRoutines {
@@ -102,7 +104,6 @@ public class AutoRoutines {
   public AutoRoutine centerRoutine() {
     final AutoRoutine routine = m_factory.newRoutine("centerRoutine");
     final AutoTrajectory testTraj = routine.trajectory("CenterReef");
-
     routine
         .active()
         .onTrue(
@@ -132,9 +133,21 @@ public class AutoRoutines {
 
   public AutoRoutine visionAutoRoutine() {
     final AutoRoutine routine = m_factory.newRoutine("Vision Auton");
-    final AutoTrajectory StartToReef = routine.trajectory("VisionAuton");
+    final AutoTrajectory StartToReef = routine.trajectory("TestReef");
+    final AutoTrajectory reefToHP = routine.trajectory("ReefToHP");
 
-    routine.active().onTrue(Commands.sequence(StartToReef.resetOdometry(), StartToReef.cmd()));
+    AutoAlignCommand autoAlignCommand = new AutoAlignCommand(RobotContainer.drivetrain, RobotContainer.reefCamera);
+
+    routine.active().onTrue(Commands.sequence(
+      StartToReef.resetOdometry(), 
+      StartToReef.cmd(),
+      new RunCommand(() -> RobotContainer.coralIntake.moveWristToL2Com(), RobotContainer.coralIntake),
+      autoAlignCommand,
+      // RobotContainer.elevator.moveElevatorToL4(),
+      // new RunCommand(() -> RobotContainer.coralIntake.moveWristToL4Com(), RobotContainer.coralIntake),
+      new RunCommand(() -> RobotContainer.coralIntake.outtake(), RobotContainer.coralIntake)
+      )
+    );
     return routine;
   }
 }
