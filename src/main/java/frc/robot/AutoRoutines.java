@@ -4,7 +4,6 @@ import choreo.Choreo;
 import choreo.auto.AutoFactory;
 import choreo.auto.AutoRoutine;
 import choreo.auto.AutoTrajectory;
-import choreo.trajectory.*;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -113,15 +112,26 @@ public class AutoRoutines {
     final AutoRoutine routine = m_factory.newRoutine("Vision Auton");
     final AutoTrajectory StartToReef = routine.trajectory("TestReef");
     final AutoTrajectory reefToHP = routine.trajectory("ReefToHP");
+    final AutoTrajectory hpToReef = routine.trajectory("HPToReef");
+
     routine
         .active()
         .onTrue(
             Commands.sequence(
-                StartToReef.resetOdometry().asProxy(),
-                RobotContainer.coralIntake.moveWristToL2().asProxy(),
-                StartToReef.cmd().asProxy(),
-                CommandFactory.scoreL4Command(),
-                reefToHP.cmd().asProxy()));
+                    StartToReef.resetOdometry().asProxy(),
+                    Commands.parallel(
+                            Commands.sequence(
+                                    RobotContainer.coralIntake.moveWristToHP().asProxy(),
+                                    RobotContainer.coralIntake.intakeCommand().asProxy())
+                                .withName("Move Wrist and Intake Coral"),
+                            StartToReef.cmd().asProxy())
+                        .withName("Move and Intake Coral"),
+                    CommandFactory.scoreL4Command(),
+                    reefToHP.cmd().asProxy(),
+                    RobotContainer.coralIntake.intakeCommand().asProxy(),
+                    hpToReef.cmd().asProxy(),
+                    CommandFactory.scoreL4Command().asProxy())
+                .withName("Vision Auton"));
     return routine;
   }
 }
