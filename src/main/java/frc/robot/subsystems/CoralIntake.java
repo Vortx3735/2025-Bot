@@ -1,20 +1,31 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.sim.CANcoderSimState;
+import com.revrobotics.sim.SparkMaxSim;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.simulation.BatterySim;
+import edu.wpi.first.wpilibj.simulation.RoboRioSim;
+import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
+import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.SensorConstants;
 
@@ -41,6 +52,23 @@ public class CoralIntake extends SubsystemBase {
   public DigitalInput leftCoralBeamBreak = new DigitalInput(SensorConstants.CORAL_LEFT_BEAM_BREAK);
   public DigitalInput rightCoralBeamBreak =
       new DigitalInput(SensorConstants.CORAL_RIGHT_BEAM_BREAK);
+
+  private final int kGearRatio = 15;
+  private final Mechanism2d coralArmMech = new Mechanism2d(4, 4);
+  private final MechanismLigament2d coralArm;
+  private final MechanismRoot2d mechBase = coralArmMech.getRoot("Arm Pivot", 2, 2);
+  private final DCMotor wristGearbox = DCMotor.getNeo550(1);
+  private SparkMaxSim wristSim;
+  private final SingleJointedArmSim mArmSim =
+      new SingleJointedArmSim(
+          LinearSystemId.createDCMotorSystem(DCMotor.getNeo550(1), 0.001, kGearRatio),
+          DCMotor.getNeo550(1),
+          kGearRatio,
+          .1,
+          0,
+          2 * Math.PI,
+          false,
+          Math.PI);
 
   // aaron chang
   /**
@@ -71,7 +99,7 @@ public class CoralIntake extends SubsystemBase {
     coralWrist = new SparkMax(wristId, MotorType.kBrushless);
     wristEncoder = new CANcoder(wristEncoderId);
     kg = 0.05;
-    kp = 3;
+    kp = .1;
     coralFF = new ArmFeedforward(ks, kg, kv);
     coralPID = new PIDController(kp, ki, kd);
 
@@ -81,6 +109,9 @@ public class CoralIntake extends SubsystemBase {
     // 0.0);
     coralWrist.configure(
         coralWristConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+    wristSim = new SparkMaxSim(coralWrist, wristGearbox);
+    coralArm = mechBase.append(new MechanismLigament2d("Coral Arm", 1, 90));
   }
 
   public boolean getPositionFinished(double setpoint, double currentPos) {
@@ -89,48 +120,46 @@ public class CoralIntake extends SubsystemBase {
 
   // returns true assuming beam break is broken
   public boolean hasCoral() {
-    if (leftCoralBeamBreak.get() && rightCoralBeamBreak.get()) {
-      return false;
-    }
-    return true;
+    return (hasLeftCoral() || hasRightCoral());
   }
 
   public boolean hasLeftCoral() {
-    if (leftCoralBeamBreak.get()) {
-      return false;
-    }
-    return true;
+    return !leftCoralBeamBreak.get();
   }
 
   public boolean hasRightCoral() {
-    if (rightCoralBeamBreak.get()) {
-      return false;
-    }
-    return true;
+    return !rightCoralBeamBreak.get();
   }
 
-  public void intake() {
-    if (!rightCoralDetected()) {
-      rightCoralMotor.set(intakeSpeed);
+  public Command intakeCommand(double speed) {
+    return new RunCommand(() -> intake(speed), this)
+        .withName("Coral Intake at Speed" + speed + "Command");
+  }
+
+  public Command intakeCommand() {
+    return new RunCommand(() -> intake(intakeSpeed), this).withName("Coral Intake Command");
+  }
+
+  public Command outtakeCommand() {
+    return new RunCommand(() -> outtake(), this).withTimeout(2).withName("Coral Outtake Command");
+  }
+
+  public Command stopIntakeCommand() {
+    return new InstantCommand(() -> stopIntake(), this).withName("Stop Coral Intake Command");
+  }
+
+  private void intake(double speed) {
+    if (!hasRightCoral()) {
+      rightCoralMotor.set(speed);
     }
-    if (!leftCoralDetected()) {
-      leftCoralMotor.set(intakeSpeed);
+    if (!hasLeftCoral()) {
+      leftCoralMotor.set(speed);
     }
   }
 
-  public void outtake() {
+  private void outtake() {
     leftCoralMotor.set(-intakeSpeed - 0.1);
     rightCoralMotor.set(-intakeSpeed - 0.1);
-  }
-
-  public void intakeAtSpeed(double speed) {
-    leftCoralMotor.set(speed);
-    rightCoralMotor.set(speed);
-  }
-
-  public void moveIntake() {
-    leftCoralMotor.set(intakeSpeed);
-    rightCoralMotor.set(intakeSpeed);
   }
 
   public void stopIntake() {
@@ -159,102 +188,47 @@ public class CoralIntake extends SubsystemBase {
   /**
    * @Param targetPos The target position to move the wrist to.
    */
-  public boolean moveWristToPosition(double targetPos) {
-    coralWrist.set(
-        MathUtil.clamp(
-            coralPID.calculate(position, targetPos) + coralFF.calculate(position, targetPos),
-            -0.2,
-            0.3));
-    return false;
+  public Command moveWristToPosition(double targetPos) {
+    return new FunctionalCommand(
+            () -> System.out.println("INTIALIZED"),
+            () -> coralWrist.set(coralPID.calculate(position, targetPos)),
+            (x) -> this.hold(position),
+            () -> this.atSetpoint(targetPos),
+            this)
+        .withName("Move Coral Wrist to Position");
   }
 
-  public boolean moveWristToHPandIntake() {
-    intake();
-    return moveWristToPosition(-0.34);
-  }
-
-  public Boolean stopWristIfAtBoolean(double targetPos) {
-    if (Math.abs(targetPos - position) < .005) {
-      stopWrist();
+  public Boolean atSetpoint(double targetPos) {
+    if (Math.abs(targetPos - position) < .01) {
       return true;
     }
     return false;
   }
 
-  public Command moveWristToHpCom() {
-    return Commands.run(() -> this.moveWristToHPandIntake(), this)
-        .until(() -> this.getPositionFinished(-0.34, position));
+  public Command moveWristToHP() {
+    return moveWristToPosition(-0.34).withName("Move Coral Wrist to HP");
   }
 
-  public boolean moveWristToHP() {
-    AlgaeIntake.resetAlgae();
-    return moveWristToPosition(-0.34);
+  public Command moveWristToL2() {
+    return moveWristToPosition(-0.38).withName("Move Coral Wrist to L2");
   }
 
-  public boolean moveWristToL2() {
-    return moveWristToPosition(-0.38);
+  public Command moveWristToL3() {
+    return moveWristToPosition(-0.38).withName("Move Coral Wrist to L3");
   }
 
-  public Command moveWristToL2Com() {
-    return new FunctionalCommand(
-        () -> System.out.println("INTIALIZED"),
-        () -> this.moveWristToL2(),
-        (x) -> this.hold(),
-        () -> this.stopWristIfAtBoolean(-0.38),
-        this);
+  public Command moveWristToL4() {
+    return moveWristToPosition(-0.48).withName("Move Coral Wrist to L4");
   }
 
-  public Command barelyMoveWristCom() {
-    return new FunctionalCommand(
-        () -> System.out.println("INTIALIZED"),
-        () -> this.moveWristToPosition(-0.29),
-        (x) -> this.hold(),
-        () -> this.stopWristIfAtBoolean(-0.29),
-        this);
-  }
-
-  public Command moveWristToL4Com() {
-    return new FunctionalCommand(
-        () -> System.out.println("INTIALIZED"),
-        () -> this.moveWristToL4(),
-        (x) -> this.hold(),
-        () -> this.stopWristIfAtBoolean(-0.48),
-        this);
-  }
-
-  public void L2Auto() {
-    // double setpoint = -0.34;
-    // return new RunCommand(()->moveWristToPosition(setpoint),this).until(() ->
-    // this.getPositionFinished());
-    this.moveWristToPosition(-0.45);
-    this.intakeAtSpeed(-0.1);
-  }
-
-  public boolean moveWristToL3() {
-    return moveWristToL2();
-  }
-
-  public boolean moveWristToL4() {
-    return moveWristToPosition(-0.48);
-  }
-
-  public void hold() {
-    coralWrist.set(coralPID.calculate(position, position) + coralFF.calculate(position, kv));
+  public void hold(double targetPos) {
+    // coralWrist.set(coralPID.calculate(position, targetPos) + coralFF.calculate(position, kv));
+    coralWrist.set(coralPID.calculate(position, targetPos));
   }
 
   public double getWristPosition() {
     // get wrist position
     return wristEncoder.getAbsolutePosition().getValueAsDouble();
-  }
-
-  public boolean leftCoralDetected() {
-    // check if coral is detected type shi
-    return !leftCoralBeamBreak.get();
-  }
-
-  public boolean rightCoralDetected() {
-    // check if coral is detected type shi
-    return !rightCoralBeamBreak.get();
   }
 
   public void publishInitialValues() {
@@ -272,8 +246,8 @@ public class CoralIntake extends SubsystemBase {
     wristSpeedUp = SmartDashboard.getNumber("CoralIntake/Wrist Up Speed", wristSpeedUp);
     wristSpeedDown = SmartDashboard.getNumber("CoralIntake/Wrist Down Speed", wristSpeedDown);
 
-    SmartDashboard.putBoolean("CoralIntake/Left Coral", leftCoralBeamBreak.get());
-    SmartDashboard.putBoolean("CoralIntake/Right Coral", rightCoralBeamBreak.get());
+    SmartDashboard.putBoolean("CoralIntake/Left Coral", hasLeftCoral());
+    SmartDashboard.putBoolean("CoralIntake/Right Coral", hasRightCoral());
 
     // Update intake speed
     intakeSpeed = SmartDashboard.getNumber("CoralIntake/intakeSpeed", intakeSpeed);
@@ -283,5 +257,35 @@ public class CoralIntake extends SubsystemBase {
     SmartDashboard.putNumber("CoralIntake/Wrist Position", position);
     SmartDashboard.putBoolean(
         "CoralIntake/Wristbooleanfinished", getPositionFinished(-0.38, position));
+
+    SmartDashboard.putData("CoralIntake/CoralIntakeVisualizer", coralArmMech);
+  }
+
+  @Override
+  public void simulationPeriodic() {
+    CANcoderSimState wristEncoderSim = wristEncoder.getSimState();
+    // In this method, we update our simulation of what our arm is doing
+    // First, we set our "inputs" (voltages)
+    mArmSim.setInput(wristSim.getAppliedOutput() * RoboRioSim.getVInVoltage());
+
+    // Next, we update it. The standard loop time is 20ms.
+    mArmSim.update(0.02);
+
+    // Now, we update the Spark Flex
+    wristSim.iterate(
+        Units.radiansPerSecondToRotationsPerMinute( // motor velocity, in RPM
+            mArmSim.getVelocityRadPerSec()),
+        RoboRioSim.getVInVoltage(), // Simulated battery voltage, in Volts
+        0.02); // Time interval, in Seconds
+
+    // SimBattery estimates loaded battery voltages
+    // This should include all motors being simulated
+    RoboRioSim.setVInVoltage(
+        BatterySim.calculateDefaultBatteryLoadedVoltage(mArmSim.getCurrentDrawAmps()));
+
+    // Update any external GUI displays or values as desired
+    // For example, a Mechanism2d Arm based on the simulated arm angle
+    coralArm.setAngle(Units.radiansToDegrees(mArmSim.getAngleRads()));
+    wristEncoderSim.setRawPosition(mArmSim.getAngleRads());
   }
 }

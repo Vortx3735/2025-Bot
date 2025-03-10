@@ -9,7 +9,7 @@ import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
-import frc.robot.commands.AutoAlignCommand;
+import frc.robot.commands.CommandFactory;
 import java.util.Optional;
 
 public class AutoRoutines {
@@ -45,9 +45,7 @@ public class AutoRoutines {
                     new RunCommand(
                         () -> RobotContainer.elevator.moveElevatorToPosition(0.22),
                         RobotContainer.elevator),
-                    new RunCommand(
-                        () -> RobotContainer.coralIntake.intakeAtSpeed(-0.05),
-                        RobotContainer.coralIntake))));
+                    RobotContainer.coralIntake.intakeCommand(-.05))));
     return routine;
   }
 
@@ -63,7 +61,7 @@ public class AutoRoutines {
                 testTraj.cmd(),
                 // RobotContainer.elevator.moveElevatorToL2Auto(),
                 new RunCommand(
-                    () -> RobotContainer.coralIntake.L2Auto(), RobotContainer.coralIntake)));
+                    () -> RobotContainer.coralIntake.moveWristToL2(), RobotContainer.coralIntake)));
     return routine;
   }
 
@@ -79,27 +77,10 @@ public class AutoRoutines {
                 testTraj.cmd(),
                 // RobotContainer.elevator.moveElevatorToL2Auto(),
                 new RunCommand(
-                    () -> RobotContainer.coralIntake.L2Auto(), RobotContainer.coralIntake)));
+                    () -> RobotContainer.coralIntake.moveWristToL2(), RobotContainer.coralIntake)));
     return routine;
   }
 
-  // public AutoRoutine testAuto2() {
-  // final AutoRoutine routine = m_factory.newRoutine("Test Auto 2");
-  // // final AutoTrajectory testTraj = routine.trajectory("TestReef");
-
-  // routine.active().onTrue(testReef.resetOdometry().andThen(testTraj.cmd()));
-  // routine.active().onTrue(
-  // new ParallelCommandGroup(
-  // testTraj.resetOdometry(),
-  // new FollowTrajectoryCommand(testTraj, ),
-  // new RunCommand(() -> coralIntake.moveWristToL2(), coralIntake),
-  // new RunCommand(() -> elevator.moveElevatorToL2(), elevator),
-  // new RunCommand(() -> algaeIntake.stowWrist(), algaeIntake)
-  // )
-  // );
-  // return routine;
-  // return routine;
-  // }
   public AutoRoutine centerRoutine() {
     final AutoRoutine routine = m_factory.newRoutine("centerRoutine");
     final AutoTrajectory testTraj = routine.trajectory("CenterReef");
@@ -116,9 +97,7 @@ public class AutoRoutines {
                     new RunCommand(
                         () -> RobotContainer.elevator.moveElevatorToPosition(0.1),
                         RobotContainer.elevator)),
-                new RunCommand(
-                    () -> RobotContainer.coralIntake.intakeAtSpeed(-0.1),
-                    RobotContainer.coralIntake)));
+                RobotContainer.coralIntake.intakeCommand(-.1)));
     return routine;
   }
 
@@ -133,23 +112,15 @@ public class AutoRoutines {
   public AutoRoutine visionAutoRoutine() {
     final AutoRoutine routine = m_factory.newRoutine("Vision Auton");
     final AutoTrajectory StartToReef = routine.trajectory("TestReef");
-    final AutoTrajectory reefToHP = routine.trajectory("ReefToHP");
-
-    AutoAlignCommand autoAlignCommand =
-        new AutoAlignCommand(RobotContainer.drivetrain, RobotContainer.reefCamera);
-
+    // final AutoTrajectory reefToHP = routine.trajectory("ReefToHP");
     routine
         .active()
         .onTrue(
             Commands.sequence(
-                StartToReef.resetOdometry(),
-                RobotContainer.coralIntake.moveWristToL2Com(),
-                StartToReef.cmd(),
-                autoAlignCommand,
-                RobotContainer.elevator.moveElevatorToL4(),
-                RobotContainer.coralIntake.moveWristToL4Com(),
-                new RunCommand(
-                    () -> RobotContainer.coralIntake.outtake(), RobotContainer.coralIntake)));
+                StartToReef.resetOdometry().asProxy(),
+                RobotContainer.coralIntake.moveWristToL2().asProxy(),
+                StartToReef.cmd().asProxy(),
+                CommandFactory.scoreL4Command()));
     return routine;
   }
 }

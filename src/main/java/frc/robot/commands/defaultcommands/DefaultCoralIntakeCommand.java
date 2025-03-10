@@ -6,6 +6,8 @@ import frc.robot.subsystems.CoralIntake;
 public class DefaultCoralIntakeCommand extends Command {
   private final CoralIntake m_CoralIntake;
 
+  double position;
+
   /**
    * Default Coral Intake Command
    *
@@ -14,42 +16,19 @@ public class DefaultCoralIntakeCommand extends Command {
   public DefaultCoralIntakeCommand(CoralIntake subsystem) {
     m_CoralIntake = subsystem;
     addRequirements(m_CoralIntake);
-    // Use addRequirements() here to declare subsystem dependencies.
   }
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {}
+  public void initialize() {
+    position = m_CoralIntake.getWristPosition();
+  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    m_CoralIntake.hold();
-
-    // if (!m_CoralIntake.getCoralIntakeBeam().getAsBoolean()) {
-    //   m_CoralIntake.stopIntake();
-    //  // Stop intake motor
-    // } else {
-    //   m_CoralIntake.moveWristToHP(); // Move to Human Player position
-    //   m_CoralIntake.intake(); // Run intake motor
-    // }
-
-    // if (!m_CoralIntake.hasCoral()) {
-    //  // Stop intake motor
-    //  m_CoralIntake.moveWristToHP();
-    // }
-
-    // m_CoralIntake.stopIntake();
-
-    // m_CoralIntake.moveWristToPosition(m_CoralIntake.getWristPosition());
-
-    // if (m_CoralIntake.getWristPosition() > -0.36) {
-    //   m_CoralIntake.stopWrist();
-    // } else {
-    //   m_CoralIntake.moveWristToPosition(m_CoralIntake.getWristPosition());
-    // }
-
     m_CoralIntake.stopIntake();
+    m_CoralIntake.hold(position);
   }
 
   // Called once the command ends or is interrupted.
