@@ -8,6 +8,7 @@ import choreo.trajectory.*;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import frc.robot.commands.AutoAlignCommand;
 
@@ -140,11 +141,11 @@ public class AutoRoutines {
 
     routine.active().onTrue(Commands.sequence(
       StartToReef.resetOdometry(), 
+      RobotContainer.coralIntake.moveWristToL2Com(),
       StartToReef.cmd(),
-      new RunCommand(() -> RobotContainer.coralIntake.moveWristToL2Com(), RobotContainer.coralIntake),
       autoAlignCommand,
-      // RobotContainer.elevator.moveElevatorToL4(),
-      // new RunCommand(() -> RobotContainer.coralIntake.moveWristToL4Com(), RobotContainer.coralIntake),
+      RobotContainer.elevator.moveElevatorToL4(),
+      RobotContainer.coralIntake.moveWristToL4Com(),
       new RunCommand(() -> RobotContainer.coralIntake.outtake(), RobotContainer.coralIntake)
       )
     );

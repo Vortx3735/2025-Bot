@@ -7,19 +7,18 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.util.function.BooleanConsumer;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.SensorConstants;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
+import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.SensorConstants;
 
 public class CoralIntake extends SubsystemBase {
 
@@ -201,8 +200,12 @@ public class CoralIntake extends SubsystemBase {
     return new FunctionalCommand(() -> System.out.println("INTIALIZED"), () -> this.moveWristToL2(), (x)->this.hold(), () -> this.stopWristIfAtBoolean(-0.38), this);
   }
 
+  public Command barelyMoveWristCom(){
+    return new FunctionalCommand(() -> System.out.println("INTIALIZED"), () -> this.moveWristToPosition(-0.29), (x)->this.hold(), () -> this.stopWristIfAtBoolean(-0.29), this);
+  }
+
   public Command moveWristToL4Com(){
-    return new RunCommand(() -> this.moveWristToL4(), this).until(() -> this.getPositionFinished(-0.48, position)).andThen(new InstantCommand(() -> stopWrist()));
+    return new FunctionalCommand(() -> System.out.println("INTIALIZED"), () -> this.moveWristToL4(), (x)->this.hold(), () -> this.stopWristIfAtBoolean(-0.48), this);
   }
 
   public void L2Auto() {
