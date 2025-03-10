@@ -102,7 +102,7 @@ public class AutoRoutines {
   }
 
   public AutoRoutine mAutoRoutine() {
-    final AutoRoutine routine = m_factory.newRoutine("Maine Auton");
+    final AutoRoutine routine = m_factory.newRoutine("Main Auton");
     final AutoTrajectory testTraj = routine.trajectory("MainAuton");
 
     routine.active().onTrue(testTraj.resetOdometry().andThen(testTraj.cmd()));
@@ -112,7 +112,7 @@ public class AutoRoutines {
   public AutoRoutine visionAutoRoutine() {
     final AutoRoutine routine = m_factory.newRoutine("Vision Auton");
     final AutoTrajectory StartToReef = routine.trajectory("TestReef");
-    // final AutoTrajectory reefToHP = routine.trajectory("ReefToHP");
+    final AutoTrajectory reefToHP = routine.trajectory("ReefToHP");
     routine
         .active()
         .onTrue(
@@ -120,7 +120,8 @@ public class AutoRoutines {
                 StartToReef.resetOdometry().asProxy(),
                 RobotContainer.coralIntake.moveWristToL2().asProxy(),
                 StartToReef.cmd().asProxy(),
-                CommandFactory.scoreL4Command()));
+                CommandFactory.scoreL4Command(),
+                reefToHP.cmd().asProxy()));
     return routine;
   }
 }
