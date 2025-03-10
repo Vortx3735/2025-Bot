@@ -7,7 +7,6 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
-
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
@@ -16,7 +15,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
-import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.SensorConstants;
 
@@ -88,7 +86,7 @@ public class CoralIntake extends SubsystemBase {
   public boolean getPositionFinished(double setpoint, double currentPos) {
     return (Math.abs(setpoint - currentPos) < 0.03);
   }
-  
+
   // returns true assuming beam break is broken
   public boolean hasCoral() {
     if (leftCoralBeamBreak.get() && rightCoralBeamBreak.get()) {
@@ -183,8 +181,9 @@ public class CoralIntake extends SubsystemBase {
     return false;
   }
 
-  public Command moveWristToHpCom(){
-    return Commands.run(() -> this.moveWristToHPandIntake(), this).until(() -> this.getPositionFinished(-0.34, position));
+  public Command moveWristToHpCom() {
+    return Commands.run(() -> this.moveWristToHPandIntake(), this)
+        .until(() -> this.getPositionFinished(-0.34, position));
   }
 
   public boolean moveWristToHP() {
@@ -196,16 +195,31 @@ public class CoralIntake extends SubsystemBase {
     return moveWristToPosition(-0.38);
   }
 
-  public Command moveWristToL2Com(){
-    return new FunctionalCommand(() -> System.out.println("INTIALIZED"), () -> this.moveWristToL2(), (x)->this.hold(), () -> this.stopWristIfAtBoolean(-0.38), this);
+  public Command moveWristToL2Com() {
+    return new FunctionalCommand(
+        () -> System.out.println("INTIALIZED"),
+        () -> this.moveWristToL2(),
+        (x) -> this.hold(),
+        () -> this.stopWristIfAtBoolean(-0.38),
+        this);
   }
 
-  public Command barelyMoveWristCom(){
-    return new FunctionalCommand(() -> System.out.println("INTIALIZED"), () -> this.moveWristToPosition(-0.29), (x)->this.hold(), () -> this.stopWristIfAtBoolean(-0.29), this);
+  public Command barelyMoveWristCom() {
+    return new FunctionalCommand(
+        () -> System.out.println("INTIALIZED"),
+        () -> this.moveWristToPosition(-0.29),
+        (x) -> this.hold(),
+        () -> this.stopWristIfAtBoolean(-0.29),
+        this);
   }
 
-  public Command moveWristToL4Com(){
-    return new FunctionalCommand(() -> System.out.println("INTIALIZED"), () -> this.moveWristToL4(), (x)->this.hold(), () -> this.stopWristIfAtBoolean(-0.48), this);
+  public Command moveWristToL4Com() {
+    return new FunctionalCommand(
+        () -> System.out.println("INTIALIZED"),
+        () -> this.moveWristToL4(),
+        (x) -> this.hold(),
+        () -> this.stopWristIfAtBoolean(-0.48),
+        this);
   }
 
   public void L2Auto() {
@@ -267,6 +281,7 @@ public class CoralIntake extends SubsystemBase {
     // Publish Wrist Position
     SmartDashboard.putNumber("CoralIntake/Wrist Position", position);
     SmartDashboard.putNumber("CoralIntake/Wrist Position", position);
-    SmartDashboard.putBoolean("CoralIntake/Wristbooleanfinished", getPositionFinished(-0.38, position));
+    SmartDashboard.putBoolean(
+        "CoralIntake/Wristbooleanfinished", getPositionFinished(-0.38, position));
   }
 }

@@ -241,13 +241,9 @@ public class RobotContainer {
             Commands.parallel(
                 // elevator.moveElevatorToL2(),
                 new RunCommand(() -> algaeIntake.stowWrist(), algaeIntake),
-                coralIntake.moveWristToL2Com()
-            ),
-            Commands.parallel(
-                new RunCommand(() -> coralIntake.outtake(), coralIntake)),
-                coralIntake.moveWristToL2Com()
-            )
-        );
+                coralIntake.moveWristToL2Com()),
+            Commands.parallel(new RunCommand(() -> coralIntake.outtake(), coralIntake)),
+            coralIntake.moveWristToL2Com()));
     // L3
     operator.yButton.onTrue(
         Commands.parallel(

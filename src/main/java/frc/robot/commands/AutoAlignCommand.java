@@ -3,12 +3,13 @@ package frc.robot.commands;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonPipelineResult;
-import edu.wpi.first.wpilibj.Timer;
+
 public class AutoAlignCommand extends Command {
   private final CommandSwerveDrivetrain drivetrain;
   private final PhotonCamera intakeCamera;
@@ -108,11 +109,11 @@ public class AutoAlignCommand extends Command {
         yawAdjustment = 0;
       }
       drivetrain.setControl(
-        new SwerveRequest.RobotCentric()
-            .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
-            .withVelocityX(-xAdjustment)
-            .withVelocityY(-yAdjustment) // No lateral movement for alignment
-            .withRotationalRate(-yawAdjustment));
+          new SwerveRequest.RobotCentric()
+              .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+              .withVelocityX(-xAdjustment)
+              .withVelocityY(-yAdjustment) // No lateral movement for alignment
+              .withRotationalRate(-yawAdjustment));
 
     } else {
       // Stop the robot if no targets are found
