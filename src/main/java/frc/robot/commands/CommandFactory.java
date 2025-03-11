@@ -11,9 +11,8 @@ public class CommandFactory {
     return Commands.sequence(
             RobotContainer.elevator.moveElevatorToL2().asProxy(),
             Commands.parallel(
-            RobotContainer.coralIntake.moveWristToL2().asProxy(),
-            RobotContainer.coralIntake.outtakeCommand().asProxy()
-            ),
+                RobotContainer.coralIntake.moveWristToL2().asProxy(),
+                RobotContainer.coralIntake.outtakeCommand().asProxy()),
             idleCommand().asProxy())
         .withName("L2 Command Group");
   }

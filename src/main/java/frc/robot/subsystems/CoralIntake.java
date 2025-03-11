@@ -16,7 +16,6 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.AngleUnit;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
@@ -71,7 +70,7 @@ public class CoralIntake extends SubsystemBase {
           kGearRatio,
           .1,
           0,
-          2*Math.PI,
+          2 * Math.PI,
           false,
           Math.PI);
 
@@ -216,7 +215,7 @@ public class CoralIntake extends SubsystemBase {
   }
 
   public Command coralHPCommand() {
-    return new CoralHPCommand(-0.34,intakeSpeed).withName("Coral HP Command");
+    return new CoralHPCommand(-0.34, intakeSpeed).withName("Coral HP Command");
   }
 
   public Command moveWristToHP() {

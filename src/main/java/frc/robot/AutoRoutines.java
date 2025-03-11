@@ -6,7 +6,6 @@ import choreo.auto.AutoRoutine;
 import choreo.auto.AutoTrajectory;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import frc.robot.commands.AutoAlignCommand;
@@ -117,7 +116,7 @@ public class AutoRoutines {
     final AutoTrajectory hpToReef = routine.trajectory("HPToReef");
 
     AutoAlignCommand autoAlignCommand =
-    new AutoAlignCommand(RobotContainer.drivetrain, RobotContainer.reefCamera);
+        new AutoAlignCommand(RobotContainer.drivetrain, RobotContainer.reefCamera);
 
     routine
         .active()

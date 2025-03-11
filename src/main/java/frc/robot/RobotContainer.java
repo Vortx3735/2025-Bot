@@ -188,12 +188,8 @@ public class RobotContainer {
     Trigger coralNotDetected = coralDetected.negate();
     coralNotDetected.whileTrue(coralIntake.moveWristToHP());
 
-    leftCoralDetected.onTrue(
-        new WaitCommand(.1)
-            .andThen(coralIntake.stopIntakeCommand()));
-    rightCoralDetected.onTrue(
-        new WaitCommand(.1)
-            .andThen(coralIntake.stopIntakeCommand()));
+    leftCoralDetected.onTrue(new WaitCommand(.1).andThen(coralIntake.stopIntakeCommand()));
+    rightCoralDetected.onTrue(new WaitCommand(.1).andThen(coralIntake.stopIntakeCommand()));
     // leftCoralDetected.onTrue(coralIntake.stopIntakeCommand());
     // rightCoralDetected.onTrue(coralIntake.stopIntakeCommand());
     leftCoralDetected.onFalse(

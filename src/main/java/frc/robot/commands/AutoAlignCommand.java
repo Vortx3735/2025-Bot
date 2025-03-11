@@ -90,13 +90,10 @@ public class AutoAlignCommand extends Command {
       SmartDashboard.putNumber("vision/Distance", distanceX);
       SmartDashboard.putNumber("vision/Yaw", yaw);
 
-
       // Calculate adjustments for yaw and forward movement
       yawAdjustment = rotationPidController.calculate(yaw, 0);
       xAdjustment = drivePidControllerX.calculate(distanceX, TARGET_DISTANCE_METERS);
       yAdjustment = drivePidControllerY.calculate(distanceY, -0.03);
-
-
 
       SmartDashboard.putNumber("vision/xAdjustment", xAdjustment);
       SmartDashboard.putNumber("vision/yaw", yaw);
@@ -111,23 +108,21 @@ public class AutoAlignCommand extends Command {
       if (rotationPidController.atSetpoint()) {
         yawAdjustment = 0;
       }
-      if(!isYawAligned()){
+      if (!isYawAligned()) {
         drivetrain.setControl(
-          new SwerveRequest.RobotCentric()
-              .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
-              .withVelocityX(0)
-              .withVelocityY(0) // No lateral movement for alignment
-              .withRotationalRate(-yawAdjustment));
+            new SwerveRequest.RobotCentric()
+                .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+                .withVelocityX(0)
+                .withVelocityY(0) // No lateral movement for alignment
+                .withRotationalRate(-yawAdjustment));
+      } else {
+        drivetrain.setControl(
+            new SwerveRequest.RobotCentric()
+                .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+                .withVelocityX(-xAdjustment)
+                .withVelocityY(-yAdjustment) // No lateral movement for alignment
+                .withRotationalRate(-yawAdjustment));
       }
-      else {
-      drivetrain.setControl(
-        new SwerveRequest.RobotCentric()
-            .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
-            .withVelocityX(-xAdjustment)
-            .withVelocityY(-yAdjustment) // No lateral movement for alignment
-            .withRotationalRate(-yawAdjustment));
-    }
-
 
     } else {
       // Stop the robot if no targets are found
