@@ -23,6 +23,7 @@ import frc.robot.commands.defaultcommands.*;
 import frc.robot.subsystems.AlgaeIntake;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.CoralIntake;
+import frc.robot.subsystems.CoralWrist;
 import frc.robot.subsystems.Elevator;
 import frc.robot.util.TunerConstants;
 import frc.robot.util.VorTXControllerXbox;
@@ -55,9 +56,14 @@ public class RobotContainer {
   public static final CoralIntake coralIntake =
       new CoralIntake(
           Constants.CoralConstants.CORAL_LEFTINTAKEMOTOR_ID,
-          Constants.CoralConstants.CORAL_RIGHTINTAKEMOTOR_ID,
-          Constants.CoralConstants.CORAL_WRISTPIVOT_MOTOR_ID,
-          Constants.CoralConstants.CORAL_WRISTPIVOT_ENCODER_ID);
+          Constants.CoralConstants.CORAL_RIGHTINTAKEMOTOR_ID
+          );
+
+  public static final CoralWrist coralWrist =
+      new CoralWrist(
+        Constants.CoralConstants.CORAL_WRISTPIVOT_MOTOR_ID,
+        Constants.CoralConstants.CORAL_WRISTPIVOT_ENCODER_ID
+          );
 
   public static final AlgaeIntake algaeIntake =
       new AlgaeIntake(
@@ -103,6 +109,7 @@ public class RobotContainer {
 
     // default commands
     coralIntake.setDefaultCommand(new DefaultCoralIntakeCommand(coralIntake));
+    coralWrist.setDefaultCommand(new DefaultCoralWristCommand(coralWrist));
     algaeIntake.setDefaultCommand(new DefaultAlgaeIntakeCommand(algaeIntake));
     elevator.setDefaultCommand(new DefaultElevatorCommand(elevator));
 
@@ -186,7 +193,7 @@ public class RobotContainer {
     Trigger rightCoralDetected = new Trigger(() -> coralIntake.hasRightCoral());
 
     Trigger coralNotDetected = coralDetected.negate();
-    coralNotDetected.whileTrue(coralIntake.moveWristToHP());
+    coralNotDetected.whileTrue(coralWrist.moveWristToHP());
 
     leftCoralDetected.onTrue(new WaitCommand(.1).andThen(coralIntake.stopIntakeCommand()));
     rightCoralDetected.onTrue(new WaitCommand(.1).andThen(coralIntake.stopIntakeCommand()));
@@ -237,9 +244,9 @@ public class RobotContainer {
 
     // OPERATOR
     operator.povLeft.whileTrue(
-        new RunCommand(() -> coralIntake.moveWristUp(), coralIntake).withName("Coral Wrist Up"));
+        new RunCommand(() -> coralWrist.moveWristUp(), coralWrist).withName("Coral Wrist Up"));
     operator.povRight.whileTrue(
-        new RunCommand(() -> coralIntake.moveWristDown(), coralIntake)
+        new RunCommand(() -> coralWrist.moveWristDown(), coralWrist)
             .withName("Coral Wrist Down"));
 
     // Human Player

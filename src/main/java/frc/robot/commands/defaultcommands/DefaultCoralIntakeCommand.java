@@ -20,15 +20,12 @@ public class DefaultCoralIntakeCommand extends Command {
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {
-    position = m_CoralIntake.getWristPosition();
-  }
+  public void initialize() {}
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
     m_CoralIntake.stopIntake();
-    m_CoralIntake.hold(position);
   }
 
   // Called once the command ends or is interrupted.

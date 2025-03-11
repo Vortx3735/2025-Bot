@@ -40,8 +40,8 @@ public class AutoRoutines {
                 testTraj.cmd(),
                 Commands.parallel(
                     new RunCommand(
-                        () -> RobotContainer.coralIntake.moveWristToPosition(-0.38),
-                        RobotContainer.coralIntake),
+                        () -> RobotContainer.coralWrist.moveWristToPosition(-0.38),
+                        RobotContainer.coralWrist),
                     new RunCommand(
                         () -> RobotContainer.elevator.moveElevatorToPosition(0.22),
                         RobotContainer.elevator),
@@ -61,7 +61,7 @@ public class AutoRoutines {
                 testTraj.cmd(),
                 // RobotContainer.elevator.moveElevatorToL2Auto(),
                 new RunCommand(
-                    () -> RobotContainer.coralIntake.moveWristToL2(), RobotContainer.coralIntake)));
+                    () -> RobotContainer.coralWrist.moveWristToL2(), RobotContainer.coralWrist)));
     return routine;
   }
 
@@ -77,7 +77,7 @@ public class AutoRoutines {
                 testTraj.cmd(),
                 // RobotContainer.elevator.moveElevatorToL2Auto(),
                 new RunCommand(
-                    () -> RobotContainer.coralIntake.moveWristToL2(), RobotContainer.coralIntake)));
+                    () -> RobotContainer.coralWrist.moveWristToL2(), RobotContainer.coralWrist)));
     return routine;
   }
 
@@ -92,8 +92,8 @@ public class AutoRoutines {
                 testTraj.cmd(),
                 Commands.parallel(
                     new RunCommand(
-                        () -> RobotContainer.coralIntake.moveWristToPosition(-0.42),
-                        RobotContainer.coralIntake),
+                        () -> RobotContainer.coralWrist.moveWristToPosition(-0.42),
+                        RobotContainer.coralWrist),
                     new RunCommand(
                         () -> RobotContainer.elevator.moveElevatorToPosition(0.1),
                         RobotContainer.elevator)),
@@ -125,7 +125,7 @@ public class AutoRoutines {
                     StartToReef.resetOdometry().asProxy(),
                     Commands.parallel(
                             Commands.sequence(
-                                    RobotContainer.coralIntake.moveWristToHP().asProxy(),
+                                    RobotContainer.coralWrist.moveWristToHP().asProxy(),
                                     RobotContainer.coralIntake.intakeCommand().asProxy())
                                 .withName("Move Wrist and Intake Coral"),
                             StartToReef.cmd().asProxy())
