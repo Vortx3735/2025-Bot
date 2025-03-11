@@ -80,8 +80,8 @@ public class RobotContainer {
   public static PhotonCamera reefCamera = new PhotonCamera("reefCamera");
   public static PhotonCamera hpCamera = new PhotonCamera("hpCamera");
 
-  private AutoAlignCommand autoAlignCommand = new AutoAlignCommand(drivetrain, reefCamera);
   private AutoAlignCommand autoAlignHP = new AutoAlignCommand(drivetrain, hpCamera);
+  private AutoAlignCommand autoAlignReef = new AutoAlignCommand(drivetrain, reefCamera);
 
   public RobotContainer() {
     configureBindings();
@@ -188,14 +188,14 @@ public class RobotContainer {
     Trigger coralNotDetected = coralDetected.negate();
     coralNotDetected.whileTrue(coralIntake.moveWristToHP());
 
-    // leftCoralDetected.onTrue(
-    //     new WaitCommand(.2)
-    //         .andThen(coralIntake.stopIntakeCommand()));
-    // rightCoralDetected.onTrue(
-    //     new WaitCommand(.2)
-    //         .andThen(coralIntake.stopIntakeCommand()));
-    leftCoralDetected.onTrue(coralIntake.stopIntakeCommand());
-    rightCoralDetected.onTrue(coralIntake.stopIntakeCommand());
+    leftCoralDetected.onTrue(
+        new WaitCommand(.1)
+            .andThen(coralIntake.stopIntakeCommand()));
+    rightCoralDetected.onTrue(
+        new WaitCommand(.1)
+            .andThen(coralIntake.stopIntakeCommand()));
+    // leftCoralDetected.onTrue(coralIntake.stopIntakeCommand());
+    // rightCoralDetected.onTrue(coralIntake.stopIntakeCommand());
     leftCoralDetected.onFalse(
         new WaitCommand(.4).andThen(coralIntake.stopIntakeCommand().withName("Left Trigger Stop")));
     rightCoralDetected.onFalse(
@@ -208,8 +208,7 @@ public class RobotContainer {
             () ->
                 point.withModuleDirection(new Rotation2d(-driver.getLeftY(), -driver.getLeftX()))));
 
-    driver.xButton.onTrue(autoAlignCommand);
-    driver.yButton.whileTrue(autoAlignHP);
+    driver.xButton.whileTrue(autoAlignReef);
 
     // test whiletrue first then this
     // driver.xButton.onTrue(

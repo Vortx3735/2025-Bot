@@ -28,6 +28,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.SensorConstants;
+import frc.robot.commands.CoralMoveAndIntake;
 
 public class CoralIntake extends SubsystemBase {
 
@@ -99,7 +100,7 @@ public class CoralIntake extends SubsystemBase {
     coralWrist = new SparkMax(wristId, MotorType.kBrushless);
     wristEncoder = new CANcoder(wristEncoderId);
     kg = 0.05;
-    kp = .1;
+    kp = 3;
     coralFF = new ArmFeedforward(ks, kg, kv);
     coralPID = new PIDController(kp, ki, kd);
 
@@ -148,7 +149,12 @@ public class CoralIntake extends SubsystemBase {
     return new InstantCommand(() -> stopIntake(), this).withName("Stop Coral Intake Command");
   }
 
-  private void intake(double speed) {
+  // public FunctionalCommand holdCommand() {
+  //   double currentPos = position;
+  //   return new RunCommand(() -> hold(currentPos));
+  // }
+
+  public void intake(double speed) {
     if (!hasRightCoral()) {
       rightCoralMotor.set(speed);
     }
@@ -199,18 +205,19 @@ public class CoralIntake extends SubsystemBase {
   }
 
   public Boolean atSetpoint(double targetPos) {
-    if (Math.abs(targetPos - position) < .01) {
+    if (Math.abs(targetPos - position) < .02) {
       return true;
     }
     return false;
   }
 
   public Command moveWristToHP() {
-    return moveWristToPosition(-0.34).withName("Move Coral Wrist to HP");
+    return new CoralMoveAndIntake(-0.34,intakeSpeed).withName("Move Coral Wrist to HP");
   }
 
   public Command moveWristToL2() {
-    return moveWristToPosition(-0.38).withName("Move Coral Wrist to L2");
+    // return moveWristToPosition(-0.38).withName("Move Coral Wrist to L2");
+    return moveWristToPosition(-0.36).withName("Move Coral Wrist to L2");
   }
 
   public Command moveWristToL3() {
@@ -218,7 +225,8 @@ public class CoralIntake extends SubsystemBase {
   }
 
   public Command moveWristToL4() {
-    return moveWristToPosition(-0.48).withName("Move Coral Wrist to L4");
+    // return moveWristToPosition(-0.48).withName("Move Coral Wrist to L4");
+    return moveWristToPosition(-0.44).withName("Move Coral Wrist to L4");
   }
 
   public void hold(double targetPos) {

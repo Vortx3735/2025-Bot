@@ -6,6 +6,7 @@ import choreo.auto.AutoRoutine;
 import choreo.auto.AutoTrajectory;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import frc.robot.commands.CommandFactory;
@@ -126,11 +127,11 @@ public class AutoRoutines {
                                 .withName("Move Wrist and Intake Coral"),
                             StartToReef.cmd().asProxy())
                         .withName("Move and Intake Coral"),
-                    CommandFactory.scoreL4Command(),
+                    CommandFactory.scoreL4AutoCommand(),
                     reefToHP.cmd().asProxy(),
                     RobotContainer.coralIntake.intakeCommand().asProxy(),
                     hpToReef.cmd().asProxy(),
-                    CommandFactory.scoreL4Command().asProxy())
+                    CommandFactory.scoreL4AutoCommand().asProxy())
                 .withName("Vision Auton"));
     return routine;
   }
