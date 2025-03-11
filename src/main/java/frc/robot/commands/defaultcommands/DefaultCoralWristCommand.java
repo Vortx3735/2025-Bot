@@ -1,36 +1,34 @@
-package frc.robot.commands;
+package frc.robot.commands.defaultcommands;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.RobotContainer;
-import frc.robot.subsystems.CoralIntake;
+import frc.robot.subsystems.CoralWrist;
 
-public class CoralHPCommand extends Command {
-  private final CoralIntake m_CoralIntake;
-  double pos;
-  double speed;
+public class DefaultCoralWristCommand extends Command {
+  private final CoralWrist m_CoralWrist;
+
+  double position;
 
   /**
    * Default Coral Intake Command
    *
    * @param subsystem The subsystem used by this command.
    */
-  public CoralHPCommand(double position, double intakeSpeed) {
-    m_CoralIntake = RobotContainer.coralIntake;
-    addRequirements(m_CoralIntake);
-    pos = position;
-    speed = intakeSpeed;
+  public DefaultCoralWristCommand(CoralWrist subsystem) {
+    m_CoralWrist = subsystem;
+    addRequirements(m_CoralWrist);
   }
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {}
+  public void initialize() {
+    position = m_CoralWrist.getWristPosition();
+  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    System.out.println(pos);
-    m_CoralIntake.intake(speed);
-    m_CoralIntake.hold(pos);
+    System.out.println(position);
+    m_CoralWrist.hold(position);
   }
 
   // Called once the command ends or is interrupted.

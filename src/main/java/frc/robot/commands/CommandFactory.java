@@ -11,7 +11,7 @@ public class CommandFactory {
     return Commands.sequence(
             RobotContainer.elevator.moveElevatorToL2().asProxy(),
             Commands.parallel(
-                RobotContainer.coralIntake.moveWristToL2().asProxy(),
+                RobotContainer.coralWrist.moveWristToL2().asProxy(),
                 RobotContainer.coralIntake.outtakeCommand().asProxy()),
             idleCommand().asProxy())
         .withName("L2 Command Group");
@@ -21,7 +21,7 @@ public class CommandFactory {
     CommandScheduler.getInstance().cancelAll();
     return Commands.sequence(
             RobotContainer.elevator.moveElevatorToL3().asProxy(),
-            RobotContainer.coralIntake.moveWristToL3().asProxy().withTimeout(2),
+            RobotContainer.coralWrist.moveWristToL3().asProxy().withTimeout(2),
             RobotContainer.coralIntake.outtakeCommand().asProxy(),
             idleCommand().asProxy())
         .withName("L3 Command Group");
@@ -31,7 +31,7 @@ public class CommandFactory {
     CommandScheduler.getInstance().cancelAll();
     return Commands.sequence(
             RobotContainer.elevator.moveElevatorToL4().asProxy(),
-            RobotContainer.coralIntake.moveWristToL4().asProxy().withTimeout(2),
+            RobotContainer.coralWrist.moveWristToL4().asProxy(),
             RobotContainer.coralIntake.outtakeCommand().asProxy(),
             idleCommand().asProxy())
         .withName("L4 Command Group");
@@ -44,14 +44,14 @@ public class CommandFactory {
     return Commands.parallel(
             // autoAlignCommand.asProxy(),
             RobotContainer.elevator.moveElevatorToHP().asProxy(),
-            RobotContainer.coralIntake.coralHPCommand().asProxy())
+            RobotContainer.coralWrist.moveWristToHP().asProxy()).andThen(RobotContainer.coralIntake.intakeCommand())
         .withName("HP Command Group");
   }
 
   private static Command idleCommand() {
     return Commands.parallel(
             RobotContainer.elevator.moveElevatorToHP().asProxy(),
-            RobotContainer.coralIntake.moveWristToHP().asProxy())
+            RobotContainer.coralWrist.moveWristToHP().asProxy())
         .withName("Idle Command Group");
   }
 }

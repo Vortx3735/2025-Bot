@@ -18,11 +18,13 @@ public class AutoAlignCommand extends Command {
   private static PIDController rotationPidController;
   private static PIDController drivePidControllerX;
   private static PIDController drivePidControllerY;
-  private static final double kP_Yaw = 6; // Proportional constant for yaw correction
+  private static final double kP_Yaw = 12; // Proportional constant for yaw correction
   private static final double YAW_THRESHOLD = 0.12; // Degrees threshold for alignment
   private static final double X_THRESHOLD = 0.01; // Meters threshold for alignment
   private static final double Y_THRESHOLD = 0.01; // Meters threshold for alignment
-  private static final double TARGET_DISTANCE_METERS = 0.32; // L2
+  private static final double TARGET_DISTANCE_METERS = 0.42; // L2
+  private static final double TARGET_Y = -0.01; // L2
+
 
   public double yawAdjustment;
   public double xAdjustment;
@@ -37,8 +39,8 @@ public class AutoAlignCommand extends Command {
   public AutoAlignCommand(CommandSwerveDrivetrain drivetrain, PhotonCamera intakeCamera) {
     this.drivetrain = drivetrain;
     this.intakeCamera = intakeCamera;
-    rotationPidController = new PIDController(kP_Yaw, 0, 0.1);
-    drivePidControllerX = new PIDController(5, 0, 0.1);
+    rotationPidController = new PIDController(kP_Yaw, 0, 0);
+    drivePidControllerX = new PIDController(4.5, 0, 0.1);
     drivePidControllerY = new PIDController(5, 0, 0.1);
 
     rotationPidController.setTolerance(YAW_THRESHOLD);
@@ -58,7 +60,7 @@ public class AutoAlignCommand extends Command {
   }
 
   public boolean isYAligned() {
-    return Math.abs(distanceY - 0.03) < Y_THRESHOLD;
+    return Math.abs(distanceY - TARGET_Y) < Y_THRESHOLD;
   }
 
   public boolean isYawAligned() {
@@ -86,6 +88,7 @@ public class AutoAlignCommand extends Command {
         yaw -= Math.PI;
       }
 
+
       distanceY = target.getBestCameraToTarget().getY();
       SmartDashboard.putNumber("vision/Distance", distanceX);
       SmartDashboard.putNumber("vision/Yaw", yaw);
@@ -93,7 +96,7 @@ public class AutoAlignCommand extends Command {
       // Calculate adjustments for yaw and forward movement
       yawAdjustment = rotationPidController.calculate(yaw, 0);
       xAdjustment = drivePidControllerX.calculate(distanceX, TARGET_DISTANCE_METERS);
-      yAdjustment = drivePidControllerY.calculate(distanceY, -0.03);
+      yAdjustment = drivePidControllerY.calculate(distanceY, TARGET_Y);
 
       SmartDashboard.putNumber("vision/xAdjustment", xAdjustment);
       SmartDashboard.putNumber("vision/yaw", yaw);
@@ -105,6 +108,27 @@ public class AutoAlignCommand extends Command {
       SmartDashboard.putBoolean("vision/isXAligned", isXAligned());
       SmartDashboard.putBoolean("vision/isYAligned", isYAligned());
 
+      if (xAdjustment>.75) {
+        xAdjustment = .75;
+      }
+      if (xAdjustment<-.75) {
+        xAdjustment = -.75;
+      }
+      if (yAdjustment>.75) {
+        yAdjustment = .75;
+      }
+      if (yAdjustment<-.75) {
+        yAdjustment = -.75;
+      }
+      if (yawAdjustment>.75) {
+        yawAdjustment = .75;
+      }
+      if (yawAdjustment<-.75) {
+        yawAdjustment = -.75;
+      }
+      if (rotationPidController.atSetpoint()) {
+        yawAdjustment = 0;
+      }
       if (rotationPidController.atSetpoint()) {
         yawAdjustment = 0;
       }

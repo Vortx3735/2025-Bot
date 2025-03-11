@@ -7,7 +7,6 @@ import choreo.auto.AutoTrajectory;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.RunCommand;
 import frc.robot.commands.AutoAlignCommand;
 import frc.robot.commands.CommandFactory;
 import java.util.Optional;
@@ -28,78 +27,80 @@ public class AutoRoutines {
     return routine;
   }
 
-  public AutoRoutine testAuto3() {
-    final AutoRoutine routine = m_factory.newRoutine("Test Auto 3");
-    final AutoTrajectory testTraj = routine.trajectory("TestReef");
+  // public AutoRoutine testAuto3() {
+  //   final AutoRoutine routine = m_factory.newRoutine("Test Auto 3");
+  //   final AutoTrajectory testTraj = routine.trajectory("TestReef");
 
-    routine
-        .active()
-        .onTrue(
-            Commands.sequence(
-                testTraj.resetOdometry(),
-                testTraj.cmd(),
-                Commands.parallel(
-                    new RunCommand(
-                        () -> RobotContainer.coralIntake.moveWristToPosition(-0.38),
-                        RobotContainer.coralIntake),
-                    new RunCommand(
-                        () -> RobotContainer.elevator.moveElevatorToPosition(0.22),
-                        RobotContainer.elevator),
-                    RobotContainer.coralIntake.intakeCommand(-.05))));
-    return routine;
-  }
+  //   routine
+  //       .active()
+  //       .onTrue(
+  //           Commands.sequence(
+  //               testTraj.resetOdometry(),
+  //               testTraj.cmd(),
+  //               Commands.parallel(
+  //                   new RunCommand(
+  //                       () -> RobotContainer.coralIntake.moveWristToPosition(-0.38),
+  //                       RobotContainer.coralIntake),
+  //                   new RunCommand(
+  //                       () -> RobotContainer.elevator.moveElevatorToPosition(0.22),
+  //                       RobotContainer.elevator),
+  //                   RobotContainer.coralIntake.intakeCommand(-.05))));
+  //   return routine;
+  // }
 
-  public AutoRoutine testAuto4() {
-    final AutoRoutine routine = m_factory.newRoutine("Test Auto 4");
-    final AutoTrajectory testTraj = routine.trajectory("TestReef");
+  // public AutoRoutine testAuto4() {
+  //   final AutoRoutine routine = m_factory.newRoutine("Test Auto 4");
+  //   final AutoTrajectory testTraj = routine.trajectory("TestReef");
 
-    routine
-        .active()
-        .onTrue(
-            Commands.sequence(
-                testTraj.resetOdometry(),
-                testTraj.cmd(),
-                // RobotContainer.elevator.moveElevatorToL2Auto(),
-                new RunCommand(
-                    () -> RobotContainer.coralIntake.moveWristToL2(), RobotContainer.coralIntake)));
-    return routine;
-  }
+  //   routine
+  //       .active()
+  //       .onTrue(
+  //           Commands.sequence(
+  //               testTraj.resetOdometry(),
+  //               testTraj.cmd(),
+  //               // RobotContainer.elevator.moveElevatorToL2Auto(),
+  //               new RunCommand(
+  //                   () -> RobotContainer.coralIntake.moveWristToL2(),
+  // RobotContainer.coralIntake)));
+  //   return routine;
+  // }
 
-  public AutoRoutine moveCenter() {
-    final AutoRoutine routine = m_factory.newRoutine("moveCenter");
-    final AutoTrajectory testTraj = routine.trajectory("CenterReef");
+  // public AutoRoutine moveCenter() {
+  //   final AutoRoutine routine = m_factory.newRoutine("moveCenter");
+  //   final AutoTrajectory testTraj = routine.trajectory("CenterReef");
 
-    routine
-        .active()
-        .onTrue(
-            Commands.sequence(
-                testTraj.resetOdometry(),
-                testTraj.cmd(),
-                // RobotContainer.elevator.moveElevatorToL2Auto(),
-                new RunCommand(
-                    () -> RobotContainer.coralIntake.moveWristToL2(), RobotContainer.coralIntake)));
-    return routine;
-  }
+  //   routine
+  //       .active()
+  //       .onTrue(
+  //           Commands.sequence(
+  //               testTraj.resetOdometry(),
+  //               testTraj.cmd(),
+  //               // RobotContainer.elevator.moveElevatorToL2Auto(),
+  //               new RunCommand(
+  //                   () -> RobotContainer.coralIntake.moveWristToL2(),
+  // RobotContainer.coralIntake)));
+  //   return routine;
+  // }
 
-  public AutoRoutine centerRoutine() {
-    final AutoRoutine routine = m_factory.newRoutine("centerRoutine");
-    final AutoTrajectory testTraj = routine.trajectory("CenterReef");
-    routine
-        .active()
-        .onTrue(
-            Commands.sequence(
-                testTraj.resetOdometry(),
-                testTraj.cmd(),
-                Commands.parallel(
-                    new RunCommand(
-                        () -> RobotContainer.coralIntake.moveWristToPosition(-0.42),
-                        RobotContainer.coralIntake),
-                    new RunCommand(
-                        () -> RobotContainer.elevator.moveElevatorToPosition(0.1),
-                        RobotContainer.elevator)),
-                RobotContainer.coralIntake.intakeCommand(-.1)));
-    return routine;
-  }
+  // public AutoRoutine centerRoutine() {
+  //   final AutoRoutine routine = m_factory.newRoutine("centerRoutine");
+  //   final AutoTrajectory testTraj = routine.trajectory("CenterReef");
+  //   routine
+  //       .active()
+  //       .onTrue(
+  //           Commands.sequence(
+  //               testTraj.resetOdometry(),
+  //               testTraj.cmd(),
+  //               Commands.parallel(
+  //                   new RunCommand(
+  //                       () -> RobotContainer.coralIntake.moveWristToPosition(-0.42),
+  //                       RobotContainer.coralIntake),
+  //                   new RunCommand(
+  //                       () -> RobotContainer.elevator.moveElevatorToPosition(0.1),
+  //                       RobotContainer.elevator)),
+  //               RobotContainer.coralIntake.intakeCommand(-.1)));
+  //   return routine;
+  // }
 
   public AutoRoutine mAutoRoutine() {
     final AutoRoutine routine = m_factory.newRoutine("Main Auton");
@@ -125,18 +126,19 @@ public class AutoRoutines {
                     StartToReef.resetOdometry().asProxy(),
                     Commands.parallel(
                             Commands.sequence(
-                                    RobotContainer.coralIntake.moveWristToHP().asProxy(),
+                                    RobotContainer.coralWrist.moveWristToHP().asProxy(),
                                     RobotContainer.coralIntake.intakeCommand().asProxy())
                                 .withName("Move Wrist and Intake Coral"),
                             StartToReef.cmd().asProxy())
                         .withName("Move and Intake Coral"),
                     autoAlignCommand.asProxy(),
-                    CommandFactory.scoreL4Command().asProxy(),
-                    reefToHP.cmd().asProxy(),
-                    RobotContainer.coralIntake.intakeCommand().asProxy(),
-                    hpToReef.cmd().asProxy(),
-                    autoAlignCommand.asProxy(),
                     CommandFactory.scoreL4Command().asProxy())
+                    
+                    // reefToHP.cmd().asProxy(),
+                    // RobotContainer.coralIntake.intakeCommand().asProxy(),
+                    // hpToReef.cmd().asProxy(),
+                    // autoAlignCommand.asProxy(),
+                    // CommandFactory.scoreL4Command().asProxy())
                 .withName("Vision Auton"));
     return routine;
   }
