@@ -9,6 +9,7 @@ import choreo.trajectory.Trajectory;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
+import frc.robot.commands.AutoAlignCommand;
 import frc.robot.commands.CommandFactory;
 import java.util.Optional;
 
@@ -115,6 +116,9 @@ public class AutoRoutines {
     final AutoTrajectory reefToHP = routine.trajectory("ReefToHP");
     final AutoTrajectory hpToReef = routine.trajectory("HPToReef");
 
+    AutoAlignCommand autoAlignCommand =
+    new AutoAlignCommand(RobotContainer.drivetrain, RobotContainer.reefCamera);
+
     routine
         .active()
         .onTrue(
@@ -127,11 +131,13 @@ public class AutoRoutines {
                                 .withName("Move Wrist and Intake Coral"),
                             StartToReef.cmd().asProxy())
                         .withName("Move and Intake Coral"),
-                    CommandFactory.scoreL4AutoCommand(),
+                    autoAlignCommand.asProxy(),
+                    CommandFactory.scoreL4Command().asProxy(),
                     reefToHP.cmd().asProxy(),
                     RobotContainer.coralIntake.intakeCommand().asProxy(),
                     hpToReef.cmd().asProxy(),
-                    CommandFactory.scoreL4AutoCommand().asProxy())
+                    autoAlignCommand.asProxy(),
+                    CommandFactory.scoreL4Command().asProxy())
                 .withName("Vision Auton"));
     return routine;
   }

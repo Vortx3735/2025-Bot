@@ -4,7 +4,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.CoralIntake;
 
-public class CoralMoveAndIntake extends Command {
+public class CoralHPCommand extends Command {
   private final CoralIntake m_CoralIntake;
   double pos;
   double speed;
@@ -14,7 +14,7 @@ public class CoralMoveAndIntake extends Command {
    *
    * @param subsystem The subsystem used by this command.
    */
-  public CoralMoveAndIntake(double position, double intakeSpeed) {
+  public CoralHPCommand(double position, double intakeSpeed) {
     m_CoralIntake = RobotContainer.coralIntake;
     addRequirements(m_CoralIntake);
     pos = position;
@@ -29,6 +29,7 @@ public class CoralMoveAndIntake extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
+    System.out.println(pos);
     m_CoralIntake.intake(speed);
     m_CoralIntake.hold(pos);
   }

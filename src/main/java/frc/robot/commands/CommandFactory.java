@@ -15,66 +15,27 @@ public class CommandFactory {
             RobotContainer.coralIntake.outtakeCommand().asProxy()
             ),
             idleCommand().asProxy())
-        .withName("L2 TeleOp Command Group");
-  }
-
-  public static Command scoreL2AutoCommand() {
-    CommandScheduler.getInstance().cancelAll();
-    AutoAlignCommand autoAlignCommand =
-        new AutoAlignCommand(RobotContainer.drivetrain, RobotContainer.reefCamera);
-    return Commands.sequence(
-            autoAlignCommand.asProxy(),
-            RobotContainer.elevator.moveElevatorToL2().asProxy(),
-            RobotContainer.coralIntake.moveWristToL2().asProxy(),
-            RobotContainer.coralIntake.outtakeCommand().asProxy(),
-            idleCommand().asProxy())
-        .withName("L2 Auto Command Group");
+        .withName("L2 Command Group");
   }
 
   public static Command scoreL3Command() {
     CommandScheduler.getInstance().cancelAll();
     return Commands.sequence(
             RobotContainer.elevator.moveElevatorToL3().asProxy(),
-            RobotContainer.coralIntake.moveWristToL3().asProxy(),
+            RobotContainer.coralIntake.moveWristToL3().asProxy().withTimeout(2),
             RobotContainer.coralIntake.outtakeCommand().asProxy(),
             idleCommand().asProxy())
-        .withName("L3 TeleOp Command Group");
-  }
-
-  public static Command scoreL3AutoCommand() {
-    CommandScheduler.getInstance().cancelAll();
-    AutoAlignCommand autoAlignCommand =
-        new AutoAlignCommand(RobotContainer.drivetrain, RobotContainer.reefCamera);
-    return Commands.sequence(
-            autoAlignCommand.asProxy(),
-            RobotContainer.elevator.moveElevatorToL3().asProxy(),
-            RobotContainer.coralIntake.moveWristToL3().asProxy(),
-            RobotContainer.coralIntake.outtakeCommand().asProxy(),
-            idleCommand().asProxy())
-        .withName("L3 Auto Command Group");
+        .withName("L3 Command Group");
   }
 
   public static Command scoreL4Command() {
     CommandScheduler.getInstance().cancelAll();
     return Commands.sequence(
             RobotContainer.elevator.moveElevatorToL4().asProxy(),
-            RobotContainer.coralIntake.moveWristToL4().asProxy(),
+            RobotContainer.coralIntake.moveWristToL4().asProxy().withTimeout(2),
             RobotContainer.coralIntake.outtakeCommand().asProxy(),
             idleCommand().asProxy())
-        .withName("L4 TeleOp Command Group");
-  }
-
-  public static Command scoreL4AutoCommand() {
-    CommandScheduler.getInstance().cancelAll();
-    AutoAlignCommand autoAlignCommand =
-        new AutoAlignCommand(RobotContainer.drivetrain, RobotContainer.reefCamera);
-    return Commands.sequence(
-            autoAlignCommand.asProxy(),
-            RobotContainer.elevator.moveElevatorToL4().asProxy(),
-            RobotContainer.coralIntake.moveWristToL4().asProxy(),
-            RobotContainer.coralIntake.outtakeCommand().asProxy(),
-            idleCommand().asProxy())
-        .withName("L4 Auto Command Group");
+        .withName("L4 Command Group");
   }
 
   public static Command hpCommand() {
@@ -84,7 +45,7 @@ public class CommandFactory {
     return Commands.parallel(
             // autoAlignCommand.asProxy(),
             RobotContainer.elevator.moveElevatorToHP().asProxy(),
-            RobotContainer.coralIntake.moveWristToHP().asProxy())
+            RobotContainer.coralIntake.coralHPCommand().asProxy())
         .withName("HP Command Group");
   }
 

@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Radians;
+
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.sim.CANcoderSimState;
 import com.revrobotics.sim.SparkMaxSim;
@@ -14,6 +16,8 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.AngleUnit;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
@@ -28,7 +32,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.SensorConstants;
-import frc.robot.commands.CoralMoveAndIntake;
+import frc.robot.commands.CoralHPCommand;
 
 public class CoralIntake extends SubsystemBase {
 
@@ -62,12 +66,12 @@ public class CoralIntake extends SubsystemBase {
   private SparkMaxSim wristSim;
   private final SingleJointedArmSim mArmSim =
       new SingleJointedArmSim(
-          LinearSystemId.createDCMotorSystem(DCMotor.getNeo550(1), 0.001, kGearRatio),
+          LinearSystemId.createDCMotorSystem(DCMotor.getNeo550(1), 0.25, kGearRatio),
           DCMotor.getNeo550(1),
           kGearRatio,
           .1,
           0,
-          2 * Math.PI,
+          2*Math.PI,
           false,
           Math.PI);
 
@@ -211,8 +215,12 @@ public class CoralIntake extends SubsystemBase {
     return false;
   }
 
+  public Command coralHPCommand() {
+    return new CoralHPCommand(-0.34,intakeSpeed).withName("Coral HP Command");
+  }
+
   public Command moveWristToHP() {
-    return new CoralMoveAndIntake(-0.34,intakeSpeed).withName("Move Coral Wrist to HP");
+    return moveWristToPosition(-0.34).withName("Move Coral Wrist to HP");
   }
 
   public Command moveWristToL2() {
@@ -294,6 +302,7 @@ public class CoralIntake extends SubsystemBase {
     // Update any external GUI displays or values as desired
     // For example, a Mechanism2d Arm based on the simulated arm angle
     coralArm.setAngle(Units.radiansToDegrees(mArmSim.getAngleRads()));
-    wristEncoderSim.setRawPosition(mArmSim.getAngleRads());
+    Angle coralArmAngle = Angle.ofBaseUnits(mArmSim.getAngleRads(), Radians);
+    wristEncoderSim.setRawPosition(coralArmAngle);
   }
 }
