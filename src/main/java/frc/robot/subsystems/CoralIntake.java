@@ -57,7 +57,7 @@ public class CoralIntake extends SubsystemBase {
   public DigitalInput rightCoralBeamBreak =
       new DigitalInput(SensorConstants.CORAL_RIGHT_BEAM_BREAK);
 
-  private final int kGearRatio = 15;
+  private final int kGearRatio = 60;
   private final Mechanism2d coralArmMech = new Mechanism2d(4, 4);
   private final MechanismLigament2d coralArm;
   private final MechanismRoot2d mechBase = coralArmMech.getRoot("Arm Pivot", 2, 2);
@@ -145,7 +145,7 @@ public class CoralIntake extends SubsystemBase {
   }
 
   public Command outtakeCommand() {
-    return new RunCommand(() -> outtake(), this).withTimeout(2).withName("Coral Outtake Command");
+    return new CoralHPCommand(position, -intakeSpeed - .1).withName("Coral Outtake Command");
   }
 
   public Command stopIntakeCommand() {
@@ -301,7 +301,7 @@ public class CoralIntake extends SubsystemBase {
     // Update any external GUI displays or values as desired
     // For example, a Mechanism2d Arm based on the simulated arm angle
     coralArm.setAngle(Units.radiansToDegrees(mArmSim.getAngleRads()));
-    Angle coralArmAngle = Angle.ofBaseUnits(mArmSim.getAngleRads(), Radians);
+    Angle coralArmAngle = Angle.ofBaseUnits(mArmSim.getAngleRads() - Math.PI, Radians);
     wristEncoderSim.setRawPosition(coralArmAngle);
   }
 }
