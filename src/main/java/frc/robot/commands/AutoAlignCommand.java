@@ -3,12 +3,13 @@ package frc.robot.commands;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonPipelineResult;
-import edu.wpi.first.wpilibj.Timer;
+
 public class AutoAlignCommand extends Command {
   private final CommandSwerveDrivetrain drivetrain;
   private final PhotonCamera intakeCamera;
@@ -17,11 +18,11 @@ public class AutoAlignCommand extends Command {
   private static PIDController rotationPidController;
   private static PIDController drivePidControllerX;
   private static PIDController drivePidControllerY;
-  private static final double kP_Yaw = 0.03; // Proportional constant for yaw correction
-  private static final double YAW_THRESHOLD = 0.5; // Degrees threshold for alignment
-  private static final double X_THRESHOLD = 0.07; // Meters threshold for alignment
+  private static final double kP_Yaw = 6; // Proportional constant for yaw correction
+  private static final double YAW_THRESHOLD = 0.12; // Degrees threshold for alignment
+  private static final double X_THRESHOLD = 0.01; // Meters threshold for alignment
   private static final double Y_THRESHOLD = 0.01; // Meters threshold for alignment
-  private static final double TARGET_DISTANCE_METERS = 0.42; // L2
+  private static final double TARGET_DISTANCE_METERS = 0.32; // L2
 
   public double yawAdjustment;
   public double xAdjustment;
@@ -36,9 +37,9 @@ public class AutoAlignCommand extends Command {
   public AutoAlignCommand(CommandSwerveDrivetrain drivetrain, PhotonCamera intakeCamera) {
     this.drivetrain = drivetrain;
     this.intakeCamera = intakeCamera;
-    rotationPidController = new PIDController(kP_Yaw, 0.02, 0.0);
-    drivePidControllerX = new PIDController(3, 0, 0);
-    drivePidControllerY = new PIDController(4.5, 0, 0);
+    rotationPidController = new PIDController(kP_Yaw, 0, 0.1);
+    drivePidControllerX = new PIDController(5, 0, 0.1);
+    drivePidControllerY = new PIDController(5, 0, 0.1);
 
     rotationPidController.setTolerance(YAW_THRESHOLD);
 
@@ -77,12 +78,12 @@ public class AutoAlignCommand extends Command {
       var target = result.getBestTarget();
       // double yaw = target.getYaw(); // Horizontal offset to the AprilTag
       distanceX = target.getBestCameraToTarget().getX(); // Distance to the tag (forward)
-      yaw = (target.getBestCameraToTarget().getRotation().getZ()) * (180 / Math.PI);
+      yaw = (target.getBestCameraToTarget().getRotation().getZ());
 
       if (yaw < 0) {
-        yaw += 180;
+        yaw += Math.PI;
       } else {
-        yaw -= 180;
+        yaw -= Math.PI;
       }
 
       distanceY = target.getBestCameraToTarget().getY();
@@ -107,12 +108,21 @@ public class AutoAlignCommand extends Command {
       if (rotationPidController.atSetpoint()) {
         yawAdjustment = 0;
       }
-      drivetrain.setControl(
-        new SwerveRequest.RobotCentric()
-            .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
-            .withVelocityX(-xAdjustment)
-            .withVelocityY(-yAdjustment) // No lateral movement for alignment
-            .withRotationalRate(-yawAdjustment));
+      if (!isYawAligned()) {
+        drivetrain.setControl(
+            new SwerveRequest.RobotCentric()
+                .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+                .withVelocityX(0)
+                .withVelocityY(0) // No lateral movement for alignment
+                .withRotationalRate(-yawAdjustment));
+      } else {
+        drivetrain.setControl(
+            new SwerveRequest.RobotCentric()
+                .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+                .withVelocityX(-xAdjustment)
+                .withVelocityY(-yAdjustment) // No lateral movement for alignment
+                .withRotationalRate(-yawAdjustment));
+      }
 
     } else {
       // Stop the robot if no targets are found

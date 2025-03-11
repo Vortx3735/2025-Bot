@@ -1,27 +1,24 @@
 package frc.robot.commands;
 
-// starting wrist setpoint: -0.22
-// L2 L3 wrist setpoint: 0.49
-
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.RobotContainer;
 import frc.robot.subsystems.CoralIntake;
 
-public class MoveCoralWrist extends Command {
+public class CoralHPCommand extends Command {
   private final CoralIntake m_CoralIntake;
-  private final double position;
-  private boolean isFinishedBool;
+  double pos;
+  double speed;
 
   /**
-   * Creates a new DefaultAlgaeIntakeCommand
+   * Default Coral Intake Command
    *
    * @param subsystem The subsystem used by this command.
    */
-  public MoveCoralWrist(CoralIntake subsystem, double pos) {
-    m_CoralIntake = subsystem;
-    position = pos;
+  public CoralHPCommand(double position, double intakeSpeed) {
+    m_CoralIntake = RobotContainer.coralIntake;
     addRequirements(m_CoralIntake);
-    boolean isFinishedBool = false;
-    // Use addRequirements() here to declare subsystem dependencies.
+    pos = position;
+    speed = intakeSpeed;
   }
 
   // Called when the command is initially scheduled.
@@ -31,8 +28,9 @@ public class MoveCoralWrist extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    // m_AlgaeIntake.hold();
-    isFinishedBool = m_CoralIntake.moveWristToPosition(position);
+    System.out.println(pos);
+    m_CoralIntake.intake(speed);
+    m_CoralIntake.hold(pos);
   }
 
   // Called once the command ends or is interrupted.
@@ -42,7 +40,6 @@ public class MoveCoralWrist extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-
-    return isFinishedBool;
+    return false;
   }
 }
