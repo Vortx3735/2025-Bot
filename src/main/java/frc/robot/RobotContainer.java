@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.*;
 import frc.robot.commands.defaultcommands.*;
 import frc.robot.subsystems.AlgaeIntake;
+import frc.robot.subsystems.AlgaeWrist;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.CoralIntake;
 import frc.robot.subsystems.CoralWrist;
@@ -66,7 +67,10 @@ public class RobotContainer {
   public static final AlgaeIntake algaeIntake =
       new AlgaeIntake(
           Constants.AlgaeConstants.LEFTINTAKE_MOTOR_ID,
-          Constants.AlgaeConstants.RIGHTINTAKE_MOTOR_ID,
+          Constants.AlgaeConstants.RIGHTINTAKE_MOTOR_ID);
+
+  public static final AlgaeWrist algaeWrist =
+      new AlgaeWrist(
           Constants.AlgaeConstants.WRISTPIVOT_MOTOR_ID,
           Constants.AlgaeConstants.WRISTPIVOT_ENCODER_ID);
 
@@ -104,11 +108,14 @@ public class RobotContainer {
     elevator.publishInitialValues();
     coralIntake.publishInitialValues();
     algaeIntake.publishInitialValues();
+    coralWrist.publishInitialValues();
+    algaeWrist.publishInitialValues();
 
     // default commands
     coralIntake.setDefaultCommand(new DefaultCoralIntakeCommand(coralIntake));
     coralWrist.setDefaultCommand(new DefaultCoralWristCommand(coralWrist));
     algaeIntake.setDefaultCommand(new DefaultAlgaeIntakeCommand(algaeIntake));
+    algaeWrist.setDefaultCommand(new DefaultAlgaeWristCommand(algaeWrist));
     elevator.setDefaultCommand(new DefaultElevatorCommand(elevator));
 
     elevator.configureTalonFX();
@@ -235,10 +242,9 @@ public class RobotContainer {
 
     // temp button binding for algae wrist
     driver.povUp.whileTrue(
-        new RunCommand(() -> algaeIntake.stowWrist(), algaeIntake).withName("Algae Stow Wrist"));
+        new RunCommand(() -> algaeWrist.stowWrist(), algaeWrist).withName("Algae Stow Wrist"));
     driver.povDown.whileTrue(
-        new RunCommand(() -> algaeIntake.unstowWrist(), algaeIntake)
-            .withName("Algae Unstow Wrist"));
+        new RunCommand(() -> algaeWrist.unstowWrist(), algaeWrist).withName("Algae Unstow Wrist"));
 
     // OPERATOR
     operator.povLeft.whileTrue(
@@ -276,11 +282,10 @@ public class RobotContainer {
         new RunCommand(() -> elevator.moveElevatorDown(), elevator).withName("Move Elevator Down"));
 
     operator.rs.whileTrue(
-        new RunCommand(() -> algaeIntake.moveWristDown(), algaeIntake)
+        new RunCommand(() -> algaeWrist.moveWristDown(), algaeWrist)
             .withName("Move Algae Wrist Down"));
     operator.ls.whileTrue(
-        new RunCommand(() -> algaeIntake.moveWristUp(), algaeIntake)
-            .withName("Move Algae Wrist Up"));
+        new RunCommand(() -> algaeWrist.moveWristUp(), algaeWrist).withName("Move Algae Wrist Up"));
     operator.view.onTrue(
         new InstantCommand(() -> elevator.zeroElevator(), elevator).withName("Zero Elevator"));
   }

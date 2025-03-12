@@ -1,19 +1,19 @@
 package frc.robot.commands.defaultcommands;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.AlgaeIntake;
+import frc.robot.subsystems.AlgaeWrist;
 
-public class DefaultAlgaeIntakeCommand extends Command {
-  private final AlgaeIntake m_AlgaeIntake;
+public class DefaultAlgaeWristCommand extends Command {
+  private final AlgaeWrist m_AlgaeWrist;
 
   /**
-   * Creates a new DefaultAlgaeIntakeCommand
+   * Creates a new DefaultAlgaeWristCommand
    *
    * @param subsystem The subsystem used by this command.
    */
-  public DefaultAlgaeIntakeCommand(AlgaeIntake subsystem) {
-    m_AlgaeIntake = subsystem;
-    addRequirements(m_AlgaeIntake);
+  public DefaultAlgaeWristCommand(AlgaeWrist subsystem) {
+    m_AlgaeWrist = subsystem;
+    addRequirements(m_AlgaeWrist);
     // Use addRequirements() here to declare subsystem dependencies.
   }
 
@@ -24,7 +24,8 @@ public class DefaultAlgaeIntakeCommand extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    m_AlgaeIntake.stopIntake();
+    // m_AlgaeWrist.hold();
+    m_AlgaeWrist.stopWrist();
   }
 
   // Called once the command ends or is interrupted.
