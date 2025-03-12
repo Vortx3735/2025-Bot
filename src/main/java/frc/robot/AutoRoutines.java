@@ -5,6 +5,7 @@ import choreo.auto.AutoRoutine;
 import choreo.auto.AutoTrajectory;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.commands.AutoAlignCommand;
+import frc.robot.commands.AutoAlignHpCommand;
 import frc.robot.commands.CommandFactory;
 import frc.robot.commands.NewAutoAlignCommand;
 
@@ -56,10 +57,13 @@ public class AutoRoutines {
     final AutoTrajectory reefToHP = routine.trajectory("ReefToHP");
     final AutoTrajectory hpToReef = routine.trajectory("HPToReef");
 
-    AutoAlignCommand autoAlignCommand =
-        new AutoAlignCommand(RobotContainer.drivetrain, RobotContainer.reefCamera);
+    NewAutoAlignCommand autoAlignCommand =
+        new NewAutoAlignCommand(RobotContainer.drivetrain, RobotContainer.reefCamera, 0.42);
 
-    routine
+    AutoAlignHpCommand autoAlignHpCommand = 
+        new AutoAlignHpCommand(RobotContainer.drivetrain, RobotContainer.hpCamera);
+
+        routine
         .active()
         .onTrue(
             Commands.sequence(
@@ -74,6 +78,7 @@ public class AutoRoutines {
                     autoAlignCommand.withTimeout(2).asProxy().withName("Auto Align Command"),
                     CommandFactory.scoreL4Command().asProxy(),
                     reefToHP.cmd().asProxy(),
+                    autoAlignHpCommand.withTimeout(2),
                     RobotContainer.coralIntake.intakeCommand().asProxy(),
                     hpToReef.cmd().asProxy(),
                     autoAlignCommand.asProxy(),

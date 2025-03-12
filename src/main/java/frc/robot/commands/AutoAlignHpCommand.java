@@ -27,9 +27,10 @@ public class AutoAlignHpCommand extends Command {
   private static final double X_THRESHOLD = 0.03; // Meters threshold for alignment
   private static final double Y_THRESHOLD = 0.01; // Meters threshold for alignment
 
-  private static double TARGET_X = 0.71; // Target distance in meters
-  private static final double TARGET_Y = -0.06; // Target distance in meters
-  private static final double TARGET_YAW = -0.0698; // Target rotation
+  private static double TARGET_X = 0.69;
+  ; // Target distance in meters
+  private static final double TARGET_Y = -0.02; // Target distance in meters
+  private static final double TARGET_YAW = -0.0349; // Target rotation
 
   private double yawAdjustment;
   private double xAdjustment;
@@ -40,13 +41,12 @@ public class AutoAlignHpCommand extends Command {
   private double distanceY;
 
   public AutoAlignHpCommand(
-      CommandSwerveDrivetrain drivetrain, PhotonCamera intakeCamera, double targetXDistance) {
-    TARGET_X = targetXDistance;
+      CommandSwerveDrivetrain drivetrain, PhotonCamera intakeCamera) {
 
     this.drivetrain = drivetrain;
     this.intakeCamera = intakeCamera;
     yawPID = new PIDController(kP_Yaw, 0, 0);
-    xPID = new PIDController(kP_X, 0, 0.25);
+    xPID = new PIDController(kP_X, 0, 0);
     yPID = new PIDController(kP_Y, 0, 0.25);
 
     yawPID.setTolerance(YAW_THRESHOLD);

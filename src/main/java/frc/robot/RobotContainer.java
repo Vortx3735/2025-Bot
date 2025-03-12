@@ -93,7 +93,7 @@ public class RobotContainer {
   private NewAutoAlignCommand newAutoAlignReef =
       new NewAutoAlignCommand(drivetrain, reefCamera, 0.42);
 
-  private NewAutoAlignCommand newAutoAlignHp = new NewAutoAlignCommand(drivetrain, hpCamera, 0.4);
+  private AutoAlignHpCommand newAutoAlignHp = new AutoAlignHpCommand(drivetrain, hpCamera);
 
   public RobotContainer() {
     configureBindings();
