@@ -25,11 +25,12 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class CoralWrist extends SubsystemBase {
 
-  public static SparkMax coralWrist;
+  private static SparkMax coralWrist;
 
   private final CANcoder wristEncoder;
   private double position;
@@ -37,9 +38,9 @@ public class CoralWrist extends SubsystemBase {
   private PIDController coralPID;
   private double ki, kp, kd;
 
-  public double wristSpeedDown = -0.1;
-  public double wristSpeedUp = 0.2;
-  public double error;
+  private double wristSpeedDown = -0.1;
+  private double wristSpeedUp = 0.2;
+  private double error;
   private double intakeSpeed = 0.25;
 
   private final int kGearRatio = 60;
@@ -76,34 +77,38 @@ public class CoralWrist extends SubsystemBase {
 
     // Configure wrist motor settings
     coralWristConfig.inverted(false).idleMode(IdleMode.kBrake);
-    // coralWristConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder).pid(1.0, 0.0,
+    // coralWristConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder).pid(1.0,
+    // 0.0,
     // 0.0);
     coralWrist.configure(
         coralWristConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     wristSim = new SparkMaxSim(coralWrist, wristGearbox);
     coralArm = mechBase.append(new MechanismLigament2d("Coral Arm", 1, 90));
+
+    SmartDashboard.putNumber("CoralWrist/intakeSpeed", intakeSpeed);
+
+    SmartDashboard.putNumber("CoralWrist/Wrist Up Speed", wristSpeedUp);
+    SmartDashboard.putNumber("CoralWrist/Wrist Down Speed", wristSpeedDown);
   }
 
-  public boolean getPositionFinished(double setpoint, double currentPos) {
-    return (Math.abs(setpoint - currentPos) < 0.03);
+  public boolean atSetpoint(double targetPos) {
+    if (Math.abs(targetPos - position) < .02) {
+      return true;
+    }
+    return false;
   }
 
-  public void moveWristUp() {
-    moveWrist(wristSpeedUp);
+  public Command moveWristUpSlow() {
+    return new RunCommand(() -> this.moveWrist(.05), this).withName("Coral Wrist Up Slow");
   }
 
-  public void moveWristDown() {
-    moveWrist(wristSpeedDown);
+  public Command moveWristUp() {
+    return new RunCommand(() -> this.moveWrist(wristSpeedUp), this).withName("Coral Wrist Up");
   }
 
-  public void moveWrist(double speed) {
-    coralWrist.set(speed);
-  }
-
-  public void stopWrist() {
-    // stop wrist
-    coralWrist.set(0);
+  public Command moveWristDown() {
+    return new RunCommand(() -> this.moveWrist(wristSpeedDown), this).withName("Coral Wrist Down");
   }
 
   /**
@@ -117,13 +122,6 @@ public class CoralWrist extends SubsystemBase {
             () -> this.atSetpoint(targetPos),
             this)
         .withName("Move Coral Wrist to Position");
-  }
-
-  public Boolean atSetpoint(double targetPos) {
-    if (Math.abs(targetPos - position) < .02) {
-      return true;
-    }
-    return false;
   }
 
   public Command moveWristToHP() {
@@ -145,21 +143,24 @@ public class CoralWrist extends SubsystemBase {
     // return moveWristToPosition(-0.46).withName("Move Coral Wrist to L4");
   }
 
-  public void hold(double targetPos) {
-    // coralWrist.set(coralPID.calculate(position, targetPos) + coralFF.calculate(position, kv));
-    coralWrist.set(coralPID.calculate(position, targetPos));
-  }
-
   public double getWristPosition() {
     // get wrist position
     return wristEncoder.getAbsolutePosition().getValueAsDouble();
   }
 
-  public void publishInitialValues() {
-    SmartDashboard.putNumber("CoralWrist/intakeSpeed", intakeSpeed);
+  private void moveWrist(double speed) {
+    coralWrist.set(speed);
+  }
 
-    SmartDashboard.putNumber("CoralWrist/Wrist Up Speed", wristSpeedUp);
-    SmartDashboard.putNumber("CoralWrist/Wrist Down Speed", wristSpeedDown);
+  public void stopWrist() {
+    // stop wrist
+    coralWrist.set(0);
+  }
+
+  public void hold(double targetPos) {
+    // coralWrist.set(coralPID.calculate(position, targetPos) +
+    // coralFF.calculate(position, kv));
+    coralWrist.set(coralPID.calculate(position, targetPos));
   }
 
   @Override
@@ -173,9 +174,6 @@ public class CoralWrist extends SubsystemBase {
     // Publish Wrist Position
     SmartDashboard.putNumber("CoralWrist/Wrist Position", position);
     SmartDashboard.putNumber("CoralWrist/Wrist Position", position);
-    SmartDashboard.putBoolean(
-        "CoralWrist/Wristbooleanfinished", getPositionFinished(-0.38, position));
-
     SmartDashboard.putData("CoralWrist/CoralWristVisualizer", coralArmMech);
   }
 

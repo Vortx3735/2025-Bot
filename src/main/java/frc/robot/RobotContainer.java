@@ -105,11 +105,6 @@ public class RobotContainer {
 
     SmartDashboard.putData("Auto Chooser", autoChooser);
 
-    coralIntake.publishInitialValues();
-    algaeIntake.publishInitialValues();
-    coralWrist.publishInitialValues();
-    algaeWrist.publishInitialValues();
-
     // default commands
     coralIntake.setDefaultCommand(new DefaultCoralIntakeCommand(coralIntake));
     coralWrist.setDefaultCommand(new DefaultCoralWristCommand(coralWrist));
@@ -210,7 +205,7 @@ public class RobotContainer {
             .andThen(coralIntake.stopIntakeCommand().withName("Right Trigger Stop")));
 
     Trigger isSafeToDeployAlgae = new Trigger(() -> elevator.isSafe());
-    
+
     driver.aButton.whileTrue(drivetrain.applyRequest(() -> brake));
     driver.bButton.whileTrue(
         drivetrain.applyRequest(
@@ -234,10 +229,8 @@ public class RobotContainer {
     driver.povDown.and(isSafeToDeployAlgae).onTrue(algaeWrist.unstowWrist());
 
     // OPERATOR
-    operator.povLeft.whileTrue(
-        new RunCommand(() -> coralWrist.moveWristUp(), coralWrist).withName("Coral Wrist Up"));
-    operator.povRight.whileTrue(
-        new RunCommand(() -> coralWrist.moveWristDown(), coralWrist).withName("Coral Wrist Down"));
+    operator.povLeft.whileTrue(coralWrist.moveWristUp());
+    operator.povRight.whileTrue(coralWrist.moveWristDown());
 
     // Human Player
     operator.aButton.whileTrue(CommandFactory.hpCommand());

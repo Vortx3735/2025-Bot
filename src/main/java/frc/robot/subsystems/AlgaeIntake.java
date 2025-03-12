@@ -12,7 +12,6 @@ import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotContainer;
-import frc.robot.commands.defaultcommands.DefaultAlgaeIntakeCommand;
 
 public class AlgaeIntake extends SubsystemBase {
   static SparkMax leftAlgaeMotor;
@@ -40,14 +39,22 @@ public class AlgaeIntake extends SubsystemBase {
         algaeMotorConfig.inverted(false),
         ResetMode.kResetSafeParameters,
         PersistMode.kPersistParameters);
+
+    SmartDashboard.putNumber("AlgaeIntake/intakeSpeed", intakeSpeed);
   }
 
   public Command intakeCommand() {
-    return new ConditionalCommand(new RunCommand(() -> stopIntake(), this).withName("No Intake While Stowed").asProxy(), new RunCommand(() -> intake(), this).withName("Algae Intake").asProxy(), () -> RobotContainer.algaeWrist.isStowed());
+    return new ConditionalCommand(
+        new RunCommand(() -> stopIntake(), this).withName("No Intake While Stowed").asProxy(),
+        new RunCommand(() -> intake(), this).withName("Algae Intake").asProxy(),
+        () -> RobotContainer.algaeWrist.isStowed());
   }
 
   public Command outtakeCommand() {
-    return new ConditionalCommand(new RunCommand(() -> stopIntake(), this).withName("No Outtake While Stowed").asProxy(), new RunCommand(() -> intake(), this).withName("Algae Outtake").asProxy(), () -> RobotContainer.algaeWrist.isStowed());
+    return new ConditionalCommand(
+        new RunCommand(() -> stopIntake(), this).withName("No Outtake While Stowed").asProxy(),
+        new RunCommand(() -> intake(), this).withName("Algae Outtake").asProxy(),
+        () -> RobotContainer.algaeWrist.isStowed());
   }
 
   private void intake() {
@@ -56,7 +63,7 @@ public class AlgaeIntake extends SubsystemBase {
   }
 
   private void outtake() {
-    if(!RobotContainer.algaeWrist.isStowed()){
+    if (!RobotContainer.algaeWrist.isStowed()) {
       leftAlgaeMotor.set(-intakeSpeed);
       rightAlgaeMotor.set(-intakeSpeed);
     }
@@ -66,10 +73,6 @@ public class AlgaeIntake extends SubsystemBase {
     // stop motor
     leftAlgaeMotor.set(0);
     rightAlgaeMotor.set(0);
-  }
-
-  public void publishInitialValues() {
-    SmartDashboard.putNumber("AlgaeIntake/intakeSpeed", intakeSpeed);
   }
 
   @Override

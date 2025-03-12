@@ -21,24 +21,20 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import java.util.function.BooleanSupplier;
 
 public class Elevator extends SubsystemBase {
-  public static TalonFX leftElevatorMotor;
-  public static TalonFX rightElevatorMotor;
-  private static CANcoder elevatorEncoder;
-
-  public double position;
-  public double elevatorSpeed;
+  private TalonFX leftElevatorMotor;
+  private TalonFX rightElevatorMotor;
+  private CANcoder elevatorEncoder;
 
   // create a Motion Magic request, voltage output
   private final MotionMagicVoltage m_request = new MotionMagicVoltage(0);
 
   // Define soft limits
-  public static double LOWER_LIMIT = 0;
-  public static double UPPER_LIMIT = 5;
-  public static double maxPosition = 0;
-  public static double positionCutoff = 2;
+  private double LOWER_LIMIT = 0;
+  private double UPPER_LIMIT = 5;
+  private double elevatorSpeed = 0.15;
+  private double position;
 
   private final int kGearRatio = 15;
   private final Mechanism2d elevatorMech = new Mechanism2d(1, 6);
@@ -61,7 +57,9 @@ public class Elevator extends SubsystemBase {
     configureCANcoder();
     configureTalonFX();
 
-    elevatorSpeed = 0.15;
+    SmartDashboard.putNumber("elevator/Elevator Speed", elevatorSpeed);
+    SmartDashboard.putNumber("elevator/UpperLimit", UPPER_LIMIT);
+    SmartDashboard.putNumber("elevator/LowerLimit", LOWER_LIMIT);
 
     mechBase.append(new MechanismLigament2d("elevator", 0.1, 90));
   }
@@ -107,6 +105,18 @@ public class Elevator extends SubsystemBase {
     rightElevatorMotor.getConfigurator().apply(fx_cfg);
   }
 
+  public boolean isSafe() {
+    if (position > 1) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  public boolean atSetpoint(double setpoint) {
+    return Math.abs(setpoint - position) < .025;
+  }
+
   public void hold(double currentPos) {
     leftElevatorMotor.setControl(m_request.withPosition(currentPos));
     rightElevatorMotor.setControl(m_request.withPosition(currentPos));
@@ -134,19 +144,6 @@ public class Elevator extends SubsystemBase {
     rightElevatorMotor.setControl(m_request.withPosition(targetPos));
   }
 
-  public boolean isSafe(){
-    if(position>1){
-      return true;
-    }
-    else {
-      return false;
-    }
-  }
-
-  public boolean getPositionFinished(double setpoint) {
-    return Math.abs(setpoint - position) < .025;
-  }
-
   public double getPosition() {
     return position;
   }
@@ -154,35 +151,35 @@ public class Elevator extends SubsystemBase {
   public Command moveElevatorToBottom() {
     double setpoint = 0;
     return new RunCommand(() -> moveElevatorToPosition(setpoint), this)
-        .until(() -> this.getPositionFinished(setpoint))
+        .until(() -> this.atSetpoint(setpoint))
         .withName("Move Elevator to Bottom");
   }
 
   public Command moveElevatorToHP() {
     double setpoint = 1.04;
     return new RunCommand(() -> moveElevatorToPosition(setpoint), this)
-        .until(() -> this.getPositionFinished(setpoint))
+        .until(() -> this.atSetpoint(setpoint))
         .withName("Move Elevator to HP");
   }
 
   public Command moveElevatorToL1() {
     double setpoint = 0.18;
     return new RunCommand(() -> moveElevatorToPosition(setpoint), this)
-        .until(() -> this.getPositionFinished(setpoint))
+        .until(() -> this.atSetpoint(setpoint))
         .withName("Move Elevator to L1");
   }
 
   public Command moveElevatorToL2() {
     double setpoint = 0.4;
     return new RunCommand(() -> moveElevatorToPosition(setpoint), this)
-        .until(() -> this.getPositionFinished(setpoint))
+        .until(() -> this.atSetpoint(setpoint))
         .withName("Move Elevator to L2");
   }
 
   public Command moveElevatorToL3() {
     double setpoint = 1.8;
     return new RunCommand(() -> moveElevatorToPosition(setpoint), this)
-        .until(() -> this.getPositionFinished(setpoint))
+        .until(() -> this.atSetpoint(setpoint))
         .withName("Move Elevator to L3");
   }
 
@@ -190,40 +187,18 @@ public class Elevator extends SubsystemBase {
     double setpoint = 4.93;
     // double setpoint = 4.95;
     return new RunCommand(() -> moveElevatorToPosition(setpoint), this)
-        .until(() -> this.getPositionFinished(setpoint))
+        .until(() -> this.atSetpoint(setpoint))
         .withName("Move Elevator to L4");
   }
 
   public double getElevatorCoefficient() {
-    // if (position > positionCutoff){
-    //   double a = maxPosition-positionCutoff;
-    //   double b = position - positionCutoff;
-    //   if ((a-b)<0.125){
-    //     return(0.125);
-    //   }
-    //   else{
-    //     return ((a-b)/a);
-    //   }
-    // }
-    // else{
-    return (1.0);
-    // }
+    return 1;
   }
 
   public void moveElevatorUp() {
     if (position <= UPPER_LIMIT) {
       leftElevatorMotor.set(elevatorSpeed);
       rightElevatorMotor.set(elevatorSpeed);
-    } else {
-      stopElevator();
-    }
-  }
-
-  public void moveElevatorUpSetpoint() {
-    if (position <= UPPER_LIMIT) {
-      // leftElevatorMotor.set(elevatorSpeed);
-      // rightElevatorMotor.set(elevatorSpeed);
-      moveElevatorToPosition(position + .1);
     } else {
       stopElevator();
     }
@@ -238,62 +213,27 @@ public class Elevator extends SubsystemBase {
     }
   }
 
-  public void moveElevatorDownSetpoint() {
-    if (position >= LOWER_LIMIT) {
-      // leftElevatorMotor.set(-elevatorSpeed);
-      // rightElevatorMotor.set(-elevatorSpeed);
-      moveElevatorToPosition(position - .1);
-    } else {
-      stopElevator();
-    }
-  }
-
-  public BooleanSupplier atL4() {
-    return () -> position > 4.8;
-  }
-
-  public void setElevatorSpeed(double speed) {
-    leftElevatorMotor.set(speed);
-    rightElevatorMotor.set(speed);
-  }
-
   public void stopElevator() {
     leftElevatorMotor.set(0);
     rightElevatorMotor.set(0);
   }
 
-  public void setBrakeMode() {
-    leftElevatorMotor.setNeutralMode(NeutralModeValue.Brake);
-    rightElevatorMotor.setNeutralMode(NeutralModeValue.Brake);
-  }
-
-  public void publishInitialValues() {
-    // SmartDashboard.putNumber("elevator/Elevator Speed", elevatorSpeed);
-    // SmartDashboard.putNumber("elevator/UpperLimit", UPPER_LIMIT);
-    // SmartDashboard.putNumber("elevator/LowerLimit", LOWER_LIMIT);
-  }
-
   @Override
   public void periodic() {
     position = leftElevatorMotor.getPosition().getValueAsDouble();
-
     mechBase.setPosition(0, position);
 
     UPPER_LIMIT = SmartDashboard.getNumber("elevator/UpperLimit", UPPER_LIMIT);
     LOWER_LIMIT = SmartDashboard.getNumber("elevator/LowerLimit", LOWER_LIMIT);
-
-    // Values
     SmartDashboard.putNumber("elevator/Elevator Position", position);
     SmartDashboard.putNumber(
         "elevator/Kraken Left pos", leftElevatorMotor.getPosition().getValueAsDouble());
     SmartDashboard.putNumber(
         "elevator/Kraken Right Pos", rightElevatorMotor.getPosition().getValueAsDouble());
-
     // Add Slider to dynamically change Elevator Speed
     elevatorSpeed = SmartDashboard.getNumber("elevator/Elevator Speed", elevatorSpeed);
-    
-    SmartDashboard.putBoolean("elevator/isSafe", isSafe());
 
+    SmartDashboard.putBoolean("elevator/isSafe", isSafe());
     SmartDashboard.putData("elevator/Visualizer", elevatorMech);
   }
 

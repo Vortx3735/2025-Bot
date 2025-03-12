@@ -11,8 +11,6 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
@@ -28,8 +26,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.RobotContainer;
-import frc.robot.commands.defaultcommands.DefaultAlgaeWristCommand;
 
 public class AlgaeWrist extends SubsystemBase {
 
@@ -45,7 +41,7 @@ public class AlgaeWrist extends SubsystemBase {
   private static double position;
 
   public double wristSpeedDown = -0.3;
-  public double wristSpeedUp = 0.6; 
+  public double wristSpeedUp = 0.6;
   public double error = 0.03;
 
   public static final double STOW_POS = -0.42;
@@ -58,7 +54,7 @@ public class AlgaeWrist extends SubsystemBase {
   private SparkMaxSim wristSim;
   private final SingleJointedArmSim mArmSim =
       new SingleJointedArmSim(
-          LinearSystemId.createDCMotorSystem(DCMotor.getNeo550(1),  0.25, kGearRatio),
+          LinearSystemId.createDCMotorSystem(DCMotor.getNeo550(1), 0.25, kGearRatio),
           DCMotor.getNeo550(1),
           kGearRatio,
           .1,
@@ -90,6 +86,10 @@ public class AlgaeWrist extends SubsystemBase {
 
     wristSim = new SparkMaxSim(algaeWrist, wristGearbox);
     algaeArm = mechBase.append(new MechanismLigament2d("Algae Arm", 1, 90));
+
+    SmartDashboard.putNumber("AlgaeWrist/Wrist Up Speed", wristSpeedUp);
+    SmartDashboard.putNumber("AlgaeWrist/Wrist Down Speed", wristSpeedDown);
+    SmartDashboard.putNumber("AlgaeWrist/Wrist Error", error);
   }
 
   /**
@@ -121,15 +121,15 @@ public class AlgaeWrist extends SubsystemBase {
         .withName("Move Algae Wrist to Position");
   }
 
-  public Boolean atSetpoint(double targetPos) {
+  public boolean atSetpoint(double targetPos) {
     if (Math.abs(targetPos - position) < .02) {
       return true;
     }
     return false;
   }
 
-  public Boolean isStowed(){
-    if(getWristPosition() + error >= STOW_POS){
+  public boolean isStowed() {
+    if (getWristPosition() + error >= STOW_POS) {
       return true;
     }
     return false;
@@ -178,13 +178,6 @@ public class AlgaeWrist extends SubsystemBase {
     algaeWrist.set(algaePID.calculate(position, targetPos));
   }
 
-  public void publishInitialValues() {
-    // Publish initial values to the dashboard
-    SmartDashboard.putNumber("AlgaeWrist/Wrist Up Speed", wristSpeedUp);
-    SmartDashboard.putNumber("AlgaeWrist/Wrist Down Speed", wristSpeedDown);
-    SmartDashboard.putNumber("AlgaeWrist/Wrist Error", error);
-  }
-
   @Override
   public void periodic() {
     // Update wrist position
@@ -201,7 +194,7 @@ public class AlgaeWrist extends SubsystemBase {
     SmartDashboard.putData("AlgaeWrist/AlgaeWristVisualizer", algaeArmMech);
   }
 
-    @Override
+  @Override
   public void simulationPeriodic() {
     CANcoderSimState wristEncoderSim = wristEncoder.getSimState();
     // In this method, we update our simulation of what our arm is doing

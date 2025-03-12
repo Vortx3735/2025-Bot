@@ -3,6 +3,7 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.RobotContainer;
 
 public class CommandFactory {
@@ -32,7 +33,10 @@ public class CommandFactory {
     return Commands.sequence(
             RobotContainer.elevator.moveElevatorToL4().asProxy(),
             RobotContainer.coralWrist.moveWristToL4().asProxy(),
-            RobotContainer.coralIntake.outtakeCommand().asProxy(),
+            Commands.race(
+                new WaitCommand(2),
+                RobotContainer.coralIntake.outtakeCommand().asProxy(),
+                RobotContainer.coralWrist.moveWristUpSlow().asProxy()),
             idleCommand().asProxy())
         .withName("L4 Command Group");
   }

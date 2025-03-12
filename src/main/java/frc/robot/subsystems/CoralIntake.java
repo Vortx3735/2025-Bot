@@ -16,13 +16,13 @@ import frc.robot.Constants.SensorConstants;
 
 public class CoralIntake extends SubsystemBase {
 
-  public static SparkMax leftCoralMotor;
-  public static SparkMax rightCoralMotor;
+  private static SparkMax leftCoralMotor;
+  private static SparkMax rightCoralMotor;
 
   private double intakeSpeed = 0.25;
 
-  public DigitalInput leftCoralBeamBreak = new DigitalInput(SensorConstants.CORAL_LEFT_BEAM_BREAK);
-  public DigitalInput rightCoralBeamBreak =
+  private DigitalInput leftCoralBeamBreak = new DigitalInput(SensorConstants.CORAL_LEFT_BEAM_BREAK);
+  private DigitalInput rightCoralBeamBreak =
       new DigitalInput(SensorConstants.CORAL_RIGHT_BEAM_BREAK);
 
   // aaron chang
@@ -46,8 +46,10 @@ public class CoralIntake extends SubsystemBase {
         coralMotorConfig.inverted(false),
         ResetMode.kResetSafeParameters,
         PersistMode.kPersistParameters);
+
+    SmartDashboard.putNumber("CoralIntake/intakeSpeed", intakeSpeed);
   }
-  
+
   // returns true assuming beam break is broken
   public boolean hasCoral() {
     return (hasLeftCoral() || hasRightCoral());
@@ -78,7 +80,7 @@ public class CoralIntake extends SubsystemBase {
     return new InstantCommand(() -> stopIntake(), this).withName("Stop Coral Intake Command");
   }
 
-  public void intake(double speed) {
+  private void intake(double speed) {
     if (!hasRightCoral()) {
       rightCoralMotor.set(speed);
     }
@@ -104,17 +106,10 @@ public class CoralIntake extends SubsystemBase {
     rightCoralMotor.set(0);
   }
 
-  public void publishInitialValues() {
-    SmartDashboard.putNumber("CoralIntake/intakeSpeed", intakeSpeed);
-  }
-
   @Override
   public void periodic() {
-    // Update wrist position
+    intakeSpeed = SmartDashboard.getNumber("CoralIntake/intakeSpeed", intakeSpeed);
     SmartDashboard.putBoolean("CoralIntake/Left Coral", hasLeftCoral());
     SmartDashboard.putBoolean("CoralIntake/Right Coral", hasRightCoral());
-
-    // Update intake speed
-    intakeSpeed = SmartDashboard.getNumber("CoralIntake/intakeSpeed", intakeSpeed);
   }
 }
