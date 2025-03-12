@@ -7,25 +7,43 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.RobotContainer;
 
 public class CommandFactory {
-  public static Command scoreL2Command() {
+  public static Command movetoL2Command() {
     CommandScheduler.getInstance().cancelAll();
     return Commands.sequence(
             RobotContainer.elevator.moveElevatorToL2().asProxy(),
-            Commands.parallel(
-                RobotContainer.coralWrist.moveWristToL2().asProxy(),
-                RobotContainer.coralIntake.outtakeCommand().asProxy()),
-            idleCommand().asProxy())
-        .withName("L2 Command Group");
+            RobotContainer.coralWrist.moveWristToL2().asProxy())
+        .withName("Move to L2 Command Group");
   }
 
-  public static Command scoreL3Command() {
+  public static Command movetoL3Command() {
     CommandScheduler.getInstance().cancelAll();
     return Commands.sequence(
             RobotContainer.elevator.moveElevatorToL3().asProxy(),
-            RobotContainer.coralWrist.moveWristToL3().asProxy().withTimeout(2),
-            RobotContainer.coralIntake.outtakeCommand().asProxy(),
-            idleCommand().asProxy())
-        .withName("L3 Command Group");
+            RobotContainer.coralWrist.moveWristToL3().asProxy())
+        .withName("Move to L3 Command Group");
+  }
+
+  public static Command outtakeCommand() {
+    CommandScheduler.getInstance().cancelAll();
+    return Commands.sequence(
+      RobotContainer.coralIntake.outtakeCommand().asProxy(),
+      idleCommand().asProxy())
+        .withName("Outtake Command Group");
+  }
+  public static Command scoreL2Command() {
+    CommandScheduler.getInstance().cancelAll();
+    return Commands.sequence(
+            movetoL2Command(),
+            outtakeCommand())
+        .withName("Score L2 Command Group");
+  }
+  public static Command scoreL3Command() {
+    CommandScheduler.getInstance().cancelAll();
+    return Commands.sequence(
+            movetoL2Command(),
+            outtakeCommand(),
+            idleCommand())
+        .withName("Score L3 Command Group");
   }
 
   public static Command scoreL4Command() {
@@ -38,7 +56,7 @@ public class CommandFactory {
                 RobotContainer.coralIntake.outtakeCommand().asProxy(),
                 RobotContainer.coralWrist.moveWristUpSlow().asProxy()),
             idleCommand().asProxy())
-        .withName("L4 Command Group");
+        .withName("Score L4 Command Group");
   }
 
   public static Command hpCommand() {

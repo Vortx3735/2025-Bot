@@ -238,9 +238,9 @@ public class RobotContainer {
     // Human Player
     operator.aButton.whileTrue(CommandFactory.hpCommand());
     // L2
-    operator.xButton.onTrue(CommandFactory.scoreL2Command());
+    operator.xButton.onTrue(CommandFactory.movetoL2Command()).onFalse(CommandFactory.outtakeCommand());
     // L3
-    operator.yButton.onTrue(CommandFactory.scoreL3Command());
+    operator.yButton.onTrue(CommandFactory.movetoL3Command()).onFalse(CommandFactory.outtakeCommand());
     // L4
     operator.bButton.onTrue(CommandFactory.scoreL4Command());
 
