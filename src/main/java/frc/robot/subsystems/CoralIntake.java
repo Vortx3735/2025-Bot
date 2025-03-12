@@ -29,8 +29,6 @@ public class CoralIntake extends SubsystemBase {
   /**
    * @param leftMotorId The CAN ID of the left intake motor.
    * @param rightMotorId The CAN ID of the right intake motor.
-   * @param wristId The CAN ID of the wrist motor.
-   * @param wristEncoderId The CAN ID of the wrist encoder.
    */
   public CoralIntake(int leftMotorId, int rightMotorId) {
     // Motor configurations
@@ -49,11 +47,7 @@ public class CoralIntake extends SubsystemBase {
         ResetMode.kResetSafeParameters,
         PersistMode.kPersistParameters);
   }
-
-  public boolean getPositionFinished(double setpoint, double currentPos) {
-    return (Math.abs(setpoint - currentPos) < 0.03);
-  }
-
+  
   // returns true assuming beam break is broken
   public boolean hasCoral() {
     return (hasLeftCoral() || hasRightCoral());
@@ -83,11 +77,6 @@ public class CoralIntake extends SubsystemBase {
   public Command stopIntakeCommand() {
     return new InstantCommand(() -> stopIntake(), this).withName("Stop Coral Intake Command");
   }
-
-  // public FunctionalCommand holdCommand() {
-  //   double currentPos = position;
-  //   return new RunCommand(() -> hold(currentPos));
-  // }
 
   public void intake(double speed) {
     if (!hasRightCoral()) {

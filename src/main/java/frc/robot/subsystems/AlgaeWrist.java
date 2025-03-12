@@ -1,55 +1,73 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Radians;
+
 import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.sim.CANcoderSimState;
+import com.revrobotics.sim.SparkMaxSim;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.wpilibj.simulation.BatterySim;
+import edu.wpi.first.wpilibj.simulation.RoboRioSim;
+import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
+import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.RobotContainer;
+import frc.robot.commands.defaultcommands.DefaultAlgaeWristCommand;
 
 public class AlgaeWrist extends SubsystemBase {
 
-  private PIDController wristPID;
-  private double ki, kp, kd;
-
-  private ArmFeedforward wristFF;
-  private double ka, kg, ks, kv;
-
   private PIDController algaePID;
-  private ArmFeedforward algaeFF;
+  // private ArmFeedforward algaeFF;
 
   static SparkMax leftAlgaeMotor;
   static SparkMax rightAlgaeMotor;
-  static SparkMax algaeWrist1;
+  static SparkMax algaeWrist;
 
   private final CANcoder wristEncoder;
 
-  private double position;
+  private static double position;
 
-  public double wristDownDefault = -0.3;
-  public double wristUpDefault = 0.6;
-  public double errorDefault = 0.03;
+  public double wristSpeedDown = -0.3;
+  public double wristSpeedUp = 0.6; 
+  public double error = 0.03;
 
-  public double wristSpeedDown;
-  public double wristSpeedUp;
-  public double error;
-  public Object moveWristUp;
-  public double leftIntakeCurrent;
-  public double rightIntakeCurrent;
+  public static final double STOW_POS = -0.42;
 
-  public double averageCurrent;
-  public int currentLimit = 35;
+  private final int kGearRatio = 150;
+  private final Mechanism2d algaeArmMech = new Mechanism2d(4, 4);
+  private final MechanismLigament2d algaeArm;
+  private final MechanismRoot2d mechBase = algaeArmMech.getRoot("Algae Arm Pivot", 2, 2);
+  private final DCMotor wristGearbox = DCMotor.getNeo550(1);
+  private SparkMaxSim wristSim;
+  private final SingleJointedArmSim mArmSim =
+      new SingleJointedArmSim(
+          LinearSystemId.createDCMotorSystem(DCMotor.getNeo550(1),  0.25, kGearRatio),
+          DCMotor.getNeo550(1),
+          kGearRatio,
+          .1,
+          0,
+          2 * Math.PI,
+          false,
+          Math.PI);
 
   /**
-   * @param leftMotorID The CAN ID of the left intake motor.
-   * @param rightMotorID The CAN ID of the right intake motor.
    * @param wristID The CAN ID of the wrist motor.
    * @param wristEncoderID The CAN ID of the wrist encoder.
    */
@@ -58,67 +76,90 @@ public class AlgaeWrist extends SubsystemBase {
     SparkMaxConfig algaeWristConfig = new SparkMaxConfig();
 
     // Initialize wrist motor and encoder
-    algaeWrist1 = new SparkMax(wristID, MotorType.kBrushless);
+    algaeWrist = new SparkMax(wristID, MotorType.kBrushless);
     wristEncoder = new CANcoder(wristEncoderID);
 
     // Configure wrist motor settings
     algaeWristConfig.inverted(true).idleMode(IdleMode.kBrake);
-    algaeWristConfig.encoder.positionConversionFactor(1000).velocityConversionFactor(1000);
-    algaeWristConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder).pid(1.0, 0.0, 0.0);
 
-    algaeWrist1.configure(
+    algaeWrist.configure(
         algaeWristConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-    wristSpeedDown = wristDownDefault;
-    wristSpeedUp = wristUpDefault;
-    error = errorDefault;
-
     algaePID = new PIDController(4, 0, 0);
-    algaeFF = new ArmFeedforward(0, 0.11, 0);
+    // algaeFF = new ArmFeedforward(0, 0.11, 0);
+
+    wristSim = new SparkMaxSim(algaeWrist, wristGearbox);
+    algaeArm = mechBase.append(new MechanismLigament2d("Algae Arm", 1, 90));
   }
 
   /**
    * @Param targetPos The target position to move the wrist to.
    */
-  public boolean moveWristToPosition(double targetPos) {
+  // public boolean moveWristToPosition(double targetPos) {
+  //   if (Math.abs(targetPos - position) < .02) {
+  //     stopWrist();
+  //     return true;
+  //   }
+  //   algaeWrist.set(
+  //       MathUtil.clamp(
+  //           algaePID.calculate(position, targetPos) + algaeFF.calculate(position, targetPos),
+  //           -0.6,
+  //           0.6));
+  //   return false;
+  // }
+
+  /**
+   * @Param targetPos The target position to move the wrist to.
+   */
+  public Command moveWristToPosition(double targetPos) {
+    return new FunctionalCommand(
+            () -> {},
+            () -> algaeWrist.set(algaePID.calculate(position, targetPos)),
+            (x) -> this.hold(targetPos),
+            () -> this.atSetpoint(targetPos),
+            this)
+        .withName("Move Algae Wrist to Position");
+  }
+
+  public Boolean atSetpoint(double targetPos) {
     if (Math.abs(targetPos - position) < .02) {
-      stopWrist();
       return true;
     }
-    algaeWrist1.set(
-        MathUtil.clamp(
-            algaePID.calculate(position, targetPos) + algaeFF.calculate(position, targetPos),
-            -0.6,
-            0.6));
+    return false;
+  }
+
+  public Boolean isStowed(){
+    if(getWristPosition() + error >= STOW_POS){
+      return true;
+    }
     return false;
   }
 
   public void moveWrist(double speed) {
     // move wrist
-    algaeWrist1.set(speed);
+    algaeWrist.set(speed);
   }
 
   public void moveWristUp() {
-    algaeWrist1.set(wristSpeedUp);
-  }
-
-  public void stowWrist() {
-    moveWristToPosition(-0.42);
-  }
-
-  public void unstowWrist() {
-    if (Elevator.getPosition() > 1) {
-      moveWristToPosition(-0.64);
-    }
+    algaeWrist.set(wristSpeedUp);
   }
 
   public void moveWristDown() {
-    algaeWrist1.set(wristSpeedDown);
+    algaeWrist.set(wristSpeedDown);
   }
 
   public void stopWrist() {
     // stop wrist
-    algaeWrist1.set(0);
+    algaeWrist.set(0);
+  }
+
+  public Command stowWrist() {
+    return moveWristToPosition(STOW_POS).withName("Stow Wrist");
+  }
+
+  public Command unstowWrist() {
+    // return moveWristToPosition(-0.64);
+    return moveWristToPosition(-0.5).withName("Unstow Wrist");
   }
 
   public double getWristPosition() {
@@ -126,28 +167,19 @@ public class AlgaeWrist extends SubsystemBase {
     return wristEncoder.getAbsolutePosition().getValueAsDouble();
   }
 
-  public void resetWristPosition() {
-    // reset wrist position
-    algaeWrist1.getEncoder().setPosition(0);
-  }
+  // public void hold(double targetPos) {
+  //   algaeWrist.set(
+  //     algaePID.calculate(position * 2 * Math.PI, targetPos * 2 * Math.PI)
+  //           + wristFF.calculate(position * 2 * Math.PI, kv));
+  // }
 
-  public void hold() {
-    algaeWrist1.set(
-        wristPID.calculate(position * 2 * Math.PI, (int) position * 2 * Math.PI)
-            + wristFF.calculate(position * 2 * Math.PI, kv));
+  public void hold(double targetPos) {
+    // coralWrist.set(coralPID.calculate(position, targetPos) + coralFF.calculate(position, kv));
+    algaeWrist.set(algaePID.calculate(position, targetPos));
   }
 
   public void publishInitialValues() {
     // Publish initial values to the dashboard
-    SmartDashboard.putNumber("AlgaeWrist/Wrist P", kp);
-    SmartDashboard.putNumber("AlgaeWrist/Wrist I", ki);
-    SmartDashboard.putNumber("AlgaeWrist/Wrist D", kd);
-
-    SmartDashboard.putNumber("AlgaeWrist/Wrist A", ka);
-    SmartDashboard.putNumber("AlgaeWrist/Wrist G", kg);
-    SmartDashboard.putNumber("AlgaeWrist/Wrist S", ks);
-    SmartDashboard.putNumber("AlgaeWrist/Wrist V", kv);
-
     SmartDashboard.putNumber("AlgaeWrist/Wrist Up Speed", wristSpeedUp);
     SmartDashboard.putNumber("AlgaeWrist/Wrist Down Speed", wristSpeedDown);
     SmartDashboard.putNumber("AlgaeWrist/Wrist Error", error);
@@ -159,20 +191,42 @@ public class AlgaeWrist extends SubsystemBase {
     position = getWristPosition();
 
     // Get PID values from the dashboard (or use default values)
-    kp = SmartDashboard.getNumber("AlgaeWrist/Wrist P", kp);
-    ki = SmartDashboard.getNumber("AlgaeWrist/Wrist I", ki);
-    kd = SmartDashboard.getNumber("AlgaeWrist/Wrist D", kd);
-
-    ka = SmartDashboard.getNumber("AlgaeWrist/Wrist A", ka);
-    kg = SmartDashboard.getNumber("AlgaeWrist/Wrist G", kg);
-    ks = SmartDashboard.getNumber("AlgaeWrist/Wrist S", ks);
-    kv = SmartDashboard.getNumber("AlgaeWrist/Wrist V", kv);
-
-    wristSpeedDown = SmartDashboard.getNumber("AlgaeWrist/Wrist Down Speed", wristDownDefault);
-    wristSpeedUp = SmartDashboard.getNumber("AlgaeWrist/Wrist Up Speed", wristUpDefault);
-    error = SmartDashboard.getNumber("AlgaeWrist/Wrist Error", errorDefault);
+    wristSpeedDown = SmartDashboard.getNumber("AlgaeWrist/Wrist Down Speed", wristSpeedDown);
+    wristSpeedUp = SmartDashboard.getNumber("AlgaeWrist/Wrist Up Speed", wristSpeedUp);
+    error = SmartDashboard.getNumber("AlgaeWrist/Wrist Error", error);
 
     // Publish Wrist Position
     SmartDashboard.putNumber("AlgaeWrist/Wrist Position", position);
+
+    SmartDashboard.putData("AlgaeWrist/AlgaeWristVisualizer", algaeArmMech);
+  }
+
+    @Override
+  public void simulationPeriodic() {
+    CANcoderSimState wristEncoderSim = wristEncoder.getSimState();
+    // In this method, we update our simulation of what our arm is doing
+    // First, we set our "inputs" (voltages)
+    mArmSim.setInput(wristSim.getAppliedOutput() * RoboRioSim.getVInVoltage());
+
+    // Next, we update it. The standard loop time is 20ms.
+    mArmSim.update(0.02);
+
+    // Now, we update the Spark Flex
+    wristSim.iterate(
+        Units.radiansPerSecondToRotationsPerMinute( // motor velocity, in RPM
+            mArmSim.getVelocityRadPerSec()),
+        RoboRioSim.getVInVoltage(), // Simulated battery voltage, in Volts
+        0.02); // Time interval, in Seconds
+
+    // SimBattery estimates loaded battery voltages
+    // This should include all motors being simulated
+    RoboRioSim.setVInVoltage(
+        BatterySim.calculateDefaultBatteryLoadedVoltage(mArmSim.getCurrentDrawAmps()));
+
+    // Update any external GUI displays or values as desired
+    // For example, a Mechanism2d Arm based on the simulated arm angle
+    algaeArm.setAngle(Units.radiansToDegrees(mArmSim.getAngleRads()));
+    Angle armAngle = Angle.ofBaseUnits(mArmSim.getAngleRads() - Math.PI, Radians);
+    wristEncoderSim.setRawPosition(armAngle);
   }
 }

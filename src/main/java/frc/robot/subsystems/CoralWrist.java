@@ -11,7 +11,6 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
-import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
@@ -38,9 +37,6 @@ public class CoralWrist extends SubsystemBase {
   private PIDController coralPID;
   private double ki, kp, kd;
 
-  private ArmFeedforward coralFF;
-  private double kg, ks, kv;
-
   public double wristSpeedDown = -0.1;
   public double wristSpeedUp = 0.2;
   public double error;
@@ -49,7 +45,7 @@ public class CoralWrist extends SubsystemBase {
   private final int kGearRatio = 60;
   private final Mechanism2d coralArmMech = new Mechanism2d(4, 4);
   private final MechanismLigament2d coralArm;
-  private final MechanismRoot2d mechBase = coralArmMech.getRoot("Arm Pivot", 2, 2);
+  private final MechanismRoot2d mechBase = coralArmMech.getRoot("Coral Arm Pivot", 2, 2);
   private final DCMotor wristGearbox = DCMotor.getNeo550(1);
   private SparkMaxSim wristSim;
   private final SingleJointedArmSim mArmSim =
@@ -65,8 +61,6 @@ public class CoralWrist extends SubsystemBase {
 
   // aaron chang
   /**
-   * @param leftMotorId The CAN ID of the left intake motor.
-   * @param rightMotorId The CAN ID of the right intake motor.
    * @param wristId The CAN ID of the wrist motor.
    * @param wristEncoderId The CAN ID of the wrist encoder.
    */
@@ -77,9 +71,7 @@ public class CoralWrist extends SubsystemBase {
     // Initialize wrist motor and encoder
     coralWrist = new SparkMax(wristId, MotorType.kBrushless);
     wristEncoder = new CANcoder(wristEncoderId);
-    kg = 0.05;
     kp = 3;
-    coralFF = new ArmFeedforward(ks, kg, kv);
     coralPID = new PIDController(kp, ki, kd);
 
     // Configure wrist motor settings
@@ -96,11 +88,6 @@ public class CoralWrist extends SubsystemBase {
   public boolean getPositionFinished(double setpoint, double currentPos) {
     return (Math.abs(setpoint - currentPos) < 0.03);
   }
-
-  // public FunctionalCommand holdCommand() {
-  //   double currentPos = position;
-  //   return new RunCommand(() -> hold(currentPos));
-  // }
 
   public void moveWristUp() {
     moveWrist(wristSpeedUp);
@@ -124,7 +111,7 @@ public class CoralWrist extends SubsystemBase {
    */
   public Command moveWristToPosition(double targetPos) {
     return new FunctionalCommand(
-            () -> System.out.println("INTIALIZED"),
+            () -> {},
             () -> coralWrist.set(coralPID.calculate(position, targetPos)),
             (x) -> this.hold(position),
             () -> this.atSetpoint(targetPos),
@@ -217,7 +204,7 @@ public class CoralWrist extends SubsystemBase {
     // Update any external GUI displays or values as desired
     // For example, a Mechanism2d Arm based on the simulated arm angle
     coralArm.setAngle(Units.radiansToDegrees(mArmSim.getAngleRads()));
-    Angle coralArmAngle = Angle.ofBaseUnits(mArmSim.getAngleRads() - Math.PI, Radians);
-    wristEncoderSim.setRawPosition(coralArmAngle);
+    Angle armAngle = Angle.ofBaseUnits(mArmSim.getAngleRads() - Math.PI, Radians);
+    wristEncoderSim.setRawPosition(armAngle);
   }
 }

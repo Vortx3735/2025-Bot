@@ -16,7 +16,7 @@ public class DefaultElevatorCommand extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    holdPos = Elevator.getPosition();
+    holdPos = m_elevator.getPosition();
   }
 
   // Called every time the scheduler runs while the command is scheduled.

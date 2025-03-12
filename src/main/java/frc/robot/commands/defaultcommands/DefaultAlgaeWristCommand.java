@@ -6,6 +6,8 @@ import frc.robot.subsystems.AlgaeWrist;
 public class DefaultAlgaeWristCommand extends Command {
   private final AlgaeWrist m_AlgaeWrist;
 
+  double position;
+
   /**
    * Creates a new DefaultAlgaeWristCommand
    *
@@ -19,18 +21,21 @@ public class DefaultAlgaeWristCommand extends Command {
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {}
+  public void initialize() {
+    position = m_AlgaeWrist.getWristPosition();
+  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    // m_AlgaeWrist.hold();
-    m_AlgaeWrist.stopWrist();
+    m_AlgaeWrist.hold(position);
   }
 
   // Called once the command ends or is interrupted.
   @Override
-  public void end(boolean interrupted) {}
+  public void end(boolean interrupted) {
+    m_AlgaeWrist.stowWrist();
+  }
 
   // Returns true when the command should end.
   @Override

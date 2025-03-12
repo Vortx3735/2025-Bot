@@ -105,7 +105,6 @@ public class RobotContainer {
 
     SmartDashboard.putData("Auto Chooser", autoChooser);
 
-    elevator.publishInitialValues();
     coralIntake.publishInitialValues();
     algaeIntake.publishInitialValues();
     coralWrist.publishInitialValues();
@@ -210,6 +209,8 @@ public class RobotContainer {
         new WaitCommand(.4)
             .andThen(coralIntake.stopIntakeCommand().withName("Right Trigger Stop")));
 
+    Trigger isSafeToDeployAlgae = new Trigger(() -> elevator.isSafe());
+    
     driver.aButton.whileTrue(drivetrain.applyRequest(() -> brake));
     driver.bButton.whileTrue(
         drivetrain.applyRequest(
@@ -217,18 +218,6 @@ public class RobotContainer {
                 point.withModuleDirection(new Rotation2d(-driver.getLeftY(), -driver.getLeftX()))));
 
     driver.xButton.whileTrue(autoAlignReef);
-
-    // test whiletrue first then this
-    // driver.xButton.onTrue(
-    //     Commands.sequence(
-    //         autoAlignL2.until(autoAlignL2.isAligned()),
-    //         Commands.parallel(
-    //             new RunCommand(() -> coralIntake.moveWristToL2(), coralIntake),
-    //             new RunCommand(() -> elevator.moveElevatorToL2(), elevator),
-    //             new RunCommand(() -> algaeIntake.stowWrist(), algaeIntake)
-    //         )
-    //     )
-    // );
 
     // Run SysId routines when holding back/start and X/Y.
     // Note that each routine should be run exactly once in a single log.
@@ -241,10 +230,8 @@ public class RobotContainer {
     driver.menu.onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
     // temp button binding for algae wrist
-    driver.povUp.whileTrue(
-        new RunCommand(() -> algaeWrist.stowWrist(), algaeWrist).withName("Algae Stow Wrist"));
-    driver.povDown.whileTrue(
-        new RunCommand(() -> algaeWrist.unstowWrist(), algaeWrist).withName("Algae Unstow Wrist"));
+    driver.povUp.onTrue(algaeWrist.stowWrist());
+    driver.povDown.and(isSafeToDeployAlgae).onTrue(algaeWrist.unstowWrist());
 
     // OPERATOR
     operator.povLeft.whileTrue(
@@ -262,17 +249,15 @@ public class RobotContainer {
     operator.bButton.onTrue(CommandFactory.scoreL4Command());
 
     // Coral Intake with Beam
-    operator.lt.whileTrue(coralIntake.intakeCommand().withName("Coral Intake"));
+    operator.lt.whileTrue(coralIntake.intakeCommand());
 
     // Coral Outtake
-    operator.rt.whileTrue(coralIntake.outtakeCommand().withName("Coral Outtake"));
+    operator.rt.whileTrue(coralIntake.outtakeCommand());
 
     // Algae Intake
-    operator.lb.whileTrue(
-        new RunCommand(() -> algaeIntake.intake(), algaeIntake).withName("Algae Intake"));
+    operator.lb.whileTrue(algaeIntake.intakeCommand());
     // Algae Outtake
-    operator.rb.whileTrue(
-        new RunCommand(() -> algaeIntake.outtake(), algaeIntake).withName("Algae Outtake"));
+    operator.rb.whileTrue(algaeIntake.outtakeCommand());
 
     // elevator up
     operator.povUp.whileTrue(

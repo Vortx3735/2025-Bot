@@ -28,7 +28,7 @@ public class Elevator extends SubsystemBase {
   public static TalonFX rightElevatorMotor;
   private static CANcoder elevatorEncoder;
 
-  public static double position;
+  public double position;
   public double elevatorSpeed;
 
   // create a Motion Magic request, voltage output
@@ -134,11 +134,20 @@ public class Elevator extends SubsystemBase {
     rightElevatorMotor.setControl(m_request.withPosition(targetPos));
   }
 
+  public boolean isSafe(){
+    if(position>1){
+      return true;
+    }
+    else {
+      return false;
+    }
+  }
+
   public boolean getPositionFinished(double setpoint) {
     return Math.abs(setpoint - position) < .025;
   }
 
-  public static double getPosition() {
+  public double getPosition() {
     return position;
   }
 
@@ -259,9 +268,9 @@ public class Elevator extends SubsystemBase {
   }
 
   public void publishInitialValues() {
-    SmartDashboard.putNumber("elevator/Elevator Speed", elevatorSpeed);
-    SmartDashboard.putNumber("UpperLimit", UPPER_LIMIT);
-    SmartDashboard.putNumber("LowerLimit", LOWER_LIMIT);
+    // SmartDashboard.putNumber("elevator/Elevator Speed", elevatorSpeed);
+    // SmartDashboard.putNumber("elevator/UpperLimit", UPPER_LIMIT);
+    // SmartDashboard.putNumber("elevator/LowerLimit", LOWER_LIMIT);
   }
 
   @Override
@@ -270,8 +279,8 @@ public class Elevator extends SubsystemBase {
 
     mechBase.setPosition(0, position);
 
-    UPPER_LIMIT = SmartDashboard.getNumber("UpperLimit", UPPER_LIMIT);
-    LOWER_LIMIT = SmartDashboard.getNumber("LowerLimit", LOWER_LIMIT);
+    UPPER_LIMIT = SmartDashboard.getNumber("elevator/UpperLimit", UPPER_LIMIT);
+    LOWER_LIMIT = SmartDashboard.getNumber("elevator/LowerLimit", LOWER_LIMIT);
 
     // Values
     SmartDashboard.putNumber("elevator/Elevator Position", position);
@@ -282,6 +291,8 @@ public class Elevator extends SubsystemBase {
 
     // Add Slider to dynamically change Elevator Speed
     elevatorSpeed = SmartDashboard.getNumber("elevator/Elevator Speed", elevatorSpeed);
+    
+    SmartDashboard.putBoolean("elevator/isSafe", isSafe());
 
     SmartDashboard.putData("elevator/Visualizer", elevatorMech);
   }
