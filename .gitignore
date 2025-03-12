@@ -187,5 +187,5 @@ compile_commands.json
 .factorypath
 
 ###################### Custom ignores ######################
-src/main/java/frc/robot/BuildConstants.java
+src/main/java/frc/robot/util/BuildConstants.java
 simgui-ds.json

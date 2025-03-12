@@ -90,6 +90,7 @@ public class RobotContainer {
 
   private AutoAlignCommand autoAlignHP = new AutoAlignCommand(drivetrain, hpCamera);
   private AutoAlignCommand autoAlignReef = new AutoAlignCommand(drivetrain, reefCamera);
+  private NewAutoAlignCommand newAutoAlignReef = new NewAutoAlignCommand(drivetrain, reefCamera, 0.42);
 
   public RobotContainer() {
     configureBindings();
@@ -101,7 +102,8 @@ public class RobotContainer {
 
     // autoChooser.addRoutine("Test Auto 4", autoRoutines::testAuto4);
     // autoChooser.addRoutine("CenterReef", autoRoutines::centerRoutine);
-    autoChooser.addRoutine("VisionAuton", autoRoutines::visionAutoRoutine);
+    autoChooser.addRoutine("One L4", autoRoutines::oneL4);
+    autoChooser.addRoutine("Two L4", autoRoutines::twoL4);
 
     SmartDashboard.putData("Auto Chooser", autoChooser);
 
@@ -212,7 +214,7 @@ public class RobotContainer {
             () ->
                 point.withModuleDirection(new Rotation2d(-driver.getLeftY(), -driver.getLeftX()))));
 
-    driver.xButton.whileTrue(autoAlignReef);
+    driver.xButton.whileTrue(newAutoAlignReef);
 
     // Run SysId routines when holding back/start and X/Y.
     // Note that each routine should be run exactly once in a single log.

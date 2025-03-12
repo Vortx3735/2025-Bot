@@ -2,15 +2,16 @@ package frc.robot.commands;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonPipelineResult;
 
-public class AutoAlignCommand extends Command {
+public class NewAutoAlignCommand extends Command {
   private final CommandSwerveDrivetrain drivetrain;
   private final PhotonCamera intakeCamera;
 
@@ -18,7 +19,7 @@ public class AutoAlignCommand extends Command {
   private static PIDController rotationPidController;
   private static PIDController drivePidControllerX;
   private static PIDController drivePidControllerY;
-  private static final double kP_Yaw = 12; // Proportional constant for yaw correction
+  private static final double kP_Yaw = 5; // Proportional constant for yaw correction
   private static final double kP_X = 4.5;
   private static final double kP_Y = 5;
 
@@ -26,7 +27,7 @@ public class AutoAlignCommand extends Command {
   private static final double X_THRESHOLD = 0.01; // Meters threshold for alignment
   private static final double Y_THRESHOLD = 0.01; // Meters threshold for alignment
 
-  private static final double TARGET_X = 0.42; // Target distance in meters
+  private static double TARGET_X = 0.42; // Target distance in meters
   private static final double TARGET_Y = -0.01; // Target distance in meters
   private static final double TARGET_YAW = -0.01; // Target rotation
 
@@ -38,9 +39,10 @@ public class AutoAlignCommand extends Command {
   private double distanceX;
   private double distanceY;
 
-  private Timer timer;
+  public NewAutoAlignCommand(
+      CommandSwerveDrivetrain drivetrain, PhotonCamera intakeCamera, double targetXDistance) {
+    TARGET_X = targetXDistance;
 
-  public AutoAlignCommand(CommandSwerveDrivetrain drivetrain, PhotonCamera intakeCamera) {
     this.drivetrain = drivetrain;
     this.intakeCamera = intakeCamera;
     rotationPidController = new PIDController(kP_Yaw, 0, 0);
@@ -48,15 +50,14 @@ public class AutoAlignCommand extends Command {
     drivePidControllerY = new PIDController(kP_Y, 0, 0.1);
 
     rotationPidController.setTolerance(YAW_THRESHOLD);
+    drivePidControllerX.setTolerance(X_THRESHOLD);
+    drivePidControllerY.setTolerance(Y_THRESHOLD);
 
-    timer = new Timer();
+    rotationPidController.setSetpoint(TARGET_YAW);
+    drivePidControllerX.setTolerance(TARGET_X);
+    drivePidControllerY.setTolerance(TARGET_Y);
 
     addRequirements(drivetrain);
-  }
-
-  @Override
-  public void initialize() {
-    timer.restart();
   }
 
   public boolean isXAligned() {
@@ -82,7 +83,7 @@ public class AutoAlignCommand extends Command {
 
     if (result.hasTargets()) {
       var target = result.getBestTarget();
-      // double yaw = target.getYaw(); // Horizontal offset to the AprilTag
+
       distanceX = target.getBestCameraToTarget().getX(); // Distance to the tag (forward)
       distanceY = target.getBestCameraToTarget().getY();
       yaw = (target.getBestCameraToTarget().getRotation().getZ());
@@ -98,30 +99,10 @@ public class AutoAlignCommand extends Command {
       xAdjustment = drivePidControllerX.calculate(distanceX, TARGET_X);
       yAdjustment = drivePidControllerY.calculate(distanceY, TARGET_Y);
 
-      if (xAdjustment > .75) {
-        xAdjustment = .75;
-      }
-      if (xAdjustment < -.75) {
-        xAdjustment = -.75;
-      }
-      if (yAdjustment > .75) {
-        yAdjustment = .75;
-      }
-      if (yAdjustment < -.75) {
-        yAdjustment = -.75;
-      }
-      if (yawAdjustment > .75) {
-        yawAdjustment = .75;
-      }
-      if (yawAdjustment < -.75) {
-        yawAdjustment = -.75;
-      }
-      if (rotationPidController.atSetpoint()) {
-        yawAdjustment = 0;
-      }
-      if (rotationPidController.atSetpoint()) {
-        yawAdjustment = 0;
-      }
+      xAdjustment = MathUtil.clamp(xAdjustment, -0.75, 0.75);
+      yAdjustment = MathUtil.clamp(yAdjustment, -0.75, 0.75);
+      yawAdjustment = MathUtil.clamp(yawAdjustment, -0.75, 0.75);
+
       if (!isYawAligned()) {
         drivetrain.setControl(
             new SwerveRequest.RobotCentric()
@@ -134,7 +115,7 @@ public class AutoAlignCommand extends Command {
             new SwerveRequest.RobotCentric()
                 .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
                 .withVelocityX(-xAdjustment)
-                .withVelocityY(-yAdjustment) // No lateral movement for alignment
+                .withVelocityY(-yAdjustment)
                 .withRotationalRate(-yawAdjustment));
       }
 
@@ -159,7 +140,7 @@ public class AutoAlignCommand extends Command {
 
   @Override
   public boolean isFinished() {
-    return isAligned() || timer.hasElapsed(1);
+    return isAligned();
   }
 
   @Override
