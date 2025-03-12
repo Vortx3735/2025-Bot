@@ -102,6 +102,7 @@ public class CoralIntake extends SubsystemBase {
     leftCoralMotor.set(-intakeSpeed - 0.3);
     rightCoralMotor.set(-intakeSpeed - 0.3);
   }
+
   private void outtake(double speed) {
     double x = speed;
     leftCoralMotor.set(x);

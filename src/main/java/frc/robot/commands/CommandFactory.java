@@ -44,7 +44,8 @@ public class CommandFactory {
     return Commands.parallel(
             // autoAlignCommand.asProxy(),
             RobotContainer.elevator.moveElevatorToHP().asProxy(),
-            RobotContainer.coralWrist.moveWristToHP().asProxy()).andThen(RobotContainer.coralIntake.intakeCommand())
+            RobotContainer.coralWrist.moveWristToHP().asProxy())
+        .andThen(RobotContainer.coralIntake.intakeCommand())
         .withName("HP Command Group");
   }
 

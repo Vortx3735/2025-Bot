@@ -133,12 +133,12 @@ public class AutoRoutines {
                         .withName("Move and Intake Coral"),
                     autoAlignCommand.asProxy(),
                     CommandFactory.scoreL4Command().asProxy())
-                    
-                    // reefToHP.cmd().asProxy(),
-                    // RobotContainer.coralIntake.intakeCommand().asProxy(),
-                    // hpToReef.cmd().asProxy(),
-                    // autoAlignCommand.asProxy(),
-                    // CommandFactory.scoreL4Command().asProxy())
+
+                // reefToHP.cmd().asProxy(),
+                // RobotContainer.coralIntake.intakeCommand().asProxy(),
+                // hpToReef.cmd().asProxy(),
+                // autoAlignCommand.asProxy(),
+                // CommandFactory.scoreL4Command().asProxy())
                 .withName("Vision Auton"));
     return routine;
   }

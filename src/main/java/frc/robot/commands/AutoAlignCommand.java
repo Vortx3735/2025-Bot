@@ -25,7 +25,6 @@ public class AutoAlignCommand extends Command {
   private static final double TARGET_DISTANCE_METERS = 0.42; // L2
   private static final double TARGET_Y = -0.01; // L2
 
-
   public double yawAdjustment;
   public double xAdjustment;
   public double yAdjustment;
@@ -88,7 +87,6 @@ public class AutoAlignCommand extends Command {
         yaw -= Math.PI;
       }
 
-
       distanceY = target.getBestCameraToTarget().getY();
       SmartDashboard.putNumber("vision/Distance", distanceX);
       SmartDashboard.putNumber("vision/Yaw", yaw);
@@ -108,22 +106,22 @@ public class AutoAlignCommand extends Command {
       SmartDashboard.putBoolean("vision/isXAligned", isXAligned());
       SmartDashboard.putBoolean("vision/isYAligned", isYAligned());
 
-      if (xAdjustment>.75) {
+      if (xAdjustment > .75) {
         xAdjustment = .75;
       }
-      if (xAdjustment<-.75) {
+      if (xAdjustment < -.75) {
         xAdjustment = -.75;
       }
-      if (yAdjustment>.75) {
+      if (yAdjustment > .75) {
         yAdjustment = .75;
       }
-      if (yAdjustment<-.75) {
+      if (yAdjustment < -.75) {
         yAdjustment = -.75;
       }
-      if (yawAdjustment>.75) {
+      if (yawAdjustment > .75) {
         yawAdjustment = .75;
       }
-      if (yawAdjustment<-.75) {
+      if (yawAdjustment < -.75) {
         yawAdjustment = -.75;
       }
       if (rotationPidController.atSetpoint()) {
