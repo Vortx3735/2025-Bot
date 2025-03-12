@@ -11,6 +11,8 @@ import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -24,8 +26,14 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.Constants;
 import frc.robot.util.TunerConstants.TunerSwerveDrivetrain;
+import java.util.Optional;
 import java.util.function.Supplier;
+import org.photonvision.EstimatedRobotPose;
+import org.photonvision.PhotonCamera;
+import org.photonvision.PhotonPoseEstimator;
+import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements Subsystem so it can easily
@@ -47,8 +55,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   private final SwerveRequest.ApplyFieldSpeeds m_pathApplyFieldSpeeds =
       new SwerveRequest.ApplyFieldSpeeds();
 
-  private final PIDController m_pathXController = new PIDController(5, 0, 0);
-  private final PIDController m_pathYController = new PIDController(5, 0, 0);
+  private final PIDController m_pathXController = new PIDController(3.7, 0, 0);
+  private final PIDController m_pathYController = new PIDController(3.7, 0, 0);
   private final PIDController m_pathThetaController = new PIDController(3.5, 0, 0);
 
   /* Swerve requests to apply during SysId characterization */
@@ -112,6 +120,14 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
   /* The SysId routine to test */
   private SysIdRoutine m_sysIdRoutineToApply = m_sysIdRoutineTranslation;
+
+  private final AprilTagFieldLayout aprilTagFieldLayout =
+      AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
+  private final PhotonPoseEstimator photonPoseEstimator =
+      new PhotonPoseEstimator(
+          aprilTagFieldLayout,
+          PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+          Constants.VisionConstants.CENTER_TO_CAMERA);
 
   /**
    * Constructs a CTRE SwerveDrivetrain using the specified constants.
@@ -313,5 +329,16 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             .getEntry("maxRotation")
             .getDouble(3.14);
     return maxSpeed;
+  }
+
+  public void updatePoseWithVision(PhotonCamera camera) {
+    var result = camera.getLatestResult();
+    if (result.hasTargets()) {
+      Optional<EstimatedRobotPose> poseEstimate = photonPoseEstimator.update(result);
+      if (poseEstimate.isPresent()) {
+        this.addVisionMeasurement(
+            poseEstimate.get().estimatedPose.toPose2d(), poseEstimate.get().timestampSeconds);
+      }
+    }
   }
 }

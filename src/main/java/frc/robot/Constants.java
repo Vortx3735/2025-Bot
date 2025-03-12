@@ -4,6 +4,9 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
  * constants. This class should not be used for any other purpose. All constants should be declared
@@ -54,11 +57,6 @@ public final class Constants {
     public static final double WRIST_UPPER_LIMIT = Math.PI; // Define upper bound in radians
   }
 
-  public static final class ClimberConstants {
-    public static final int CLIMBER_LEFTMOTOR_ID = 21;
-    public static final int CLIMBER_RIGHTMOTOR_ID = 22;
-  }
-
   public static final class ElevatorConstants {
     public static final int ELEVATOR_LEFTMOTOR_ID = 24;
     public static final int ELEVATOR_RIGHTMOTOR_ID = 25;
@@ -72,15 +70,13 @@ public final class Constants {
 
   public static final class SensorConstants {
     public static final int CORAL_LEFT_BEAM_BREAK = 0;
-    public static final int CORAL_RIGHT_BEAM_BREAK = 1;
-    public static final int ALGAE_BEAM_BREAK = 3;
+    public static final int CORAL_RIGHT_BEAM_BREAK = 3;
+    public static final int ALGAE_BEAM_BREAK = 5;
   }
 
   public static final class PDH {
     public static final int BACK_RIGHT_DRIVE_PDH = 0;
     public static final int BACK_LEFT_DRIVE_PDH = 1;
-    public static final int CLIMB_LEFT_PDH = 2;
-    public static final int CLIMB_RIGHT_PDH = 3;
     public static final int ALGAE_PIVOT_PDH = 4;
     public static final int ALGAE_RIGHT_PDH = 5;
     public static final int ALGAE_LEFT_PDH = 6;
@@ -95,5 +91,14 @@ public final class Constants {
     public static final int FRONT_RIGHT_TURN_PDH = 17;
     public static final int FRONT_LEFT_DRIVE_PDH = 18;
     public static final int FRONT_RIGHT_DRIVE_PDH = 19;
+  }
+
+  public static final class VisionConstants {
+    public static final Transform3d CENTER_TO_CAMERA =
+        new Transform3d(
+            10.5,
+            0.0,
+            5.0,
+            new Rotation3d(0, 10, 0)); // x = center to front, y = center to left, z = center to top
   }
 }

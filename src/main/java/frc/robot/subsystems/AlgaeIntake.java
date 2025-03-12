@@ -8,6 +8,7 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -21,6 +22,9 @@ public class AlgaeIntake extends SubsystemBase {
   private ArmFeedforward wristFF;
   private double ka, kg, ks, kv;
 
+  private PIDController algaePID;
+  private ArmFeedforward algaeFF;
+
   static SparkMax leftAlgaeMotor;
   static SparkMax rightAlgaeMotor;
   static SparkMax algaeWrist1;
@@ -28,16 +32,23 @@ public class AlgaeIntake extends SubsystemBase {
   private final CANcoder wristEncoder;
 
   private double position;
-  private double intakeSpeed = 0.25;
+  private double intakeSpeed = 0.5;
 
-  public double wristDownDefault = -0.1;
-  public double wristUpDefault = 0.2;
+  public double wristDownDefault = -0.3;
+  public double wristUpDefault = 0.6;
   public double errorDefault = 0.03;
 
   public double wristSpeedDown;
   public double wristSpeedUp;
   public double error;
   public Object moveWristUp;
+  public double leftIntakeCurrent;
+  public double rightIntakeCurrent;
+
+  public double averageCurrent;
+  public int currentLimit = 35;
+
+  public static boolean hasAlgae = false;
 
   /**
    * @param leftMotorID The CAN ID of the left intake motor.
@@ -56,6 +67,7 @@ public class AlgaeIntake extends SubsystemBase {
 
     // Set motor configurations
     algaeMotorConfig.inverted(true).idleMode(IdleMode.kBrake);
+    algaeMotorConfig.secondaryCurrentLimit(currentLimit);
     leftAlgaeMotor.configure(
         algaeMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     rightAlgaeMotor.configure(
@@ -78,16 +90,56 @@ public class AlgaeIntake extends SubsystemBase {
     wristSpeedDown = wristDownDefault;
     wristSpeedUp = wristUpDefault;
     error = errorDefault;
+
+    algaePID = new PIDController(4, 0, 0);
+    algaeFF = new ArmFeedforward(0, 0.11, 0);
+
+    resetAlgae();
+  }
+
+  public boolean hasAlgae() {
+    averageCurrent = (leftAlgaeMotor.getOutputCurrent() + rightAlgaeMotor.getOutputCurrent()) / 2;
+    // averageCurrent += averageCurrent/2;
+    if (averageCurrent >= (currentLimit - 5)) {
+      hasAlgae = true;
+    }
+    return hasAlgae;
+  }
+
+  public static void resetAlgae() {
+    hasAlgae = false;
+  }
+
+  /**
+   * @Param targetPos The target position to move the wrist to.
+   */
+  public boolean moveWristToPosition(double targetPos) {
+    if (Math.abs(targetPos - position) < .02) {
+      stopWrist();
+      return true;
+    }
+    algaeWrist1.set(
+        MathUtil.clamp(
+            algaePID.calculate(position, targetPos) + algaeFF.calculate(position, targetPos),
+            -0.6,
+            0.6));
+    return false;
   }
 
   public void intake() {
-    leftAlgaeMotor.set(intakeSpeed);
-    rightAlgaeMotor.set(intakeSpeed);
+    unstowWrist();
+    if (hasAlgae()) {
+      stopIntake();
+    } else {
+      leftAlgaeMotor.set(intakeSpeed);
+      rightAlgaeMotor.set(intakeSpeed);
+    }
   }
 
   public void outtake() {
     leftAlgaeMotor.set(-intakeSpeed);
     rightAlgaeMotor.set(-intakeSpeed);
+    resetAlgae();
   }
 
   public void stopIntake() {
@@ -103,6 +155,19 @@ public class AlgaeIntake extends SubsystemBase {
 
   public void moveWristUp() {
     algaeWrist1.set(wristSpeedUp);
+  }
+
+  public void stowWrist() {
+    if (!hasAlgae) {
+      stopIntake();
+      moveWristToPosition(-0.42);
+    }
+  }
+
+  public void unstowWrist() {
+    if (Elevator.getPosition() > 1) {
+      moveWristToPosition(-0.64);
+    }
   }
 
   public void moveWristDown() {
@@ -130,51 +195,6 @@ public class AlgaeIntake extends SubsystemBase {
             + wristFF.calculate(position * 2 * Math.PI, kv));
   }
 
-  /**
-   * @Param targetPos The target position to move the wrist to.
-   */
-  public boolean moveWristToPositionBool(double targetPos) {
-    // if (targetRadians < CoralConstants.WRIST_LOWER_LIMIT
-    //     || targetRadians > CoralConstants.WRIST_UPPER_LIMIT) {
-    //   stopWrist();
-    //   return;
-    // }
-    if (Math.abs(targetPos - position) < error) {
-      algaeWrist1.stopMotor();
-      return true;
-    } else if (position < targetPos) {
-      algaeWrist1.set(wristSpeedUp);
-      return false;
-    } else if (position > targetPos) {
-      algaeWrist1.set(wristSpeedDown);
-      return false;
-    } else {
-      algaeWrist1.stopMotor();
-      return true;
-    }
-    // wristPID.calculate(position * 2 * Math.PI, targetPos * 2 * Math.PI)
-    //     + wristFF.calculate(targetPos * 2 * Math.PI, kv));
-  }
-
-  public void moveWristToPosition(double targetPos) {
-    // if (targetRadians < CoralConstants.WRIST_LOWER_LIMIT
-    //     || targetRadians > CoralConstants.WRIST_UPPER_LIMIT) {
-    //   stopWrist();
-    //   return;
-    // }
-    if (Math.abs(targetPos - position) < error) {
-      algaeWrist1.stopMotor();
-    } else if (position < targetPos) {
-      algaeWrist1.set(wristSpeedUp);
-    } else if (position > targetPos) {
-      algaeWrist1.set(wristSpeedDown);
-    } else {
-      algaeWrist1.stopMotor();
-    }
-    // wristPID.calculate(position * 2 * Math.PI, targetPos * 2 * Math.PI)
-    //     + wristFF.calculate(targetPos * 2 * Math.PI, kv));
-  }
-
   public void publishInitialValues() {
     // Publish initial values to the dashboard
     SmartDashboard.putNumber("AlgaeIntake/Wrist P", kp);
@@ -191,6 +211,8 @@ public class AlgaeIntake extends SubsystemBase {
     SmartDashboard.putNumber("AlgaeIntake/Wrist Up Speed", wristSpeedUp);
     SmartDashboard.putNumber("AlgaeIntake/Wrist Down Speed", wristSpeedDown);
     SmartDashboard.putNumber("AlgaeIntake/Wrist Error", error);
+    SmartDashboard.putNumber("AlgaeIntake/Left Intake Current", leftIntakeCurrent);
+    SmartDashboard.putNumber("AlgaeIntake/Right Intake Current", rightIntakeCurrent);
   }
 
   @Override
@@ -216,5 +238,19 @@ public class AlgaeIntake extends SubsystemBase {
 
     // Publish Wrist Position
     SmartDashboard.putNumber("AlgaeIntake/Wrist Position", position);
+    SmartDashboard.putNumber("AlgaeIntake/Left Max Intake Current", leftIntakeCurrent);
+    SmartDashboard.putNumber("AlgaeIntake/Right Max Intake Current", rightIntakeCurrent);
+    SmartDashboard.putNumber("AlgaeIntake/Left Intake Current", leftAlgaeMotor.getOutputCurrent());
+    SmartDashboard.putNumber(
+        "AlgaeIntake/Right Intake Current", rightAlgaeMotor.getOutputCurrent());
+    SmartDashboard.putBoolean("AlgaeIntake/Has Algae", hasAlgae);
+    SmartDashboard.putNumber("AlgaeIntake/Average Current", averageCurrent);
+
+    if (leftAlgaeMotor.getOutputCurrent() > leftIntakeCurrent) {
+      leftIntakeCurrent = leftAlgaeMotor.getOutputCurrent();
+    }
+    if (rightAlgaeMotor.getOutputCurrent() > rightIntakeCurrent) {
+      rightIntakeCurrent = rightAlgaeMotor.getOutputCurrent();
+    }
   }
 }
