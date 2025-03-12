@@ -90,8 +90,8 @@ public class CoralIntake extends SubsystemBase {
   }
 
   private void outtake() {
-    leftCoralMotor.set(-intakeSpeed - 0.3);
-    rightCoralMotor.set(-intakeSpeed - 0.3);
+    leftCoralMotor.set(-intakeSpeed - 0.4);
+    rightCoralMotor.set(-intakeSpeed - 0.4);
   }
 
   private void outtake(double speed) {

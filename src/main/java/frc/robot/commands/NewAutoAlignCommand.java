@@ -19,12 +19,13 @@ public class NewAutoAlignCommand extends Command {
   private PIDController xPID;
   private PIDController yPID;
 
-  private static final double kP_Yaw = 5; // Proportional constant for yaw correction
-  private static final double kP_X = 4.5;
-  private static final double kP_Y = 5;
+  private static final double kP_Yaw = 2.5; // Proportional constant for yaw correction
+  private static final double kP_X = 2;
+  private static final double kP_Y = 6;
 
+  
   private static final double YAW_THRESHOLD = 0.12; // Degrees threshold for alignment
-  private static final double X_THRESHOLD = 0.01; // Meters threshold for alignment
+  private static final double X_THRESHOLD = 0.03; // Meters threshold for alignment
   private static final double Y_THRESHOLD = 0.01; // Meters threshold for alignment
 
   private static double TARGET_X = 0.42; // Target distance in meters
@@ -46,8 +47,8 @@ public class NewAutoAlignCommand extends Command {
     this.drivetrain = drivetrain;
     this.intakeCamera = intakeCamera;
     yawPID = new PIDController(kP_Yaw, 0, 0);
-    xPID = new PIDController(kP_X, 0, 0.1);
-    yPID = new PIDController(kP_Y, 0, 0.1);
+    xPID = new PIDController(kP_X, 0, 0.25);
+    yPID = new PIDController(kP_Y, 0, 0.25);
 
     yawPID.setTolerance(YAW_THRESHOLD);
     xPID.setTolerance(X_THRESHOLD);

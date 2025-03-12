@@ -22,7 +22,7 @@ public class AutoRoutines {
     final AutoTrajectory hpToReef = routine.trajectory("HPToReef");
 
     NewAutoAlignCommand autoAlignCommand =
-        new NewAutoAlignCommand(RobotContainer.drivetrain, RobotContainer.reefCamera, -0.42);
+        new NewAutoAlignCommand(RobotContainer.drivetrain, RobotContainer.reefCamera, 0.42);
     // AutoAlignCommand autoAlignCommand =
     //     new AutoAlignCommand(RobotContainer.drivetrain, RobotContainer.reefCamera);
 
