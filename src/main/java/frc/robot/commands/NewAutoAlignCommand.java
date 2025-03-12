@@ -2,7 +2,6 @@ package frc.robot.commands;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
-
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -16,9 +15,10 @@ public class NewAutoAlignCommand extends Command {
   private final PhotonCamera intakeCamera;
 
   // PID constants for alignment
-  private static PIDController rotationPidController;
-  private static PIDController drivePidControllerX;
-  private static PIDController drivePidControllerY;
+  private PIDController yawPID;
+  private PIDController xPID;
+  private PIDController yPID;
+
   private static final double kP_Yaw = 5; // Proportional constant for yaw correction
   private static final double kP_X = 4.5;
   private static final double kP_Y = 5;
@@ -34,8 +34,8 @@ public class NewAutoAlignCommand extends Command {
   private double yawAdjustment;
   private double xAdjustment;
   private double yAdjustment;
-  private double yaw;
 
+  private double yaw;
   private double distanceX;
   private double distanceY;
 
@@ -45,35 +45,23 @@ public class NewAutoAlignCommand extends Command {
 
     this.drivetrain = drivetrain;
     this.intakeCamera = intakeCamera;
-    rotationPidController = new PIDController(kP_Yaw, 0, 0);
-    drivePidControllerX = new PIDController(kP_X, 0, 0.1);
-    drivePidControllerY = new PIDController(kP_Y, 0, 0.1);
+    yawPID = new PIDController(kP_Yaw, 0, 0);
+    xPID = new PIDController(kP_X, 0, 0.1);
+    yPID = new PIDController(kP_Y, 0, 0.1);
 
-    rotationPidController.setTolerance(YAW_THRESHOLD);
-    drivePidControllerX.setTolerance(X_THRESHOLD);
-    drivePidControllerY.setTolerance(Y_THRESHOLD);
+    yawPID.setTolerance(YAW_THRESHOLD);
+    xPID.setTolerance(X_THRESHOLD);
+    yPID.setTolerance(Y_THRESHOLD);
 
-    rotationPidController.setSetpoint(TARGET_YAW);
-    drivePidControllerX.setTolerance(TARGET_X);
-    drivePidControllerY.setTolerance(TARGET_Y);
+    yawPID.setSetpoint(TARGET_YAW);
+    xPID.setSetpoint(TARGET_X);
+    yPID.setSetpoint(TARGET_Y);
 
     addRequirements(drivetrain);
   }
 
-  public boolean isXAligned() {
-    return Math.abs(distanceX - TARGET_X) < X_THRESHOLD;
-  }
-
-  public boolean isYAligned() {
-    return Math.abs(distanceY - TARGET_Y) < Y_THRESHOLD;
-  }
-
-  public boolean isYawAligned() {
-    return Math.abs(yawAdjustment) < YAW_THRESHOLD;
-  }
-
   public boolean isAligned() {
-    return isXAligned() && isYAligned() && isYawAligned();
+    return xPID.atSetpoint() && yPID.atSetpoint() && yawPID.atSetpoint();
   }
 
   @Override
@@ -95,15 +83,15 @@ public class NewAutoAlignCommand extends Command {
       }
 
       // Calculate adjustments for yaw and forward movement
-      yawAdjustment = rotationPidController.calculate(yaw, TARGET_YAW);
-      xAdjustment = drivePidControllerX.calculate(distanceX, TARGET_X);
-      yAdjustment = drivePidControllerY.calculate(distanceY, TARGET_Y);
+      yawAdjustment = yawPID.calculate(yaw, TARGET_YAW);
+      xAdjustment = xPID.calculate(distanceX, TARGET_X);
+      yAdjustment = yPID.calculate(distanceY, TARGET_Y);
 
       xAdjustment = MathUtil.clamp(xAdjustment, -0.75, 0.75);
       yAdjustment = MathUtil.clamp(yAdjustment, -0.75, 0.75);
       yawAdjustment = MathUtil.clamp(yawAdjustment, -0.75, 0.75);
 
-      if (!isYawAligned()) {
+      if (!yawPID.atSetpoint()) {
         drivetrain.setControl(
             new SwerveRequest.RobotCentric()
                 .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
@@ -127,11 +115,10 @@ public class NewAutoAlignCommand extends Command {
       SmartDashboard.putNumber("vision/yAdjustment", yAdjustment);
       SmartDashboard.putNumber("vision/rotationAdjustment", yawAdjustment);
 
-      SmartDashboard.putBoolean("vision/isXAligned", isXAligned());
-      SmartDashboard.putBoolean("vision/isYAligned", isYAligned());
-      SmartDashboard.putBoolean("vision/isYawAligned", isYawAligned());
+      SmartDashboard.putBoolean("vision/isXAligned", xPID.atSetpoint());
+      SmartDashboard.putBoolean("vision/isYAligned", yPID.atSetpoint());
+      SmartDashboard.putBoolean("vision/isYawAligned", yawPID.atSetpoint());
       SmartDashboard.putBoolean("vision/isAligned", isAligned());
-
     } else {
       // Stop the robot if no targets are found
       end(true);
