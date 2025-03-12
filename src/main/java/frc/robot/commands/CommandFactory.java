@@ -26,23 +26,19 @@ public class CommandFactory {
   public static Command outtakeCommand() {
     CommandScheduler.getInstance().cancelAll();
     return Commands.sequence(
-      RobotContainer.coralIntake.outtakeCommand().asProxy(),
-      idleCommand().asProxy())
+            RobotContainer.coralIntake.outtakeCommand().asProxy(), idleCommand().asProxy())
         .withName("Outtake Command Group");
   }
+
   public static Command scoreL2Command() {
     CommandScheduler.getInstance().cancelAll();
-    return Commands.sequence(
-            movetoL2Command(),
-            outtakeCommand())
+    return Commands.sequence(movetoL2Command(), outtakeCommand())
         .withName("Score L2 Command Group");
   }
+
   public static Command scoreL3Command() {
     CommandScheduler.getInstance().cancelAll();
-    return Commands.sequence(
-            movetoL2Command(),
-            outtakeCommand(),
-            idleCommand())
+    return Commands.sequence(movetoL2Command(), outtakeCommand(), idleCommand())
         .withName("Score L3 Command Group");
   }
 

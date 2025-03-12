@@ -23,7 +23,6 @@ public class NewAutoAlignCommand extends Command {
   private static final double kP_X = 2;
   private static final double kP_Y = 6;
 
-  
   private static final double YAW_THRESHOLD = 0.12; // Degrees threshold for alignment
   private static final double X_THRESHOLD = 0.03; // Meters threshold for alignment
   private static final double Y_THRESHOLD = 0.01; // Meters threshold for alignment
