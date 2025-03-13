@@ -105,8 +105,11 @@ public class RobotContainer {
 
     // autoChooser.addRoutine("Test Auto 4", autoRoutines::testAuto4);
     // autoChooser.addRoutine("CenterReef", autoRoutines::centerRoutine);
-    autoChooser.addRoutine("One L4", autoRoutines::oneL4);
-    autoChooser.addRoutine("Two L4", autoRoutines::twoL4);
+    autoChooser.addRoutine("One L4 Left", autoRoutines::oneL4Left);
+    autoChooser.addRoutine("Two L4 Left", autoRoutines::twoL4Left);
+    autoChooser.addRoutine("One L4 Right", autoRoutines::oneL4Right);
+    autoChooser.addRoutine("Two L4 Right", autoRoutines::twoL4Right);
+    autoChooser.addRoutine("One L4 Center", autoRoutines::oneL4Center);
 
     SmartDashboard.putData("Auto Chooser", autoChooser);
 

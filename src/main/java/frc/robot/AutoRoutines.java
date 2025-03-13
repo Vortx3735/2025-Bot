@@ -3,8 +3,8 @@ package frc.robot;
 import choreo.auto.AutoFactory;
 import choreo.auto.AutoRoutine;
 import choreo.auto.AutoTrajectory;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.commands.AutoAlignCommand;
 import frc.robot.commands.AutoAlignHpCommand;
 import frc.robot.commands.CommandFactory;
 import frc.robot.commands.NewAutoAlignCommand;
@@ -16,74 +16,134 @@ public class AutoRoutines {
     m_factory = factory;
   }
 
-  public AutoRoutine oneL4() {
-    final AutoRoutine routine = m_factory.newRoutine("Vision Auton");
-    final AutoTrajectory StartToReef = routine.trajectory("TestReef");
-    final AutoTrajectory reefToHP = routine.trajectory("ReefToHP");
-    final AutoTrajectory hpToReef = routine.trajectory("HPToReef");
+  public Command autoAlignL4() {
+    return new NewAutoAlignCommand(RobotContainer.drivetrain, RobotContainer.reefCamera, 0.42)
+        .withTimeout(2);
+  }
 
-    NewAutoAlignCommand autoAlignCommand =
-        new NewAutoAlignCommand(RobotContainer.drivetrain, RobotContainer.reefCamera, 0.42);
-    // AutoAlignCommand autoAlignCommand =
-    //     new AutoAlignCommand(RobotContainer.drivetrain, RobotContainer.reefCamera);
+  public Command autoAlignHP() {
+    return new AutoAlignHpCommand(RobotContainer.drivetrain, RobotContainer.hpCamera)
+        .withTimeout(2);
+  }
+
+  public AutoRoutine oneL4Left() {
+    final AutoRoutine routine = m_factory.newRoutine("One L4 Left Auton");
+    final AutoTrajectory startToReef = routine.trajectory("LeftStart");
 
     routine
         .active()
         .onTrue(
             Commands.sequence(
-                    StartToReef.resetOdometry().asProxy(),
-                    Commands.parallel(
-                            Commands.sequence(
-                                    RobotContainer.coralWrist.moveWristToHP().asProxy(),
-                                    RobotContainer.coralIntake.intakeCommand().asProxy())
-                                .withName("Move Wrist and Intake Coral"),
-                            StartToReef.cmd().asProxy())
-                        .withName("Move and Intake Coral"),
-                    autoAlignCommand.withTimeout(2).asProxy().withName("Auto Align Command"),
-                    CommandFactory.scoreL4Command().asProxy())
-
-                // reefToHP.cmd().asProxy(),
-                // RobotContainer.coralIntake.intakeCommand().asProxy(),
-                // hpToReef.cmd().asProxy(),
-                // autoAlignCommand.asProxy(),
-                // CommandFactory.scoreL4Command().asProxy())
-                .withName("One L4 Auton Sequence"));
+                startToReef.resetOdometry().asProxy(),
+                Commands.parallel(
+                        Commands.sequence(
+                                RobotContainer.coralWrist.moveWristToHP().asProxy(),
+                                RobotContainer.coralIntake.intakeCommand().asProxy())
+                            .withName("Move Wrist and Intake Coral"),
+                        startToReef.cmd().asProxy())
+                    .withName("Move and Intake Coral"),
+                autoAlignL4().asProxy(),
+                CommandFactory.scoreL4Command()));
     return routine;
   }
 
-  public AutoRoutine twoL4() {
-    final AutoRoutine routine = m_factory.newRoutine("Vision Auton");
-    final AutoTrajectory StartToReef = routine.trajectory("TestReef");
-    final AutoTrajectory reefToHP = routine.trajectory("ReefToHP");
-    final AutoTrajectory hpToReef = routine.trajectory("HPToReef");
+  public AutoRoutine twoL4Left() {
+    final AutoRoutine routine = m_factory.newRoutine("Two L4 Left Auton");
+    final AutoTrajectory startToReef = routine.trajectory("LeftStart");
+    final AutoTrajectory reefToHP = routine.trajectory("LeftReeftoHP");
+    final AutoTrajectory hpToReef = routine.trajectory("LeftHPtoReef");
 
-    NewAutoAlignCommand autoAlignCommand =
-        new NewAutoAlignCommand(RobotContainer.drivetrain, RobotContainer.reefCamera, 0.42);
-
-    AutoAlignHpCommand autoAlignHpCommand = 
-        new AutoAlignHpCommand(RobotContainer.drivetrain, RobotContainer.hpCamera);
-
-        routine
+    routine
         .active()
         .onTrue(
             Commands.sequence(
-                    StartToReef.resetOdometry().asProxy(),
-                    Commands.parallel(
-                            Commands.sequence(
-                                    RobotContainer.coralWrist.moveWristToHP().asProxy(),
-                                    RobotContainer.coralIntake.intakeCommand().asProxy())
-                                .withName("Move Wrist and Intake Coral"),
-                            StartToReef.cmd().asProxy())
-                        .withName("Move and Intake Coral"),
-                    autoAlignCommand.withTimeout(2).asProxy().withName("Auto Align Command"),
-                    CommandFactory.scoreL4Command().asProxy(),
-                    reefToHP.cmd().asProxy(),
-                    autoAlignHpCommand.withTimeout(2),
-                    RobotContainer.coralIntake.intakeCommand().asProxy(),
-                    hpToReef.cmd().asProxy(),
-                    autoAlignCommand.asProxy(),
-                    CommandFactory.scoreL4Command().asProxy())
-                .withName("Two L4 Auton Sequence"));
+                startToReef.resetOdometry().asProxy(),
+                Commands.parallel(
+                        Commands.sequence(
+                                RobotContainer.coralWrist.moveWristToHP().asProxy(),
+                                RobotContainer.coralIntake.intakeCommand().asProxy())
+                            .withName("Move Wrist and Intake Coral"),
+                        startToReef.cmd().asProxy())
+                    .withName("Move and Intake Coral"),
+                autoAlignL4().asProxy(),
+                CommandFactory.scoreL4Command().asProxy(),
+                reefToHP.cmd().asProxy(),
+                autoAlignHP().asProxy(),
+                RobotContainer.coralIntake.intakeCommand().asProxy(),
+                hpToReef.cmd().asProxy(),
+                autoAlignL4().asProxy(),
+                CommandFactory.scoreL4Command().asProxy()));
+    return routine;
+  }
+
+  public AutoRoutine oneL4Right() {
+    final AutoRoutine routine = m_factory.newRoutine("One L4 Right Auton");
+    final AutoTrajectory startToReef = routine.trajectory("RightStart");
+
+    routine
+        .active()
+        .onTrue(
+            Commands.sequence(
+                startToReef.resetOdometry().asProxy(),
+                Commands.parallel(
+                        Commands.sequence(
+                                RobotContainer.coralWrist.moveWristToHP().asProxy(),
+                                RobotContainer.coralIntake.intakeCommand().asProxy())
+                            .withName("Move Wrist and Intake Coral"),
+                        startToReef.cmd().asProxy())
+                    .withName("Move and Intake Coral"),
+                autoAlignL4().asProxy(),
+                CommandFactory.scoreL4Command()));
+    return routine;
+  }
+
+  public AutoRoutine twoL4Right() {
+    final AutoRoutine routine = m_factory.newRoutine("Two L4 Right Auton");
+    final AutoTrajectory startToReef = routine.trajectory("RightStart");
+    final AutoTrajectory reefToHP = routine.trajectory("RightReeftoHP");
+    final AutoTrajectory hpToReef = routine.trajectory("RightHPtoReef");
+
+    routine
+        .active()
+        .onTrue(
+            Commands.sequence(
+                startToReef.resetOdometry().asProxy(),
+                Commands.parallel(
+                        Commands.sequence(
+                                RobotContainer.coralWrist.moveWristToHP().asProxy(),
+                                RobotContainer.coralIntake.intakeCommand().asProxy())
+                            .withName("Move Wrist and Intake Coral"),
+                        startToReef.cmd().asProxy())
+                    .withName("Move and Intake Coral"),
+                autoAlignL4().asProxy(),
+                CommandFactory.scoreL4Command().asProxy(),
+                reefToHP.cmd().asProxy(),
+                autoAlignHP().asProxy(),
+                RobotContainer.coralIntake.intakeCommand().asProxy(),
+                hpToReef.cmd().asProxy(),
+                autoAlignL4().asProxy(),
+                CommandFactory.scoreL4Command().asProxy()));
+    return routine;
+  }
+
+  public AutoRoutine oneL4Center() {
+    final AutoRoutine routine = m_factory.newRoutine("One L4 Center Auton");
+    final AutoTrajectory startToReef = routine.trajectory("CenterStart");
+
+    routine
+        .active()
+        .onTrue(
+            Commands.sequence(
+                startToReef.resetOdometry().asProxy(),
+                Commands.parallel(
+                        Commands.sequence(
+                                RobotContainer.coralWrist.moveWristToHP().asProxy(),
+                                RobotContainer.coralIntake.intakeCommand().asProxy())
+                            .withName("Move Wrist and Intake Coral"),
+                        startToReef.cmd().asProxy())
+                    .withName("Move and Intake Coral"),
+                autoAlignL4().asProxy(),
+                CommandFactory.scoreL4Command()));
     return routine;
   }
 }

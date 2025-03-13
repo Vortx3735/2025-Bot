@@ -40,8 +40,7 @@ public class AutoAlignHpCommand extends Command {
   private double distanceX;
   private double distanceY;
 
-  public AutoAlignHpCommand(
-      CommandSwerveDrivetrain drivetrain, PhotonCamera intakeCamera) {
+  public AutoAlignHpCommand(CommandSwerveDrivetrain drivetrain, PhotonCamera intakeCamera) {
 
     this.drivetrain = drivetrain;
     this.intakeCamera = intakeCamera;
