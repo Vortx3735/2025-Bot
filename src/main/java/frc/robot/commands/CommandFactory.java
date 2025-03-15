@@ -42,6 +42,14 @@ public class CommandFactory {
         .withName("Score L3 Command Group");
   }
 
+  public static Command movetoL4Command() {
+    CommandScheduler.getInstance().cancelAll();
+    return Commands.sequence(
+            RobotContainer.elevator.moveElevatorToL4().asProxy(),
+            RobotContainer.coralWrist.moveWristToL4().asProxy())
+        .withName("Move to L3 Command Group");
+  }
+
   public static Command scoreL4Command() {
     CommandScheduler.getInstance().cancelAll();
     return Commands.sequence(
@@ -67,7 +75,7 @@ public class CommandFactory {
         .withName("HP Command Group");
   }
 
-  private static Command idleCommand() {
+  public static Command idleCommand() {
     return Commands.parallel(
             RobotContainer.elevator.moveElevatorToHP().asProxy(),
             RobotContainer.coralWrist.moveWristToHP().asProxy())

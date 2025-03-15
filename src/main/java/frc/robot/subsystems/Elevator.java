@@ -94,7 +94,7 @@ public class Elevator extends SubsystemBase {
     fx_cfg.Slot0.kG = 0.368;
 
     // Motion Magic settings
-    fx_cfg.MotionMagic.MotionMagicCruiseVelocity = 4.2;
+    fx_cfg.MotionMagic.MotionMagicCruiseVelocity = 6;
     fx_cfg.MotionMagic.MotionMagicAcceleration = 15;
     fx_cfg.MotionMagic.MotionMagicJerk = 200;
 
@@ -160,6 +160,13 @@ public class Elevator extends SubsystemBase {
     return new RunCommand(() -> moveElevatorToPosition(setpoint), this)
         .until(() -> this.atSetpoint(setpoint))
         .withName("Move Elevator to HP");
+  }
+
+  public Command moveElevatorToHPHigher(){
+    double setpoint = 1.08;
+    return new RunCommand(() -> moveElevatorToPosition(setpoint), this)
+        .until(() -> this.atSetpoint(setpoint))
+        .withName("Move Elevator to HP"); 
   }
 
   public Command moveElevatorToL1() {

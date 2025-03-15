@@ -10,7 +10,7 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonPipelineResult;
 
-public class NewAutoAlignCommand extends Command {
+public class AutonAutoAlignL4 extends Command {
   private final CommandSwerveDrivetrain drivetrain;
   private final PhotonCamera intakeCamera;
 
@@ -23,7 +23,7 @@ public class NewAutoAlignCommand extends Command {
   private final double kP_X = 4;
   private final double kP_Y = 6;
 
-  private final double YAW_THRESHOLD = 0.12; // Degrees threshold for alignment
+  private final double YAW_THRESHOLD = 0.01; // Degrees threshold for alignment
   private final double X_THRESHOLD = 0.03; // Meters threshold for alignment
   private final double Y_THRESHOLD = 0.01; // Meters threshold for alignment
 
@@ -39,7 +39,8 @@ public class NewAutoAlignCommand extends Command {
   private double distanceX;
   private double distanceY;
 
-  public NewAutoAlignCommand(
+  public 
+  AutonAutoAlignL4(
       CommandSwerveDrivetrain drivetrain, PhotonCamera intakeCamera, double targetXDistance) {
     TARGET_X = targetXDistance;
 

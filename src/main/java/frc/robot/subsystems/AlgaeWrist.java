@@ -81,7 +81,7 @@ public class AlgaeWrist extends SubsystemBase {
     algaeWrist.configure(
         algaeWristConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-    algaePID = new PIDController(4, 0, 0);
+    algaePID = new PIDController(5, 0, 0);
     // algaeFF = new ArmFeedforward(0, 0.11, 0);
 
     wristSim = new SparkMaxSim(algaeWrist, wristGearbox);
@@ -158,8 +158,8 @@ public class AlgaeWrist extends SubsystemBase {
   }
 
   public Command unstowWrist() {
-    // return moveWristToPosition(-0.64);
-    return moveWristToPosition(-0.5).withName("Unstow Wrist");
+    return moveWristToPosition(-0.64);
+    // return moveWristToPosition(-0.5).withName("Unstow Wrist");
   }
 
   public double getWristPosition() {

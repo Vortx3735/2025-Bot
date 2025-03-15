@@ -173,7 +173,6 @@ public class CoralWrist extends SubsystemBase {
 
     // Publish Wrist Position
     SmartDashboard.putNumber("CoralWrist/Wrist Position", position);
-    SmartDashboard.putNumber("CoralWrist/Wrist Position", position);
     SmartDashboard.putData("CoralWrist/CoralWristVisualizer", coralArmMech);
   }
 

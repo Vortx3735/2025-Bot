@@ -13,6 +13,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
@@ -88,12 +89,13 @@ public class RobotContainer {
   public static PhotonCamera reefCamera = new PhotonCamera("reefCamera");
   public static PhotonCamera hpCamera = new PhotonCamera("hpCamera");
 
-  private AutoAlignCommand autoAlignHP = new AutoAlignCommand(drivetrain, hpCamera);
-  private AutoAlignCommand autoAlignReef = new AutoAlignCommand(drivetrain, reefCamera);
   private NewAutoAlignCommand newAutoAlignReef =
-      new NewAutoAlignCommand(drivetrain, reefCamera, 0.42);
+      new NewAutoAlignCommand(drivetrain, reefCamera, 0.37);
 
-  private AutoAlignHpCommand newAutoAlignHp = new AutoAlignHpCommand(drivetrain, hpCamera);
+  private NewAutoAlignCommand autoAlignL2 = 
+      new NewAutoAlignCommand(drivetrain, reefCamera, 0.28);
+
+  private AutoAlignHpCommand newAutoAlignHp = new AutoAlignHpCommand(drivetrain, hpCamera, 0.07);
 
   public RobotContainer() {
     configureBindings();
@@ -110,6 +112,7 @@ public class RobotContainer {
     autoChooser.addRoutine("One L4 Right", autoRoutines::oneL4Right);
     autoChooser.addRoutine("Two L4 Right", autoRoutines::twoL4Right);
     autoChooser.addRoutine("One L4 Center", autoRoutines::oneL4Center);
+    autoChooser.addRoutine("AlignAndScore", autoRoutines::alignAndScore);
 
     SmartDashboard.putData("Auto Chooser", autoChooser);
 
@@ -214,14 +217,15 @@ public class RobotContainer {
 
     Trigger isSafeToDeployAlgae = new Trigger(() -> elevator.isSafe());
 
-    driver.aButton.whileTrue(drivetrain.applyRequest(() -> brake));
-    driver.bButton.whileTrue(
-        drivetrain.applyRequest(
-            () ->
-                point.withModuleDirection(new Rotation2d(-driver.getLeftY(), -driver.getLeftX()))));
+    // driver.aButton.whileTrue(drivetrain.applyRequest(() -> brake));
+    // driver.bButton.whileTrue(
+    //     drivetrain.applyRequest(
+    //         () ->
+    //             point.withModuleDirection(new Rotation2d(-driver.getLeftY(), -driver.getLeftX()))));
 
     driver.xButton.whileTrue(newAutoAlignReef);
-    driver.yButton.whileTrue(newAutoAlignHp);
+    driver.yButton.whileTrue(autoAlignL2);
+    driver.aButton.whileTrue(newAutoAlignHp);
 
     // Run SysId routines when holding back/start and X/Y.
     // Note that each routine should be run exactly once in a single log.
@@ -257,7 +261,10 @@ public class RobotContainer {
     operator.bButton.onTrue(CommandFactory.scoreL4Command());
 
     // Coral Intake with Beam
-    operator.lt.whileTrue(coralIntake.intakeCommand());
+    operator.lt.whileTrue(Commands.parallel(
+        coralIntake.intakeCommand(),
+        elevator.moveElevatorToHPHigher()
+    ));
 
     // Coral Outtake
     operator.rt.whileTrue(coralIntake.outtakeCommand());
