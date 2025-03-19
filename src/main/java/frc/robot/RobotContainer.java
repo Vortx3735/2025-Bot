@@ -97,6 +97,8 @@ public class RobotContainer {
 
   private AutoAlignHpCommand newAutoAlignHp = new AutoAlignHpCommand(drivetrain, hpCamera, 0.07);
 
+  private AutonAutoAlignL4 autonTest = new AutonAutoAlignL4(drivetrain, reefCamera, 0.38);
+
   public RobotContainer() {
     configureBindings();
     configureNetworkTables();
@@ -226,6 +228,7 @@ public class RobotContainer {
     driver.xButton.whileTrue(newAutoAlignReef);
     driver.yButton.whileTrue(autoAlignL2);
     driver.aButton.whileTrue(newAutoAlignHp);
+    driver.bButton.whileTrue(autonTest);
 
     // Run SysId routines when holding back/start and X/Y.
     // Note that each routine should be run exactly once in a single log.

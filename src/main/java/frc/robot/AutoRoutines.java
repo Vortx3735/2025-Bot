@@ -18,8 +18,11 @@ public class AutoRoutines {
   }
 
   public Command autoAlignL4() {
-    return new NewAutoAlignCommand(RobotContainer.drivetrain, RobotContainer.reefCamera, 0.38)
-        .withTimeout(5);
+    return new NewAutoAlignCommand(RobotContainer.drivetrain, RobotContainer.reefCamera, 0.37).withTimeout(7);
+  }
+
+  public Command autoAlignL3(){
+    return new NewAutoAlignCommand(RobotContainer.drivetrain, RobotContainer.reefCamera, 0.28).withTimeout(7);
   }
 
   public Command autoAlignL4LowRotThres() {
@@ -71,7 +74,7 @@ public class AutoRoutines {
                             .withName("Move Wrist and Intake Coral"),
                         startToReef.cmd().asProxy())
                     .withName("Move and Intake Coral"),
-                autoAlignL4(),
+                autoAlignL4().asProxy(),
                 CommandFactory.scoreL4Command().asProxy(),
                 reefToHP.cmd().asProxy(),
                 Commands.parallel(
@@ -79,7 +82,7 @@ public class AutoRoutines {
                     RobotContainer.coralIntake.intakeCommand().asProxy()   
                 ),
                 hpToReef.cmd().asProxy(),
-                autoAlignL4(),
+                autoAlignL4().asProxy(),
                 CommandFactory.scoreL4Command().asProxy()));
     return routine;
   }
@@ -87,7 +90,7 @@ public class AutoRoutines {
   public AutoRoutine oneL4Right() {
     final AutoRoutine routine = m_factory.newRoutine("One L4 Right Auton");
     final AutoTrajectory startToReef = routine.trajectory("RightStart");
-
+    
     routine
         .active()
         .onTrue(
@@ -100,8 +103,8 @@ public class AutoRoutines {
                             .withName("Move Wrist and Intake Coral"),
                         startToReef.cmd().asProxy())
                     .withName("Move and Intake Coral"),
-                autoAlignL4().asProxy(),
-                CommandFactory.scoreL4Command()));
+                autoAlignL3().asProxy(),
+                CommandFactory.scoreL3Command()));
     return routine;
   }
 
@@ -157,13 +160,17 @@ public class AutoRoutines {
 
   public AutoRoutine alignAndScore() {
     final AutoRoutine routine = m_factory.newRoutine("One L4 Center Auton");
+    final AutoTrajectory moveForward = routine.trajectory("moveForward");
+
     routine
         .active()
         .onTrue(
             Commands.sequence(
+                moveForward.resetOdometry().asProxy(),
+                moveForward.cmd().asProxy(),
                 RobotContainer.coralWrist.moveWristToHP().asProxy(),
                 RobotContainer.coralIntake.intakeCommand().asProxy(),
-                autoAlignL4(),
+                autoAlignL4().asProxy(),
                 CommandFactory.scoreL4Command()
             )
         );

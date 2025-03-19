@@ -76,6 +76,15 @@ public class CoralIntake extends SubsystemBase {
     return new RunCommand(() -> outtake(), this).withName("Coral Outtake Command");
   }
 
+  public Command outtakeL4Command() {
+    return new RunCommand(() -> outtakeL4(), this).withName("Coral L4 Outtake");
+  }
+
+  public void outtakeL4(){
+    leftCoralMotor.set(-intakeSpeed - 0.15);
+    rightCoralMotor.set(-intakeSpeed - 0.15);
+  }
+
   public Command stopIntakeCommand() {
     return new InstantCommand(() -> stopIntake(), this).withName("Stop Coral Intake Command");
   }

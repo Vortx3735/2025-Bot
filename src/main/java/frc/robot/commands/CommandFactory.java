@@ -38,7 +38,7 @@ public class CommandFactory {
 
   public static Command scoreL3Command() {
     CommandScheduler.getInstance().cancelAll();
-    return Commands.sequence(movetoL2Command(), outtakeCommand(), idleCommand())
+    return Commands.sequence(movetoL3Command(), outtakeCommand(), idleCommand())
         .withName("Score L3 Command Group");
   }
 
@@ -57,7 +57,7 @@ public class CommandFactory {
             RobotContainer.coralWrist.moveWristToL4().asProxy(),
             Commands.race(
                 new WaitCommand(2),
-                RobotContainer.coralIntake.outtakeCommand().asProxy(),
+                RobotContainer.coralIntake.outtakeL4Command().asProxy(),
                 RobotContainer.coralWrist.moveWristUpSlow().asProxy()),
             idleCommand().asProxy())
         .withName("Score L4 Command Group");

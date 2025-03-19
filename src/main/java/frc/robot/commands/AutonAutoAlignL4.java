@@ -1,5 +1,7 @@
 package frc.robot.commands;
 
+import edu.wpi.first.wpilibj.Timer;
+
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.math.MathUtil;
@@ -23,7 +25,7 @@ public class AutonAutoAlignL4 extends Command {
   private final double kP_X = 4;
   private final double kP_Y = 6;
 
-  private final double YAW_THRESHOLD = 0.01; // Degrees threshold for alignment
+  private final double YAW_THRESHOLD = 0.05; // Degrees threshold for alignment
   private final double X_THRESHOLD = 0.03; // Meters threshold for alignment
   private final double Y_THRESHOLD = 0.01; // Meters threshold for alignment
 
@@ -38,6 +40,8 @@ public class AutonAutoAlignL4 extends Command {
   private double yaw;
   private double distanceX;
   private double distanceY;
+
+  private Timer timer;
 
   public 
   AutonAutoAlignL4(
@@ -59,10 +63,17 @@ public class AutonAutoAlignL4 extends Command {
     yPID.setSetpoint(TARGET_Y);
 
     addRequirements(drivetrain);
+
+    timer = new Timer();
   }
 
   public boolean isAligned() {
     return xPID.atSetpoint() && yPID.atSetpoint() && yawPID.atSetpoint();
+  }
+
+  @Override
+  public void initialize(){
+    timer.restart();
   }
 
   @Override
@@ -128,7 +139,7 @@ public class AutonAutoAlignL4 extends Command {
 
   @Override
   public boolean isFinished() {
-    return isAligned();
+    return timer.equals(5);
   }
 
   @Override
