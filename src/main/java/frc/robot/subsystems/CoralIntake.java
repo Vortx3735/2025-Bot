@@ -16,21 +16,19 @@ import frc.robot.Constants.SensorConstants;
 
 public class CoralIntake extends SubsystemBase {
 
-  public static SparkMax leftCoralMotor;
-  public static SparkMax rightCoralMotor;
+  private static SparkMax leftCoralMotor;
+  private static SparkMax rightCoralMotor;
 
   private double intakeSpeed = 0.25;
 
-  public DigitalInput leftCoralBeamBreak = new DigitalInput(SensorConstants.CORAL_LEFT_BEAM_BREAK);
-  public DigitalInput rightCoralBeamBreak =
+  private DigitalInput leftCoralBeamBreak = new DigitalInput(SensorConstants.CORAL_LEFT_BEAM_BREAK);
+  private DigitalInput rightCoralBeamBreak =
       new DigitalInput(SensorConstants.CORAL_RIGHT_BEAM_BREAK);
 
   // aaron chang
   /**
    * @param leftMotorId The CAN ID of the left intake motor.
    * @param rightMotorId The CAN ID of the right intake motor.
-   * @param wristId The CAN ID of the wrist motor.
-   * @param wristEncoderId The CAN ID of the wrist encoder.
    */
   public CoralIntake(int leftMotorId, int rightMotorId) {
     // Motor configurations
@@ -48,10 +46,8 @@ public class CoralIntake extends SubsystemBase {
         coralMotorConfig.inverted(false),
         ResetMode.kResetSafeParameters,
         PersistMode.kPersistParameters);
-  }
 
-  public boolean getPositionFinished(double setpoint, double currentPos) {
-    return (Math.abs(setpoint - currentPos) < 0.03);
+    SmartDashboard.putNumber("CoralIntake/intakeSpeed", intakeSpeed);
   }
 
   // returns true assuming beam break is broken
@@ -84,12 +80,7 @@ public class CoralIntake extends SubsystemBase {
     return new InstantCommand(() -> stopIntake(), this).withName("Stop Coral Intake Command");
   }
 
-  // public FunctionalCommand holdCommand() {
-  //   double currentPos = position;
-  //   return new RunCommand(() -> hold(currentPos));
-  // }
-
-  public void intake(double speed) {
+  private void intake(double speed) {
     if (!hasRightCoral()) {
       rightCoralMotor.set(speed);
     }
@@ -99,8 +90,8 @@ public class CoralIntake extends SubsystemBase {
   }
 
   private void outtake() {
-    leftCoralMotor.set(-intakeSpeed - 0.3);
-    rightCoralMotor.set(-intakeSpeed - 0.3);
+    leftCoralMotor.set(-intakeSpeed - 0.4);
+    rightCoralMotor.set(-intakeSpeed - 0.4);
   }
 
   private void outtake(double speed) {
@@ -115,17 +106,10 @@ public class CoralIntake extends SubsystemBase {
     rightCoralMotor.set(0);
   }
 
-  public void publishInitialValues() {
-    SmartDashboard.putNumber("CoralIntake/intakeSpeed", intakeSpeed);
-  }
-
   @Override
   public void periodic() {
-    // Update wrist position
+    intakeSpeed = SmartDashboard.getNumber("CoralIntake/intakeSpeed", intakeSpeed);
     SmartDashboard.putBoolean("CoralIntake/Left Coral", hasLeftCoral());
     SmartDashboard.putBoolean("CoralIntake/Right Coral", hasRightCoral());
-
-    // Update intake speed
-    intakeSpeed = SmartDashboard.getNumber("CoralIntake/intakeSpeed", intakeSpeed);
   }
 }

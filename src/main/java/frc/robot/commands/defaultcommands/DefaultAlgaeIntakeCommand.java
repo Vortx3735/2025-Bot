@@ -24,9 +24,7 @@ public class DefaultAlgaeIntakeCommand extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    // m_AlgaeIntake.hold();
     m_AlgaeIntake.stopIntake();
-    m_AlgaeIntake.stopWrist();
   }
 
   // Called once the command ends or is interrupted.
