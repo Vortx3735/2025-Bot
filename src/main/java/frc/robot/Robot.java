@@ -13,6 +13,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -78,7 +79,7 @@ public class Robot extends LoggedRobot {
 
     // Start AdvantageKit logger
     Logger.start();
-
+    DriverStation.silenceJoystickConnectionWarning(true);
     // Instantiate our RobotContainer. This will perform all our button bindings,
     // and put our autonomous chooser on the dashboard.
     robotContainer = new RobotContainer();
@@ -171,8 +172,8 @@ public class Robot extends LoggedRobot {
     // Logger.recordOutput("ZeroedCarriage", new Pose3d());
     // Logger.recordOutput("ZeroedWrist", new Pose3d());
     // Logger.recordOutput("FinalComponentPoses", new Pose3d[] {new Pose3d(
-    //     -0.238, 0, 0.298, new Rotation3d(0, Math.sin(Timer.getTimestamp
-    //     ()) -1, 0))
+    // -0.238, 0, 0.298, new Rotation3d(0, Math.sin(Timer.getTimestamp
+    // ()) -1, 0))
     // });
   }
 }

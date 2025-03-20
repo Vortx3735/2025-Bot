@@ -185,4 +185,8 @@ public class Vision extends SubsystemBase {
         double timestampSeconds,
         Matrix<N3, N1> visionMeasurementStdDevs);
   }
+
+  public int[] getDetectedTags(int cameraIndex) {
+    return inputs[cameraIndex].tagIds;
+  }
 }

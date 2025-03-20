@@ -13,6 +13,8 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -60,6 +62,10 @@ public final class Constants {
     public static final int BACKRIGHT_CANCODER = 12;
 
     public static final int PIGEON_ID = 23;
+
+    public static final PPHolonomicDriveController kDriveController =
+        new PPHolonomicDriveController(
+            new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0));
   }
 
   public static final class AlgaeConstants {

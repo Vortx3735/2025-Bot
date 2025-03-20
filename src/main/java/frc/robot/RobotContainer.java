@@ -16,8 +16,7 @@ package frc.robot;
 import static edu.wpi.first.units.Units.*;
 import static frc.robot.subsystems.vision.VisionConstants.*;
 
-import choreo.auto.AutoChooser;
-import choreo.auto.AutoFactory;
+import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -30,9 +29,11 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.commands.AutoAlignCommand;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.commands.AutoAlignPose;
 import frc.robot.commands.CommandFactory;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.autos.AlignToReef;
 import frc.robot.commands.defaultcommands.DefaultAlgaeIntakeCommand;
 import frc.robot.commands.defaultcommands.DefaultAlgaeWristCommand;
 import frc.robot.commands.defaultcommands.DefaultCoralIntakeCommand;
@@ -51,7 +52,7 @@ import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.ironmaple.simulation.seasonspecific.reefscape2025.ReefscapeCoralOnFly;
 import org.littletonrobotics.junction.Logger;
-import org.photonvision.PhotonCamera;
+import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -61,7 +62,7 @@ import org.photonvision.PhotonCamera;
  */
 public class RobotContainer {
   // Subsystems
-  private final Drive drive;
+  public final Drive drive;
   private final Vision vision;
 
   public static final CoralIntake coralIntake =
@@ -92,22 +93,16 @@ public class RobotContainer {
 
   private SwerveDriveSimulation driveSimulation = null;
 
-  private PhotonCamera reefCamera = new PhotonCamera("reefCamera");
-  private PhotonCamera hpCamera = new PhotonCamera("hpCamera");
-
   // Controller
   private final VorTXControllerXbox driver = new VorTXControllerXbox(0);
   private final VorTXControllerXbox operator = new VorTXControllerXbox(1);
 
   // Dashboard inputs
-  // private final LoggedDashboardChooser<Command> autoChooser;
+  private final LoggedDashboardChooser<Command> autoChooser;
 
-  /* Path follower */
-  private final AutoFactory choreoAutoFactory;
-  private final AutoRoutines autoRoutines;
-  private final AutoChooser choreoAutoChooser = new AutoChooser();
+  private AutoAlignPose autoAlignPose;
 
-  private AutoAlignCommand autoAlign;
+  private AlignToReef alignToReef;
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -122,13 +117,14 @@ public class RobotContainer {
                 new ModuleIOTalonFXReal(TunerConstants.BackLeft),
                 new ModuleIOTalonFXReal(TunerConstants.BackRight),
                 (pose) -> {});
-        this.vision =
+        vision =
             new Vision(
                 drive,
                 new VisionIOPhotonVision(
                     VisionConstants.camera0Name, VisionConstants.robotToCamera0),
                 new VisionIOPhotonVision(
-                    VisionConstants.camera0Name, VisionConstants.robotToCamera1));
+                    VisionConstants.camera1Name, VisionConstants.robotToCamera1));
+        alignToReef = new AlignToReef(drive, aprilTagLayout);
         break;
       case SIM:
         // Sim robot, instantiate physics sim IO implementations
@@ -152,11 +148,10 @@ public class RobotContainer {
                     robotToCamera0,
                     driveSimulation::getSimulatedDriveTrainPose),
                 new VisionIOPhotonVisionSim(
-                    VisionConstants.camera0Name,
+                    VisionConstants.camera1Name,
                     robotToCamera1,
                     driveSimulation::getSimulatedDriveTrainPose));
-        autoAlign = new AutoAlignCommand(drive, reefCamera, 0.38);
-
+        alignToReef = new AlignToReef(drive, aprilTagLayout);
         break;
 
       default:
@@ -173,47 +168,33 @@ public class RobotContainer {
         break;
     }
 
-    // Set up auto routines
-    choreoAutoFactory =
-        new AutoFactory(
-            drive::getPose, // A function that returns the current robot pose
-            drive::setPose, // A function that resets the current robot pose to the provided Pose2d
-            drive::followTrajectory, // The drive subsystem trajectory follower
-            true, // If alliance flipping should be enabled
-            drive // The drive subsystem
-            );
-    autoRoutines = new AutoRoutines(choreoAutoFactory, drive, reefCamera, hpCamera);
-
     // SYS ID ROUTINES
-    // autoChooser = new LoggedDashboardChooser<>("Auto Choices",
-    // AutoBuilder.buildAutoChooser());
+    autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
-    // // Set up SysId routines
-    // autoChooser.addOption("Drive Wheel Radius Characterization",
-    // DriveCommands.wheelRadiusCharacterization(drive));
-    // autoChooser.addOption("Drive Simple FF Characterization",
-    // DriveCommands.feedforwardCharacterization(drive));
-    // autoChooser.addOption(
-    // "Drive SysId (Quasistatic Forward)",
-    // drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    // autoChooser.addOption(
-    // "Drive SysId (Quasistatic Reverse)",
-    // drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    // autoChooser.addOption("Drive SysId (Dynamic Forward)",
-    // drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
-    // autoChooser.addOption("Drive SysId (Dynamic Reverse)",
-    // drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+    // Set up SysId routines
+    autoChooser.addOption(
+        "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
+    autoChooser.addOption(
+        "Drive Simple FF Characterization", DriveCommands.feedforwardCharacterization(drive));
+    autoChooser.addOption(
+        "Drive SysId (Quasistatic Forward)",
+        drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Drive SysId (Quasistatic Reverse)",
+        drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    autoChooser.addOption(
+        "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
+    autoChooser.addOption(
+        "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
-    choreoAutoChooser.addRoutine("One L4 Left", autoRoutines::oneL4Left);
-    choreoAutoChooser.addRoutine("Two L4 Left", autoRoutines::twoL4Left);
-    choreoAutoChooser.addRoutine("One L4 Right", autoRoutines::oneL4Right);
-    choreoAutoChooser.addRoutine("Two L4 Right", autoRoutines::twoL4Right);
-    choreoAutoChooser.addRoutine("One L4 Center", autoRoutines::oneL4Center);
-    choreoAutoChooser.addRoutine("AlignAndScore", autoRoutines::alignAndScore);
+    // choreoAutoChooser.addRoutine("One L4 Left", autoRoutines::oneL4Left);
+    // choreoAutoChooser.addRoutine("Two L4 Left", autoRoutines::twoL4Left);
+    // choreoAutoChooser.addRoutine("One L4 Right", autoRoutines::oneL4Right);
+    // choreoAutoChooser.addRoutine("Two L4 Right", autoRoutines::twoL4Right);
+    // choreoAutoChooser.addRoutine("One L4 Center", autoRoutines::oneL4Center);
+    // choreoAutoChooser.addRoutine("AlignAndScore", autoRoutines::alignAndScore);
 
-    SmartDashboard.putData("Auto Chooser", choreoAutoChooser);
-
-    // default commands
+    SmartDashboard.putData("Auto Chooser", autoChooser.getSendableChooser());
     coralIntake.setDefaultCommand(new DefaultCoralIntakeCommand(coralIntake));
     coralWrist.setDefaultCommand(new DefaultCoralWristCommand(coralWrist));
     algaeIntake.setDefaultCommand(new DefaultAlgaeIntakeCommand(algaeIntake));
@@ -236,8 +217,6 @@ public class RobotContainer {
         DriveCommands.joystickDrive(
             drive, () -> -driver.getLeftY(), () -> -driver.getLeftX(), () -> -driver.getRightX()));
 
-    driver.xButton.whileTrue(autoAlign);
-
     // Reset gyro / odometry
     final Runnable resetGyro =
         Constants.currentMode == Constants.Mode.SIM
@@ -249,6 +228,9 @@ public class RobotContainer {
                     new Pose2d(drive.getPose().getTranslation(), new Rotation2d())); // zero
     // gyro
     driver.menu.onTrue(Commands.runOnce(resetGyro, drive).ignoringDisable(true));
+
+    driver.xButton.whileTrue(alignToReef.generateCommand());
+
     // Beam Break
     Trigger coralDetected = new Trigger(() -> coralIntake.hasCoral());
     Trigger leftCoralDetected = new Trigger(() -> coralIntake.hasLeftCoral());
@@ -377,7 +359,7 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return choreoAutoChooser.selectedCommand();
+    return autoChooser.get();
   }
 
   public void resetSimulationField() {

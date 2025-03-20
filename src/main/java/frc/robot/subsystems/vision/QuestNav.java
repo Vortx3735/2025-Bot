@@ -21,10 +21,14 @@ public class QuestNav {
 
   // Subscribe to the Network Tables questnav data topics
   private DoubleSubscriber questTimestamp = nt4Table.getDoubleTopic("timestamp").subscribe(0.0f);
-  private FloatArraySubscriber questPosition = nt4Table.getFloatArrayTopic("position").subscribe(new float[]{0.0f, 0.0f, 0.0f});
-  private FloatArraySubscriber questQuaternion = nt4Table.getFloatArrayTopic("quaternion").subscribe(new float[]{0.0f, 0.0f, 0.0f, 0.0f});
-  private FloatArraySubscriber questEulerAngles = nt4Table.getFloatArrayTopic("eulerAngles").subscribe(new float[]{0.0f, 0.0f, 0.0f});
-  private DoubleSubscriber questBatteryPercent = nt4Table.getDoubleTopic("batteryPercent").subscribe(0.0f);
+  private FloatArraySubscriber questPosition =
+      nt4Table.getFloatArrayTopic("position").subscribe(new float[] {0.0f, 0.0f, 0.0f});
+  private FloatArraySubscriber questQuaternion =
+      nt4Table.getFloatArrayTopic("quaternion").subscribe(new float[] {0.0f, 0.0f, 0.0f, 0.0f});
+  private FloatArraySubscriber questEulerAngles =
+      nt4Table.getFloatArrayTopic("eulerAngles").subscribe(new float[] {0.0f, 0.0f, 0.0f});
+  private DoubleSubscriber questBatteryPercent =
+      nt4Table.getDoubleTopic("batteryPercent").subscribe(0.0f);
 
   // Local heading helper variables
   private float yaw_offset = 0.0f;
@@ -32,7 +36,9 @@ public class QuestNav {
 
   // Gets the Quest's measured position.
   public Pose2d getPose() {
-    return new Pose2d(getQuestNavPose().minus(resetPosition).getTranslation(), Rotation2d.fromDegrees(getOculusYaw()));
+    return new Pose2d(
+        getQuestNavPose().minus(resetPosition).getTranslation(),
+        Rotation2d.fromDegrees(getOculusYaw()));
   }
 
   // Gets the battery percent of the Quest.
@@ -94,7 +100,8 @@ public class QuestNav {
   }
 
   private Pose2d getQuestNavPose() {
-    var oculousPositionCompensated = getQuestNavTranslation().minus(new Translation2d(0, 0.1651)); // 6.5
+    var oculousPositionCompensated =
+        getQuestNavTranslation().minus(new Translation2d(0, 0.1651)); // 6.5
     return new Pose2d(oculousPositionCompensated, Rotation2d.fromDegrees(getOculusYaw()));
   }
 }
