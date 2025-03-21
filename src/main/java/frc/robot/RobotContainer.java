@@ -13,10 +13,16 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.*;
-import static frc.robot.subsystems.vision.VisionConstants.*;
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static frc.robot.subsystems.vision.VisionConstants.aprilTagLayout;
+import static frc.robot.subsystems.vision.VisionConstants.robotToCamera0;
+import static frc.robot.subsystems.vision.VisionConstants.robotToCamera1;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -30,23 +36,28 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.commands.AutoAlignPose;
 import frc.robot.commands.CommandFactory;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.autos.AlignToReef;
-import frc.robot.commands.defaultcommands.DefaultAlgaeIntakeCommand;
-import frc.robot.commands.defaultcommands.DefaultAlgaeWristCommand;
-import frc.robot.commands.defaultcommands.DefaultCoralIntakeCommand;
-import frc.robot.commands.defaultcommands.DefaultCoralWristCommand;
-import frc.robot.commands.defaultcommands.DefaultElevatorCommand;
+import frc.robot.commands.defaultcommands.*;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.AlgaeIntake;
 import frc.robot.subsystems.AlgaeWrist;
 import frc.robot.subsystems.CoralIntake;
 import frc.robot.subsystems.CoralWrist;
 import frc.robot.subsystems.Elevator;
-import frc.robot.subsystems.drive.*;
-import frc.robot.subsystems.vision.*;
+import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.drive.GyroIO;
+import frc.robot.subsystems.drive.GyroIOPigeon2;
+import frc.robot.subsystems.drive.GyroIOSim;
+import frc.robot.subsystems.drive.ModuleIO;
+import frc.robot.subsystems.drive.ModuleIOTalonFXReal;
+import frc.robot.subsystems.drive.ModuleIOTalonFXSim;
+import frc.robot.subsystems.vision.Vision;
+import frc.robot.subsystems.vision.VisionConstants;
+import frc.robot.subsystems.vision.VisionIO;
+import frc.robot.subsystems.vision.VisionIOPhotonVision;
+import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.util.VorTXControllerXbox;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
@@ -99,8 +110,6 @@ public class RobotContainer {
 
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
-
-  private AutoAlignPose autoAlignPose;
 
   private AlignToReef alignToReef;
 
@@ -167,6 +176,13 @@ public class RobotContainer {
         vision = new Vision(drive, new VisionIO() {}, new VisionIO() {});
         break;
     }
+    // Name commands
+    NamedCommands.registerCommand("moveElevatorToBottom", elevator.moveElevatorToBottom());
+    NamedCommands.registerCommand(
+        "zeroElevator", new InstantCommand(() -> elevator.zeroElevator()).withTimeout(0.05));
+    NamedCommands.registerCommand("moveWristToHP", coralWrist.moveWristToHP());
+    NamedCommands.registerCommand("intakeCoral", coralIntake.intakeCommand().withTimeout(0.2));
+    NamedCommands.registerCommand("scoreL4", CommandFactory.ScoreL4CommandSim(driveSimulation));
 
     // SYS ID ROUTINES
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
@@ -186,13 +202,7 @@ public class RobotContainer {
         "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
     autoChooser.addOption(
         "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-
-    // choreoAutoChooser.addRoutine("One L4 Left", autoRoutines::oneL4Left);
-    // choreoAutoChooser.addRoutine("Two L4 Left", autoRoutines::twoL4Left);
-    // choreoAutoChooser.addRoutine("One L4 Right", autoRoutines::oneL4Right);
-    // choreoAutoChooser.addRoutine("Two L4 Right", autoRoutines::twoL4Right);
-    // choreoAutoChooser.addRoutine("One L4 Center", autoRoutines::oneL4Center);
-    // choreoAutoChooser.addRoutine("AlignAndScore", autoRoutines::alignAndScore);
+    autoChooser.addOption("TestAuto", new PathPlannerAuto("TestAuto"));
 
     SmartDashboard.putData("Auto Chooser", autoChooser.getSendableChooser());
     coralIntake.setDefaultCommand(new DefaultCoralIntakeCommand(coralIntake));
