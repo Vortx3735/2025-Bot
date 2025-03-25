@@ -65,54 +65,55 @@ import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.ironmaple.simulation.seasonspecific.reefscape2025.ReefscapeCoralOnFly;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+import org.photonvision.PhotonCamera;
 
 /**
- * This class is where the bulk of the robot should be declared. Since Command-based is a
- * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
- * periodic methods (other than the scheduler calls). Instead, the structure of the robot (including
+ * This class is where the bulk of the robot should be declared. Since
+ * Command-based is a
+ * "declarative" paradigm, very little robot logic should actually be handled in
+ * the {@link Robot}
+ * periodic methods (other than the scheduler calls). Instead, the structure of
+ * the robot (including
  * subsystems, commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
-  // Subsystems
-  public final Drive drive;
-  private final Vision vision;
+    // Subsystems
+    public final Drive drive;
+    private final Vision vision;
 
-  public static final CoralIntake coralIntake =
-      new CoralIntake(
-          Constants.CoralConstants.CORAL_LEFTINTAKEMOTOR_ID,
-          Constants.CoralConstants.CORAL_RIGHTINTAKEMOTOR_ID);
+    public static final CoralIntake coralIntake = new CoralIntake(
+            Constants.CoralConstants.CORAL_LEFTINTAKEMOTOR_ID,
+            Constants.CoralConstants.CORAL_RIGHTINTAKEMOTOR_ID);
 
-  public static final CoralWrist coralWrist =
-      new CoralWrist(
-          Constants.CoralConstants.CORAL_WRISTPIVOT_MOTOR_ID,
-          Constants.CoralConstants.CORAL_WRISTPIVOT_ENCODER_ID);
+    public static final CoralWrist coralWrist = new CoralWrist(
+            Constants.CoralConstants.CORAL_WRISTPIVOT_MOTOR_ID,
+            Constants.CoralConstants.CORAL_WRISTPIVOT_ENCODER_ID);
 
-  public static final AlgaeIntake algaeIntake =
-      new AlgaeIntake(
-          Constants.AlgaeConstants.LEFTINTAKE_MOTOR_ID,
-          Constants.AlgaeConstants.RIGHTINTAKE_MOTOR_ID);
+    public static final AlgaeIntake algaeIntake = new AlgaeIntake(
+            Constants.AlgaeConstants.LEFTINTAKE_MOTOR_ID,
+            Constants.AlgaeConstants.RIGHTINTAKE_MOTOR_ID);
 
-  public static final AlgaeWrist algaeWrist =
-      new AlgaeWrist(
-          Constants.AlgaeConstants.WRISTPIVOT_MOTOR_ID,
-          Constants.AlgaeConstants.WRISTPIVOT_ENCODER_ID);
+    public static final AlgaeWrist algaeWrist = new AlgaeWrist(
+            Constants.AlgaeConstants.WRISTPIVOT_MOTOR_ID,
+            Constants.AlgaeConstants.WRISTPIVOT_ENCODER_ID);
 
-  public static final Elevator elevator =
-      new Elevator(
-          Constants.ElevatorConstants.ELEVATOR_ENCODER_ID,
-          Constants.ElevatorConstants.ELEVATOR_LEFTMOTOR_ID,
-          Constants.ElevatorConstants.ELEVATOR_RIGHTMOTOR_ID);
+    public static final Elevator elevator = new Elevator(
+            Constants.ElevatorConstants.ELEVATOR_ENCODER_ID,
+            Constants.ElevatorConstants.ELEVATOR_LEFTMOTOR_ID,
+            Constants.ElevatorConstants.ELEVATOR_RIGHTMOTOR_ID);
 
-  private SwerveDriveSimulation driveSimulation = null;
+    private SwerveDriveSimulation driveSimulation = null;
 
-  // Controller
-  private final VorTXControllerXbox driver = new VorTXControllerXbox(0);
-  private final VorTXControllerXbox operator = new VorTXControllerXbox(1);
+    // Controller
+    private final VorTXControllerXbox driver = new VorTXControllerXbox(0);
+    private final VorTXControllerXbox operator = new VorTXControllerXbox(1);
 
-  // Dashboard inputs
-  private final LoggedDashboardChooser<Command> autoChooser;
+    // Dashboard inputs
+    private final LoggedDashboardChooser<Command> autoChooser;
 
-  private AlignToReef alignToReef;
+    private AlignToReef alignToReef;
+
+    private static final PhotonCamera reefCamera = new PhotonCamera("reefCamera");
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -132,9 +133,7 @@ public class RobotContainer {
             new Vision(
                 drive,
                 new VisionIOPhotonVision(
-                    VisionConstants.camera0Name, VisionConstants.robotToCamera0),
-                new VisionIOPhotonVision(
-                    VisionConstants.camera1Name, VisionConstants.robotToCamera1));
+                    reefCamera, VisionConstants.robotToCamera0));
         alignToReef = new AlignToReef(drive, aprilTagLayout);
         break;
       case SIM:
@@ -155,13 +154,11 @@ public class RobotContainer {
             new Vision(
                 drive,
                 new VisionIOPhotonVisionSim(
+                    reefCamera,
                     VisionConstants.camera0Name,
                     robotToCamera0,
-                    driveSimulation::getSimulatedDriveTrainPose),
-                new VisionIOPhotonVisionSim(
-                    VisionConstants.camera1Name,
-                    robotToCamera1,
-                    driveSimulation::getSimulatedDriveTrainPose));
+                    driveSimulation::getSimulatedDriveTrainPose)
+            );
         alignToReef = new AlignToReef(drive, aprilTagLayout);
         break;
 
@@ -217,183 +214,180 @@ public class RobotContainer {
     configureButtonBindings();
   }
 
-  /**
-   * Use this method to define your button->command mappings. Buttons can be created by
-   * instantiating a {@link GenericHID} or one of its subclasses ({@link
-   * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing it to a {@link
-   * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
-   */
-  private void configureButtonBindings() {
-    // Default command, normal field-relative drive
-    drive.setDefaultCommand(
-        DriveCommands.joystickDrive(
-            drive, () -> -driver.getLeftY(), () -> -driver.getLeftX(), () -> -driver.getRightX()));
+    /**
+     * Use this method to define your button->command mappings. Buttons can be
+     * created by
+     * instantiating a {@link GenericHID} or one of its subclasses ({@link
+     * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing
+     * it to a {@link
+     * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
+     */
+    private void configureButtonBindings() {
+        // Default command, normal field-relative drive
+        drive.setDefaultCommand(
+                DriveCommands.joystickDrive(
+                        drive, () -> -driver.getLeftY(), () -> -driver.getLeftX(), () -> -driver.getRightX()));
 
-    // Reset gyro / odometry
-    final Runnable resetGyro =
-        Constants.currentMode == Constants.Mode.SIM
-            ? () -> drive.setPose(driveSimulation.getSimulatedDriveTrainPose()) // reset odometry to
-            // actual robot pose
-            // during simulation
-            : () ->
-                drive.setPose(
-                    new Pose2d(drive.getPose().getTranslation(), new Rotation2d())); // zero
-    // gyro
-    driver.menu.onTrue(Commands.runOnce(resetGyro, drive).ignoringDisable(true));
+        // Reset gyro / odometry
+        final Runnable resetGyro = Constants.currentMode == Constants.Mode.SIM
+                ? () -> drive.setPose(driveSimulation.getSimulatedDriveTrainPose()) // reset odometry to
+                // actual robot pose
+                // during simulation
+                : () -> drive.setPose(
+                        new Pose2d(drive.getPose().getTranslation(), new Rotation2d())); // zero
+        // gyro
+        driver.menu.onTrue(Commands.runOnce(resetGyro, drive).ignoringDisable(true));
 
-    driver.xButton.whileTrue(alignToReef.generateCommand());
+        driver.xButton.whileTrue(alignToReef.generateCommand());
 
-    // Beam Break
-    Trigger coralDetected = new Trigger(() -> coralIntake.hasCoral());
-    Trigger leftCoralDetected = new Trigger(() -> coralIntake.hasLeftCoral());
-    Trigger rightCoralDetected = new Trigger(() -> coralIntake.hasRightCoral());
+        // Beam Break
+        Trigger coralDetected = new Trigger(() -> coralIntake.hasCoral());
+        Trigger leftCoralDetected = new Trigger(() -> coralIntake.hasLeftCoral());
+        Trigger rightCoralDetected = new Trigger(() -> coralIntake.hasRightCoral());
 
-    Trigger coralNotDetected = coralDetected.negate();
-    coralNotDetected.whileTrue(coralWrist.moveWristToHP());
+        Trigger coralNotDetected = coralDetected.negate();
+        coralNotDetected.whileTrue(coralWrist.moveWristToHP());
 
-    leftCoralDetected.onTrue(new WaitCommand(.2).andThen(coralIntake.stopIntakeCommand()));
-    rightCoralDetected.onTrue(new WaitCommand(.2).andThen(coralIntake.stopIntakeCommand()));
-    // leftCoralDetected.onTrue(coralIntake.stopIntakeCommand());
-    // rightCoralDetected.onTrue(coralIntake.stopIntakeCommand());
-    leftCoralDetected.onFalse(
-        new WaitCommand(.4).andThen(coralIntake.stopIntakeCommand().withName("Left Trigger Stop")));
-    rightCoralDetected.onFalse(
-        new WaitCommand(.4)
-            .andThen(coralIntake.stopIntakeCommand().withName("Right Trigger Stop")));
+        leftCoralDetected.onTrue(new WaitCommand(.2).andThen(coralIntake.stopIntakeCommand()));
+        rightCoralDetected.onTrue(new WaitCommand(.2).andThen(coralIntake.stopIntakeCommand()));
+        // leftCoralDetected.onTrue(coralIntake.stopIntakeCommand());
+        // rightCoralDetected.onTrue(coralIntake.stopIntakeCommand());
+        leftCoralDetected.onFalse(
+                new WaitCommand(.4).andThen(coralIntake.stopIntakeCommand().withName("Left Trigger Stop")));
+        rightCoralDetected.onFalse(
+                new WaitCommand(.4)
+                        .andThen(coralIntake.stopIntakeCommand().withName("Right Trigger Stop")));
 
-    operator.povLeft.whileTrue(coralWrist.moveWristUp());
-    operator.povRight.whileTrue(coralWrist.moveWristDown());
+        operator.povLeft.whileTrue(coralWrist.moveWristUp());
+        operator.povRight.whileTrue(coralWrist.moveWristDown());
 
-    // Human Player
-    operator.aButton.whileTrue(CommandFactory.hpCommand());
+        // Human Player
+        operator.aButton.whileTrue(CommandFactory.hpCommand());
 
-    // Coral Intake with Beam
-    operator.lt.whileTrue(
-        Commands.parallel(coralIntake.intakeCommand(), elevator.moveElevatorToHPHigher()));
+        // Coral Intake with Beam
+        operator.lt.whileTrue(
+                Commands.parallel(coralIntake.intakeCommand(), elevator.moveElevatorToHPHigher()));
 
-    // Coral Outtake
-    operator.rt.whileTrue(coralIntake.outtakeCommand());
+        // Coral Outtake
+        operator.rt.whileTrue(coralIntake.outtakeCommand());
 
-    // Algae Intake
-    operator.lb.whileTrue(algaeIntake.intakeCommand());
-    // Algae Outtake
-    operator.rb.whileTrue(algaeIntake.outtakeCommand());
+        // Algae Intake
+        operator.lb.whileTrue(algaeIntake.intakeCommand());
+        // Algae Outtake
+        operator.rb.whileTrue(algaeIntake.outtakeCommand());
 
-    // elevator up
-    operator.povUp.whileTrue(
-        new RunCommand(() -> elevator.moveElevatorUp(), elevator).withName("Move Elevator Up"));
-    // elevator down
-    operator.povDown.whileTrue(
-        new RunCommand(() -> elevator.moveElevatorDown(), elevator).withName("Move Elevator Down"));
+        // elevator up
+        operator.povUp.whileTrue(
+                new RunCommand(() -> elevator.moveElevatorUp(), elevator).withName("Move Elevator Up"));
+        // elevator down
+        operator.povDown.whileTrue(
+                new RunCommand(() -> elevator.moveElevatorDown(), elevator).withName("Move Elevator Down"));
 
-    operator.rs.whileTrue(
-        new RunCommand(() -> algaeWrist.moveWristDown(), algaeWrist)
-            .withName("Move Algae Wrist Down"));
-    operator.ls.whileTrue(
-        new RunCommand(() -> algaeWrist.moveWristUp(), algaeWrist).withName("Move Algae Wrist Up"));
-    operator.view.onTrue(
-        new InstantCommand(() -> elevator.zeroElevator(), elevator).withName("Zero Elevator"));
+        operator.rs.whileTrue(
+                new RunCommand(() -> algaeWrist.moveWristDown(), algaeWrist)
+                        .withName("Move Algae Wrist Down"));
+        operator.ls.whileTrue(
+                new RunCommand(() -> algaeWrist.moveWristUp(), algaeWrist).withName("Move Algae Wrist Up"));
+        operator.view.onTrue(
+                new InstantCommand(() -> elevator.zeroElevator(), elevator).withName("Zero Elevator"));
 
-    // SIM CODEEEEEE
-    if (Constants.currentMode == Constants.Mode.SIM) {
-      // L4 placement
-      driver.yButton.onTrue(
-          Commands.runOnce(
-              () ->
-                  SimulatedArena.getInstance()
-                      .addGamePieceProjectile(
-                          new ReefscapeCoralOnFly(
-                              driveSimulation.getSimulatedDriveTrainPose().getTranslation(),
-                              new Translation2d(0.4, 0.2),
-                              driveSimulation.getDriveTrainSimulatedChassisSpeedsFieldRelative(),
-                              driveSimulation.getSimulatedDriveTrainPose().getRotation(),
-                              Meters.of(2),
-                              MetersPerSecond.of(1.5),
-                              Degrees.of(-80)))));
+        // SIM CODEEEEEE
+        if (Constants.currentMode == Constants.Mode.SIM) {
+            // L4 placement
+            driver.yButton.onTrue(
+                    Commands.runOnce(
+                            () -> SimulatedArena.getInstance()
+                                    .addGamePieceProjectile(
+                                            new ReefscapeCoralOnFly(
+                                                    driveSimulation.getSimulatedDriveTrainPose().getTranslation(),
+                                                    new Translation2d(0.4, 0.2),
+                                                    driveSimulation.getDriveTrainSimulatedChassisSpeedsFieldRelative(),
+                                                    driveSimulation.getSimulatedDriveTrainPose().getRotation(),
+                                                    Meters.of(2),
+                                                    MetersPerSecond.of(1.5),
+                                                    Degrees.of(-80)))));
 
-      // L2
-      operator
-          .xButton
-          .onTrue(CommandFactory.movetoL2Command())
-          .onFalse(
-              new InstantCommand(
-                  () ->
-                      SimulatedArena.getInstance()
-                          .addGamePieceProjectile(
-                              new ReefscapeCoralOnFly(
-                                  driveSimulation.getSimulatedDriveTrainPose().getTranslation(),
-                                  new Translation2d(0.5, 0.2),
-                                  driveSimulation
-                                      .getDriveTrainSimulatedChassisSpeedsFieldRelative(),
-                                  driveSimulation.getSimulatedDriveTrainPose().getRotation(),
-                                  Meters.of(1.35),
-                                  MetersPerSecond.of(1.5),
-                                  Degrees.of(-60)))));
-      // L3
-      operator
-          .yButton
-          .onTrue(CommandFactory.movetoL3Command())
-          .onFalse(
-              (new InstantCommand(
-                  () ->
-                      SimulatedArena.getInstance()
-                          .addGamePieceProjectile(
-                              new ReefscapeCoralOnFly(
-                                  driveSimulation.getSimulatedDriveTrainPose().getTranslation(),
-                                  new Translation2d(0.6, 0.2),
-                                  driveSimulation
-                                      .getDriveTrainSimulatedChassisSpeedsFieldRelative(),
-                                  driveSimulation.getSimulatedDriveTrainPose().getRotation(),
-                                  Meters.of(1.35),
-                                  MetersPerSecond.of(1.5),
-                                  Degrees.of(-60))))));
-      // L4
-      operator.bButton.onTrue(CommandFactory.ScoreL4CommandSim(driveSimulation));
-    } else {
-      // L2
-      operator
-          .xButton
-          .onTrue(CommandFactory.movetoL2Command())
-          .onFalse(CommandFactory.outtakeCommand());
-      // L3
-      operator
-          .yButton
-          .onTrue(CommandFactory.movetoL3Command())
-          .onFalse(CommandFactory.outtakeCommand());
-      // L4
-      operator.bButton.onTrue(CommandFactory.scoreL4Command());
+            // L2
+            operator.xButton
+                    .onTrue(CommandFactory.movetoL2Command())
+                    .onFalse(
+                            new InstantCommand(
+                                    () -> SimulatedArena.getInstance()
+                                            .addGamePieceProjectile(
+                                                    new ReefscapeCoralOnFly(
+                                                            driveSimulation.getSimulatedDriveTrainPose()
+                                                                    .getTranslation(),
+                                                            new Translation2d(0.5, 0.2),
+                                                            driveSimulation
+                                                                    .getDriveTrainSimulatedChassisSpeedsFieldRelative(),
+                                                            driveSimulation.getSimulatedDriveTrainPose().getRotation(),
+                                                            Meters.of(1.35),
+                                                            MetersPerSecond.of(1.5),
+                                                            Degrees.of(-60)))));
+            // L3
+            operator.yButton
+                    .onTrue(CommandFactory.movetoL3Command())
+                    .onFalse(
+                            (new InstantCommand(
+                                    () -> SimulatedArena.getInstance()
+                                            .addGamePieceProjectile(
+                                                    new ReefscapeCoralOnFly(
+                                                            driveSimulation.getSimulatedDriveTrainPose()
+                                                                    .getTranslation(),
+                                                            new Translation2d(0.6, 0.2),
+                                                            driveSimulation
+                                                                    .getDriveTrainSimulatedChassisSpeedsFieldRelative(),
+                                                            driveSimulation.getSimulatedDriveTrainPose().getRotation(),
+                                                            Meters.of(1.35),
+                                                            MetersPerSecond.of(1.5),
+                                                            Degrees.of(-60))))));
+            // L4
+            operator.bButton.onTrue(CommandFactory.ScoreL4CommandSim(driveSimulation));
+        } else {
+            // L2
+            operator.xButton
+                    .onTrue(CommandFactory.movetoL2Command())
+                    .onFalse(CommandFactory.outtakeCommand());
+            // L3
+            operator.yButton
+                    .onTrue(CommandFactory.movetoL3Command())
+                    .onFalse(CommandFactory.outtakeCommand());
+            // L4
+            operator.bButton.onTrue(CommandFactory.scoreL4Command());
+        }
     }
-  }
 
-  /**
-   * Use this to pass the autonomous command to the main {@link Robot} class.
-   *
-   * @return the command to run in autonomous
-   */
-  public Command getAutonomousCommand() {
-    return autoChooser.get();
-  }
+    /**
+     * Use this to pass the autonomous command to the main {@link Robot} class.
+     *
+     * @return the command to run in autonomous
+     */
+    public Command getAutonomousCommand() {
+        return autoChooser.get();
+    }
 
-  public void resetSimulationField() {
-    if (Constants.currentMode != Constants.Mode.SIM) return;
+    public void resetSimulationField() {
+        if (Constants.currentMode != Constants.Mode.SIM)
+            return;
 
-    driveSimulation.setSimulationWorldPose(new Pose2d(3, 3, new Rotation2d()));
-    SimulatedArena.getInstance().resetFieldForAuto();
-  }
+        driveSimulation.setSimulationWorldPose(new Pose2d(3, 3, new Rotation2d()));
+        SimulatedArena.getInstance().resetFieldForAuto();
+    }
 
-  public Pose2d getSimulationPose() {
-    return driveSimulation.getSimulatedDriveTrainPose();
-  }
+    public Pose2d getSimulationPose() {
+        return driveSimulation.getSimulatedDriveTrainPose();
+    }
 
-  public void updateSimulation() {
-    if (Constants.currentMode != Constants.Mode.SIM) return;
+    public void updateSimulation() {
+        if (Constants.currentMode != Constants.Mode.SIM)
+            return;
 
-    SimulatedArena.getInstance().simulationPeriodic();
-    Logger.recordOutput(
-        "FieldSimulation/RobotPosition", driveSimulation.getSimulatedDriveTrainPose());
-    Logger.recordOutput(
-        "FieldSimulation/Coral", SimulatedArena.getInstance().getGamePiecesArrayByType("Coral"));
-    Logger.recordOutput(
-        "FieldSimulation/Algae", SimulatedArena.getInstance().getGamePiecesArrayByType("Algae"));
-  }
+        SimulatedArena.getInstance().simulationPeriodic();
+        Logger.recordOutput(
+                "FieldSimulation/RobotPosition", driveSimulation.getSimulatedDriveTrainPose());
+        Logger.recordOutput(
+                "FieldSimulation/Coral", SimulatedArena.getInstance().getGamePiecesArrayByType("Coral"));
+        Logger.recordOutput(
+                "FieldSimulation/Algae", SimulatedArena.getInstance().getGamePiecesArrayByType("Algae"));
+    }
 }
