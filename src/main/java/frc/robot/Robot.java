@@ -13,6 +13,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.units.measure.*;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -35,6 +36,8 @@ public class Robot extends LoggedRobot {
   private Command autonomousCommand;
   private RobotContainer robotContainer;
   private RobotSim robotSim;
+
+  // all hues at maximum saturation and half brightness
 
   public Robot() {
     // Record metadata
@@ -76,7 +79,7 @@ public class Robot extends LoggedRobot {
         Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
         break;
     }
-
+    Logger.addDataReceiver(new NT4Publisher());
     // Start AdvantageKit logger
     Logger.start();
     DriverStation.silenceJoystickConnectionWarning(true);
@@ -110,7 +113,9 @@ public class Robot extends LoggedRobot {
 
   /** This function is called periodically when disabled. */
   @Override
-  public void disabledPeriodic() {}
+  public void disabledPeriodic() {
+    // m_led.setData(m_ledBuffer);
+  }
 
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
