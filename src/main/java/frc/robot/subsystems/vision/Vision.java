@@ -15,29 +15,29 @@ package frc.robot.subsystems.vision;
 
 import static frc.robot.subsystems.vision.VisionConstants.*;
 
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.subsystems.drive.CommandSwerveDrivetrain;
 import frc.robot.subsystems.vision.VisionIO.PoseObservationType;
 import java.util.LinkedList;
 import java.util.List;
 import org.littletonrobotics.junction.Logger;
 
 public class Vision extends SubsystemBase {
-  private final VisionConsumer consumer;
+  // Removed VisionConsumer field.
+  private final CommandSwerveDrivetrain drivetrain;
   private final VisionIO[] io;
   private final VisionIOInputsAutoLogged[] inputs;
   private final Alert[] disconnectedAlerts;
 
-  public Vision(VisionConsumer consumer, VisionIO... io) {
-    this.consumer = consumer;
+  // Constructor now accepts a CommandSwerveDrivetrain instance.
+  public Vision(CommandSwerveDrivetrain drivetrain, VisionIO... io) {
+    this.drivetrain = drivetrain;
     this.io = io;
 
     // Initialize inputs
@@ -53,6 +53,9 @@ public class Vision extends SubsystemBase {
           new Alert(
               "Vision camera " + Integer.toString(i) + " is disconnected.", AlertType.kWarning);
     }
+
+    // Publish SmartDashboard toggle (default false)
+    SmartDashboard.putBoolean("VisionPoseUpdaterEnabled", false);
   }
 
   /**
@@ -77,7 +80,8 @@ public class Vision extends SubsystemBase {
     List<Pose3d> allRobotPosesAccepted = new LinkedList<>();
     List<Pose3d> allRobotPosesRejected = new LinkedList<>();
 
-    // Loop over cameras
+    // Gather accepted pose observations from all cameras.
+    List<Pose3d> acceptedPoses = new LinkedList<>();
     for (int cameraIndex = 0; cameraIndex < io.length; cameraIndex++) {
       // Update disconnected alert
       disconnectedAlerts[cameraIndex].set(!inputs[cameraIndex].connected);
@@ -118,6 +122,9 @@ public class Vision extends SubsystemBase {
           robotPosesRejected.add(observation.pose());
         } else {
           robotPosesAccepted.add(observation.pose());
+          acceptedPoses.add(observation.pose());
+          // Log individual accepted observation if desired:
+          Logger.recordOutput("Vision/Camera" + cameraIndex + "/AcceptedPose", observation.pose());
         }
 
         // Skip if rejected
@@ -138,15 +145,9 @@ public class Vision extends SubsystemBase {
           linearStdDev *= cameraStdDevFactors[cameraIndex];
           angularStdDev *= cameraStdDevFactors[cameraIndex];
         }
-
-        // Send vision observation
-        consumer.accept(
-            observation.pose().toPose2d(),
-            observation.timestamp(),
-            VecBuilder.fill(linearStdDev, linearStdDev, angularStdDev));
       }
 
-      // Log camera datadata
+      // Log camera data
       Logger.recordOutput(
           "Vision/Camera" + Integer.toString(cameraIndex) + "/TagPoses",
           tagPoses.toArray(new Pose3d[tagPoses.size()]));
@@ -176,14 +177,17 @@ public class Vision extends SubsystemBase {
     Logger.recordOutput(
         "Vision/Summary/RobotPosesRejected",
         allRobotPosesRejected.toArray(new Pose3d[allRobotPosesRejected.size()]));
-  }
 
-  @FunctionalInterface
-  public interface VisionConsumer {
-    void accept(
-        Pose2d visionRobotPoseMeters,
-        double timestampSeconds,
-        Matrix<N3, N1> visionMeasurementStdDevs);
+    // If the SmartDashboard toggle is enabled and we have an accepted observation, update
+    // drivetrain.
+    if (SmartDashboard.getBoolean("VisionPoseUpdaterEnabled", false) && !acceptedPoses.isEmpty()) {
+      // For simplicity, use the first accepted pose.
+      Pose2d visionPose = acceptedPoses.get(0).toPose2d();
+      double timestamp =
+          System.currentTimeMillis() / 1000.0; // or use a proper timestamp from observation
+      // drivetrain.addVisionMeasurement(visionPose, timestamp);
+      Logger.recordOutput("Vision/AppliedPose", visionPose);
+    }
   }
 
   public int[] getDetectedTags(int cameraIndex) {

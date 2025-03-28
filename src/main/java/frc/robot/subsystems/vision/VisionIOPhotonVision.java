@@ -103,29 +103,29 @@ public class VisionIOPhotonVision implements VisionIO {
           tagIds.add((short) target.fiducialId);
 
           // Add observation
-          poseObservations.add(
-              new PoseObservation(
-                  result.getTimestampSeconds(), // Timestamp
-                  robotPose, // 3D pose estimate
-                  target.poseAmbiguity, // Ambiguity
-                  1, // Tag count
-                  cameraToTarget.getTranslation().getNorm(), // Average tag distance
-                  PoseObservationType.PHOTONVISION)); // Observation type
+          // poseObservations.add(
+          //     new PoseObservation(
+          //         result.getTimestampSeconds(), // Timestamp
+          //         robotPose, // 3D pose estimate
+          //         target.poseAmbiguity, // Ambiguity
+          //         1, // Tag count
+          //         cameraToTarget.getTranslation().getNorm(), // Average tag distance
+          //         PoseObservationType.PHOTONVISION)); // Observation type
         }
       }
     }
 
-    // Save pose observations to inputs object
-    inputs.poseObservations = new PoseObservation[poseObservations.size()];
-    for (int i = 0; i < poseObservations.size(); i++) {
-      inputs.poseObservations[i] = poseObservations.get(i);
-    }
+    // // Save pose observations to inputs object
+    // inputs.poseObservations = new PoseObservation[poseObservations.size()];
+    // for (int i = 0; i < poseObservations.size(); i++) {
+    //   inputs.poseObservations[i] = poseObservations.get(i);
+    // }
 
-    // Save tag IDs to inputs objects
-    inputs.tagIds = new int[tagIds.size()];
-    int i = 0;
-    for (int id : tagIds) {
-      inputs.tagIds[i++] = id;
-    }
+    // // Save tag IDs to inputs objects
+    // inputs.tagIds = new int[tagIds.size()];
+    // int i = 0;
+    // for (int id : tagIds) {
+    //   inputs.tagIds[i++] = id;
+    // }
   }
 }

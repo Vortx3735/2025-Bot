@@ -13,6 +13,8 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -116,8 +118,9 @@ public class Robot extends LoggedRobot {
   @Override
   public void autonomousInit() {
     autonomousCommand = robotContainer.getAutonomousCommand();
-
-    // schedule the autonomous command (example)
+    // If the autonomous command is built with PathPlannerAuto, reset the drivetrain pose to its
+    // starting pose.
+    // schedule the autonomous command
     if (autonomousCommand != null) {
       autonomousCommand.schedule();
     }
@@ -158,6 +161,7 @@ public class Robot extends LoggedRobot {
   @Override
   public void simulationInit() {
     robotSim = new RobotSim(() -> robotContainer.getSimulationPose());
+    RobotContainer.drivetrain.resetPose(new Pose2d(3, 3, new Rotation2d()));
   }
 
   /** This function is called periodically whilst in simulation. */

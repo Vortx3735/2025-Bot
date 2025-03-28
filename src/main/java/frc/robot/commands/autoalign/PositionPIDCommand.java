@@ -1,4 +1,4 @@
-package frc.robot.commands;
+package frc.robot.commands.autoalign;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
@@ -10,7 +10,7 @@ import frc.robot.subsystems.drive.CommandSwerveDrivetrain;
 import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonPipelineResult;
 
-public class AutoAlignHeading extends Command {
+public class PositionPIDCommand extends Command {
   private final CommandSwerveDrivetrain drivetrain;
   private final PhotonCamera intakeCamera;
 
@@ -22,7 +22,7 @@ public class AutoAlignHeading extends Command {
   private static final double YAW_THRESHOLD = 0.12; // Degrees threshold for alignment
   private static final double X_THRESHOLD = 0.01; // Meters threshold for alignment
   private static final double Y_THRESHOLD = 0.01; // Meters threshold for alignment
-  private static final double TARGET_DISTANCE_METERS = 0.42; // L2
+  private static final double TARGET_DISTANCE_METERS = 0.32; // L2
   private static final double TARGET_Y = -0.01; // L2
 
   public double yawAdjustment;
@@ -35,7 +35,7 @@ public class AutoAlignHeading extends Command {
 
   private Timer timer;
 
-  public AutoAlignHeading(CommandSwerveDrivetrain drivetrain, PhotonCamera intakeCamera) {
+  public PositionPIDCommand(CommandSwerveDrivetrain drivetrain, PhotonCamera intakeCamera) {
     this.drivetrain = drivetrain;
     this.intakeCamera = intakeCamera;
     rotationPidController = new PIDController(kP_Yaw, 0, 0);
@@ -68,6 +68,10 @@ public class AutoAlignHeading extends Command {
 
   public boolean isAligned() {
     return isXAligned() && isYAligned() && isYawAligned();
+  }
+
+  public static Command generateCommand(CommandSwerveDrivetrain swerve, PhotonCamera intakeCamera) {
+    return new PositionPIDCommand(swerve, intakeCamera);
   }
 
   @Override

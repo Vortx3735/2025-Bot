@@ -19,10 +19,10 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import java.util.function.Supplier;
+import org.photonvision.PhotonCamera;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
-import org.photonvision.PhotonCamera;
 
 /** IO implementation for physics sim using PhotonVision simulator. */
 public class VisionIOPhotonVisionSim extends VisionIOPhotonVision {
@@ -38,7 +38,10 @@ public class VisionIOPhotonVisionSim extends VisionIOPhotonVision {
    * @param poseSupplier Supplier for the robot pose to use in simulation.
    */
   public VisionIOPhotonVisionSim(
-      PhotonCamera theCamera, String name, Transform3d robotToCamera, Supplier<Pose2d> poseSupplier) {
+      PhotonCamera theCamera,
+      String name,
+      Transform3d robotToCamera,
+      Supplier<Pose2d> poseSupplier) {
     super(theCamera, robotToCamera);
     this.poseSupplier = poseSupplier;
 

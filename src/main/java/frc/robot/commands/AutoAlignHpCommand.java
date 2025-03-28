@@ -1,17 +1,18 @@
 package frc.robot.commands;
 
+import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.drive.CommandSwerveDrivetrain;
 import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonPipelineResult;
 
 public class AutoAlignHpCommand extends Command {
-  private final Drive drivetrain;
+  private final CommandSwerveDrivetrain drivetrain;
   private final PhotonCamera intakeCamera;
   private static final double TARGET_TIMEOUT = 0.15;
 
@@ -29,7 +30,8 @@ public class AutoAlignHpCommand extends Command {
   private static final double kP_X = 7;
   private static final double kP_Y = 2.5;
 
-  // private static final double BIG_YAW_THRESHOLD = 0.12; // Degrees threshold for alignment
+  // private static final double BIG_YAW_THRESHOLD = 0.12; // Degrees threshold
+  // for alignment
   private static final double YAW_THRESHOLD = 0.05; // Degrees threshold for alignment
   private static final double X_THRESHOLD = 0.03; // Meters threshold for alignment
   private static final double Y_THRESHOLD = 0.01; // Meters threshold for alignment
@@ -47,7 +49,8 @@ public class AutoAlignHpCommand extends Command {
   private double distanceX;
   private double distanceY;
 
-  public AutoAlignHpCommand(Drive drivetrain, PhotonCamera intakeCamera, double targetY) {
+  public AutoAlignHpCommand(
+      CommandSwerveDrivetrain drivetrain, PhotonCamera intakeCamera, double targetY) {
     this.drivetrain = drivetrain;
     this.intakeCamera = intakeCamera;
     yawPID = new PIDController(kP_Yaw, 0, .2);
@@ -99,21 +102,31 @@ public class AutoAlignHpCommand extends Command {
       yawAdjustment = MathUtil.clamp(yawAdjustment, -2.5, 2.5);
 
       // if(xPID.atSetpoint()){
-      //   xAdjustment = 0;
+      // xAdjustment = 0;
       // }
 
       // if(yPID.atSetpoint()){
-      //   yAdjustment = 0;
+      // yAdjustment = 0;
       // }
 
       // if(yawPID.atSetpoint()){
-      //   yawAdjustment = 0;
+      // yawAdjustment = 0;
       // }
 
       if (!yawPID.atSetpoint()) {
-        drivetrain.runVelocity(new ChassisSpeeds(0, 0, -yawAdjustment));
+        drivetrain.setControl(
+            new SwerveRequest.RobotCentric()
+                .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+                .withVelocityX(0)
+                .withVelocityY(0) // No lateral movement for alignment
+                .withRotationalRate(-yawAdjustment));
       } else {
-        drivetrain.runVelocity(new ChassisSpeeds(-xAdjustment, -yAdjustment, -yawAdjustment));
+        drivetrain.setControl(
+            new SwerveRequest.RobotCentric()
+                .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+                .withVelocityX(-xAdjustment)
+                .withVelocityY(-yAdjustment) // No lateral movement for alignment
+                .withRotationalRate(-yawAdjustment));
       }
 
       SmartDashboard.putNumber("vision/DistanceX", distanceX);
@@ -153,6 +166,11 @@ public class AutoAlignHpCommand extends Command {
   @Override
   public void end(boolean interrupted) {
     // Stop the robot
-    drivetrain.runVelocity(new ChassisSpeeds(0, 0, 0));
+    drivetrain.setControl(
+        new SwerveRequest.RobotCentric()
+            .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+            .withVelocityX(0)
+            .withVelocityY(0) // No lateral movement for alignment
+            .withRotationalRate(0));
   }
 }

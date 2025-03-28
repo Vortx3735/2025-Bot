@@ -2,20 +2,24 @@ package frc.robot.subsystems.drive;
 
 import static edu.wpi.first.units.Units.*;
 
-import choreo.Choreo.TrajectoryLogger;
-import choreo.auto.AutoFactory;
-import choreo.trajectory.SwerveSample;
+import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
+import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -31,21 +35,16 @@ import frc.robot.Constants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import java.util.Optional;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
+import org.ironmaple.simulation.drivesims.COTS;
+import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
+import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
-import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
-import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
-import org.ironmaple.simulation.drivesims.COTS;
-import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.Notifier;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.math.system.plant.DCMotor;
-
 
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements Subsystem so it can easily
@@ -55,6 +54,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   private static final double kSimLoopPeriod = 0.005; // 5 ms
   private Notifier m_simNotifier = null;
   private double m_lastSimTime;
+
+  static final double ODOMETRY_FREQUENCY =
+      new CANBus(TunerConstants.DrivetrainConstants.CANBusName).isNetworkFD() ? 250.0 : 100.0;
+  static final Lock odometryLock = new ReentrantLock();
 
   /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
   private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
@@ -70,6 +73,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   private final PIDController m_pathXController = new PIDController(3.7, 0, 0);
   private final PIDController m_pathYController = new PIDController(3.7, 0, 0);
   private final PIDController m_pathThetaController = new PIDController(3.5, 0, 0);
+
+  public static final PPHolonomicDriveController kDriveController =
+      new PPHolonomicDriveController(
+          new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0));
+  private RobotConfig config = null; // Robot configuration for AutoBuilder
 
   /* Swerve requests to apply during SysId characterization */
   private final SwerveRequest.SysIdSwerveTranslation m_translationCharacterization =
@@ -176,6 +184,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       // simulation = new MapleSimSimulation(mapleSimConfig);
       startSimThread();
     }
+    configureAutoBuilder();
   }
 
   /**
@@ -198,6 +207,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       // simulation = new MapleSimSimulation(mapleSimConfig);
       startSimThread();
     }
+    configureAutoBuilder();
   }
 
   /**
@@ -231,26 +241,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       // simulation = new MapleSimSimulation(mapleSimConfig);
       startSimThread();
     }
-  }
-
-  /**
-   * Creates a new auto factory for this drivetrain.
-   *
-   * @return AutoFactory for this drivetrain
-   */
-  public AutoFactory createAutoFactory() {
-    return createAutoFactory((sample, isStart) -> {});
-  }
-
-  /**
-   * Creates a new auto factory for this drivetrain with the given trajectory logger.
-   *
-   * @param trajLogger Logger for the trajectory
-   * @return AutoFactory for this drivetrain
-   */
-  public AutoFactory createAutoFactory(TrajectoryLogger<SwerveSample> trajLogger) {
-    return new AutoFactory(
-        () -> getState().Pose, this::resetPose, this::followPath, true, this, trajLogger);
+    configureAutoBuilder();
   }
 
   /**
@@ -261,29 +252,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
    */
   public Command applyRequest(Supplier<SwerveRequest> requestSupplier) {
     return run(() -> this.setControl(requestSupplier.get()));
-  }
-
-  /**
-   * Follows the given field-centric path sample with PID.
-   *
-   * @param sample Sample along the path to follow
-   */
-  public void followPath(SwerveSample sample) {
-    m_pathThetaController.enableContinuousInput(-Math.PI, Math.PI);
-
-    var pose = getState().Pose;
-
-    var targetSpeeds = sample.getChassisSpeeds();
-    targetSpeeds.vxMetersPerSecond += m_pathXController.calculate(pose.getX(), sample.x);
-    targetSpeeds.vyMetersPerSecond += m_pathYController.calculate(pose.getY(), sample.y);
-    targetSpeeds.omegaRadiansPerSecond +=
-        m_pathThetaController.calculate(pose.getRotation().getRadians(), sample.heading);
-
-    setControl(
-        m_pathApplyFieldSpeeds
-            .withSpeeds(targetSpeeds)
-            .withWheelForceFeedforwardsX(sample.moduleForcesX())
-            .withWheelForceFeedforwardsY(sample.moduleForcesY()));
   }
 
   /**
@@ -349,7 +317,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     m_simNotifier.startPeriodic(kSimLoopPeriod);
   }
 
-  // New helper to update MapleSim simulation state; user to integrate actual simulation update logic.
+  // New helper to update MapleSim simulation state; user to integrate actual simulation update
+  // logic.
   private void simulateMapleSim(double deltaTime, double batteryVoltage) {
     // ...existing simulation updates...
     // Example: simulation.update(deltaTime, batteryVoltage);
@@ -372,6 +341,49 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             .getEntry("maxRotation")
             .getDouble(3.14);
     return maxSpeed;
+  }
+
+  public void driveRobotRelative(ChassisSpeeds speeds) {
+    this.setControl(
+        new SwerveRequest.RobotCentric()
+            .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+            .withVelocityX(speeds.vxMetersPerSecond)
+            .withVelocityY(speeds.vyMetersPerSecond)
+            .withRotationalRate(speeds.omegaRadiansPerSecond));
+  }
+
+  public void configureAutoBuilder() {
+    // Configure AutoBuilder last
+    try {
+      config = RobotConfig.fromGUISettings();
+    } catch (Exception e) {
+      // Handle exception as needed
+      e.printStackTrace();
+    }
+    AutoBuilder.configure(
+        () -> getState().Pose, // Robot pose supplier
+        this::resetPose, // Method to reset odometry (will be called if your auto has a starting
+        // pose)
+        () -> getState().Speeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+        (speeds, feedforwards) ->
+            driveRobotRelative(
+                speeds), // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds.
+        // Also optionally outputs individual module feedforwards
+        kDriveController,
+        config, // The robot configuration
+        () -> {
+          // Boolean supplier that controls when the path will be mirrored for the red alliance
+          // This will flip the path being followed to the red side of the field.
+          // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+
+          var alliance = DriverStation.getAlliance();
+          if (alliance.isPresent()) {
+            return alliance.get() == DriverStation.Alliance.Red;
+          }
+          return false;
+        },
+        this // Reference to this subsystem to set requirements
+        );
   }
 
   public void updatePoseWithVision(PhotonCamera camera) {

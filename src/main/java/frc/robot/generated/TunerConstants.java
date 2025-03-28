@@ -79,7 +79,7 @@ public class TunerConstants {
 
   // Theoretical free speed (m/s) at 12 V applied output;
   // This needs to be tuned to your individual robot
-  public static final LinearVelocity kSpeedAt12Volts = MetersPerSecond.of(4.69);
+  public static final LinearVelocity kSpeedAt12Volts = MetersPerSecond.of(4.3);
 
   // Every 1 rotation of the azimuth results in kCoupleRatio drive motor turns;
   // This may need to be tuned to your individual robot
@@ -234,10 +234,10 @@ public class TunerConstants {
    * Creates a CommandSwerveDrivetrain instance. This should only be called once in your robot
    * program,.
    */
-    public static CommandSwerveDrivetrain createDrivetrain() {
-      return new CommandSwerveDrivetrain(
-          DrivetrainConstants, FrontLeft, FrontRight, BackLeft, BackRight);
-    }
+  public static CommandSwerveDrivetrain createDrivetrain() {
+    return new CommandSwerveDrivetrain(
+        DrivetrainConstants, FrontLeft, FrontRight, BackLeft, BackRight);
+  }
 
   /** Swerve Drive class utilizing CTR Electronics' Phoenix 6 API with the selected device types. */
   public static class TunerSwerveDrivetrain extends SwerveDrivetrain<TalonFX, TalonFX, CANcoder> {
