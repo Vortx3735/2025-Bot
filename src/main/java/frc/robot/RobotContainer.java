@@ -37,6 +37,7 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.CommandFactory;
+import frc.robot.commands.autoalign.PositionPIDCommand;
 import frc.robot.commands.defaultcommands.*;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.AlgaeIntake;
@@ -45,6 +46,7 @@ import frc.robot.subsystems.CoralIntake;
 import frc.robot.subsystems.CoralWrist;
 import frc.robot.subsystems.Elevator;
 import frc.robot.subsystems.drive.CommandSwerveDrivetrain;
+import frc.robot.subsystems.vision.QuestNav;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.subsystems.vision.VisionIO;
@@ -121,6 +123,8 @@ public class RobotContainer {
 
   public static final PhotonCamera reefCamera = new PhotonCamera("reefCamera");
 
+  public static final QuestNav questNav = new QuestNav();
+
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     SmartDashboard.putData(CommandScheduler.getInstance());
@@ -165,6 +169,14 @@ public class RobotContainer {
     NamedCommands.registerCommand(
         "zeroElevator", new InstantCommand(() -> elevator.zeroElevator()).withTimeout(0.05));
     NamedCommands.registerCommand("scoreL4", CommandFactory.scoreL4Command());
+    NamedCommands.registerCommand("intake", coralIntake.intakeCommand().withTimeout(1.5));
+    NamedCommands.registerCommand(
+        "autoalign", PositionPIDCommand.generateCommand(drivetrain, reefCamera).withTimeout(4));
+    NamedCommands.registerCommand(
+        "hpCommandandVision",
+        CommandFactory.hpCommand()
+            .withDeadline(
+                PositionPIDCommand.generateCommand(drivetrain, reefCamera).withTimeout(4)));
 
     autoChooser = AutoBuilder.buildAutoChooser();
     // Set up SysId routines
@@ -200,48 +212,62 @@ public class RobotContainer {
   private void configureButtonBindings() {
     // Default command, normal field-relative drive
     drivetrain.setDefaultCommand(
+        // Drivetrain will execute this command periodically
         drivetrain
             .applyRequest(
-                () -> {
-                  if (driver.rb.getAsBoolean()) {
-                    return drive
-                        .withVelocityX(
-                            -driver.getLeftY()
-                                * drivetrain.getMaxSpeed()
-                                * elevator.getElevatorCoefficient()
-                                / 6)
-                        .withVelocityY(
-                            -driver.getLeftX()
-                                * drivetrain.getMaxSpeed()
-                                * elevator.getElevatorCoefficient()
-                                / 6)
-                        .withRotationalRate(-driver.getRightX() * drivetrain.getMaxRotation() / 4);
-                  } else if (driver.lb.getAsBoolean()) {
-                    return drive
-                        .withVelocityX(
-                            -driver.getLeftY()
-                                * drivetrain.getMaxSpeed()
-                                * elevator.getElevatorCoefficient()
-                                / 3)
-                        .withVelocityY(
-                            -driver.getLeftX()
-                                * drivetrain.getMaxSpeed()
-                                * elevator.getElevatorCoefficient()
-                                / 3)
-                        .withRotationalRate(-driver.getRightX() * drivetrain.getMaxRotation() / 2);
-                  } else {
-                    return drive
-                        .withVelocityX(
-                            -driver.getLeftY()
-                                * drivetrain.getMaxSpeed()
-                                * elevator.getElevatorCoefficient())
-                        .withVelocityY(
-                            -driver.getLeftX()
-                                * drivetrain.getMaxSpeed()
-                                * elevator.getElevatorCoefficient())
-                        .withRotationalRate(-driver.getRightX() * drivetrain.getMaxRotation());
-                  }
-                })
+                () ->
+                    driver.rb.getAsBoolean()
+                        ? // if right bumper is pressed then reduce speed of robot
+                        drive // coefficients can be changed to driver preferences
+                            .withVelocityX(
+                                -driver.getLeftY()
+                                    * drivetrain.getMaxSpeed()
+                                    * elevator.getElevatorCoefficient()
+                                    / 6) // divide drive speed by 4
+                            .withVelocityY(
+                                -driver.getLeftX()
+                                    * drivetrain.getMaxSpeed()
+                                    * elevator.getElevatorCoefficient()
+                                    / 6) // divide drive speed by 4
+                            .withRotationalRate(
+                                -driver.getRightX()
+                                    * drivetrain.getMaxRotation()
+                                    / 4) // divide turn sppeed by 3
+                        : driver.lb.getAsBoolean()
+                            ? drive
+                                .withVelocityX(
+                                    -driver.getLeftY()
+                                        * drivetrain.getMaxSpeed()
+                                        * elevator.getElevatorCoefficient()
+                                        / 3) // Drive forward with negative Y
+                                // (forward)
+                                .withVelocityY(
+                                    -driver.getLeftX()
+                                        * drivetrain.getMaxSpeed()
+                                        * elevator.getElevatorCoefficient()
+                                        / 3) // Drive left with negative X (left)
+                                .withRotationalRate(
+                                    -driver.getRightX() * drivetrain.getMaxRotation() / 2)
+                            : drive
+                                .withVelocityX(
+                                    -driver.getLeftY()
+                                        * drivetrain.getMaxSpeed()
+                                        * elevator.getElevatorCoefficient()) // Drive forward with
+                                // negative Y
+                                // (forward)
+                                .withVelocityY(
+                                    -driver.getLeftX()
+                                        * drivetrain.getMaxSpeed()
+                                        * elevator
+                                            .getElevatorCoefficient()) // Drive left with negative X
+                                // (left)
+                                .withRotationalRate(
+                                    -driver.getRightX()
+                                        * drivetrain
+                                            .getMaxRotation()) // Drive counterclockwise with
+                // negative X
+                // (left)
+                )
             .withName("Default Drive Command"));
 
     // Reset gyro / odometry
@@ -259,7 +285,7 @@ public class RobotContainer {
     // gyro
     driver.menu.onTrue(Commands.runOnce(resetGyro, drivetrain).ignoringDisable(true));
 
-    // driver.xButton.whileTrue(alignToReef.generateCommand());
+    driver.xButton.whileTrue(PositionPIDCommand.generateCommand(drivetrain, reefCamera));
 
     // Beam Break
     Trigger coralDetected = new Trigger(() -> coralIntake.hasCoral());
@@ -269,10 +295,10 @@ public class RobotContainer {
     Trigger coralNotDetected = coralDetected.negate();
     coralNotDetected.whileTrue(coralWrist.moveWristToHP());
 
-    leftCoralDetected.onTrue(new WaitCommand(.2).andThen(coralIntake.stopIntakeCommand()));
-    rightCoralDetected.onTrue(new WaitCommand(.2).andThen(coralIntake.stopIntakeCommand()));
-    // leftCoralDetected.onTrue(coralIntake.stopIntakeCommand());
-    // rightCoralDetected.onTrue(coralIntake.stopIntakeCommand());
+    // leftCoralDetected.onTrue(new WaitCommand(.2).andThen(coralIntake.stopIntakeCommand()));
+    // rightCoralDetected.onTrue(new WaitCommand(.2).andThen(coralIntake.stopIntakeCommand()));
+    leftCoralDetected.onTrue(coralIntake.stopIntakeCommand());
+    rightCoralDetected.onTrue(coralIntake.stopIntakeCommand());
     leftCoralDetected.onFalse(
         new WaitCommand(.4).andThen(coralIntake.stopIntakeCommand().withName("Left Trigger Stop")));
     rightCoralDetected.onFalse(
@@ -286,8 +312,7 @@ public class RobotContainer {
     operator.aButton.whileTrue(CommandFactory.hpCommand());
 
     // Coral Intake with Beam
-    operator.lt.whileTrue(
-        Commands.parallel(coralIntake.intakeCommand(), elevator.moveElevatorToHPHigher()));
+    operator.lt.whileTrue(coralIntake.intakeCommand(.7));
 
     // Coral Outtake
     operator.rt.whileTrue(coralIntake.outtakeCommand());
@@ -379,7 +404,10 @@ public class RobotContainer {
           .onTrue(CommandFactory.movetoL3Command())
           .onFalse(CommandFactory.outtakeCommand());
       // L4
-      operator.bButton.onTrue(CommandFactory.scoreL4Command());
+      operator
+          .bButton
+          .onTrue(CommandFactory.movetoL4Command())
+          .onFalse(CommandFactory.outtakeCommand());
     }
   }
 

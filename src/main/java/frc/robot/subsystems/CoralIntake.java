@@ -19,7 +19,7 @@ public class CoralIntake extends SubsystemBase {
   private static SparkMax leftCoralMotor;
   private static SparkMax rightCoralMotor;
 
-  private double intakeSpeed = 0.25;
+  private double intakeSpeed = 0.7;
 
   private DigitalInput leftCoralBeamBreak = new DigitalInput(SensorConstants.CORAL_LEFT_BEAM_BREAK);
   private DigitalInput rightCoralBeamBreak =
@@ -82,16 +82,16 @@ public class CoralIntake extends SubsystemBase {
 
   private void intake(double speed) {
     if (!hasRightCoral()) {
-      rightCoralMotor.set(speed);
+      rightCoralMotor.set(speed + 0.3);
     }
     if (!hasLeftCoral()) {
-      leftCoralMotor.set(speed);
+      leftCoralMotor.set(speed + 0.3);
     }
   }
 
   private void outtake() {
-    leftCoralMotor.set(-intakeSpeed - 0.4);
-    rightCoralMotor.set(-intakeSpeed - 0.4);
+    leftCoralMotor.set(-intakeSpeed - 0.1);
+    rightCoralMotor.set(-intakeSpeed - 0.1);
   }
 
   private void outtake(double speed) {

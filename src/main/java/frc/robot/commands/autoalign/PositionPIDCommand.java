@@ -2,8 +2,8 @@ package frc.robot.commands.autoalign;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.drive.CommandSwerveDrivetrain;
@@ -15,63 +15,56 @@ public class PositionPIDCommand extends Command {
   private final PhotonCamera intakeCamera;
 
   // PID constants for alignment
-  private static PIDController rotationPidController;
-  private static PIDController drivePidControllerX;
-  private static PIDController drivePidControllerY;
-  private static final double kP_Yaw = 12; // Proportional constant for yaw correction
-  private static final double YAW_THRESHOLD = 0.12; // Degrees threshold for alignment
-  private static final double X_THRESHOLD = 0.01; // Meters threshold for alignment
-  private static final double Y_THRESHOLD = 0.01; // Meters threshold for alignment
-  private static final double TARGET_DISTANCE_METERS = 0.32; // L2
-  private static final double TARGET_Y = -0.01; // L2
+  private PIDController yawPID;
+  private PIDController xPID;
+  private PIDController yPID;
 
-  public double yawAdjustment;
-  public double xAdjustment;
-  public double yAdjustment;
-  public double yaw;
+  private final double kP_Yaw = 2.5; // Proportional constant for yaw correction
+  private final double kP_X = 4;
+  private final double kP_Y = 6;
 
-  public double distanceX;
-  public double distanceY;
+  private final double YAW_THRESHOLD = 0.12; // Degrees threshold for alignment
+  private final double X_THRESHOLD = 0.03; // Meters threshold for alignment
+  private final double Y_THRESHOLD = 0.01; // Meters threshold for alignment
 
-  private Timer timer;
+  private double TARGET_X; // Target distance in meters 0.42
+  private final double TARGET_Y = 0; // Target distance in meters
+  private final double TARGET_YAW = -0.01; // Target rotation
+
+  private double yawAdjustment;
+  private double xAdjustment;
+  private double yAdjustment;
+
+  private double yaw;
+  private double distanceX;
+  private double distanceY;
 
   public PositionPIDCommand(CommandSwerveDrivetrain drivetrain, PhotonCamera intakeCamera) {
+    TARGET_X = 0.42;
+
     this.drivetrain = drivetrain;
     this.intakeCamera = intakeCamera;
-    rotationPidController = new PIDController(kP_Yaw, 0, 0);
-    drivePidControllerX = new PIDController(4.5, 0, 0.1);
-    drivePidControllerY = new PIDController(5, 0, 0.1);
+    yawPID = new PIDController(kP_Yaw, 0, 0);
+    xPID = new PIDController(kP_X, 0, 0.25);
+    yPID = new PIDController(kP_Y, 0, 0.25);
 
-    rotationPidController.setTolerance(YAW_THRESHOLD);
+    yawPID.setTolerance(YAW_THRESHOLD);
+    xPID.setTolerance(X_THRESHOLD);
+    yPID.setTolerance(Y_THRESHOLD);
 
-    timer = new Timer();
+    yawPID.setSetpoint(TARGET_YAW);
+    xPID.setSetpoint(TARGET_X);
+    yPID.setSetpoint(TARGET_Y);
 
     addRequirements(drivetrain);
   }
 
-  @Override
-  public void initialize() {
-    timer.restart();
-  }
-
-  public boolean isXAligned() {
-    return Math.abs(distanceX - TARGET_DISTANCE_METERS) < X_THRESHOLD;
-  }
-
-  public boolean isYAligned() {
-    return Math.abs(distanceY - TARGET_Y) < Y_THRESHOLD;
-  }
-
-  public boolean isYawAligned() {
-    return Math.abs(yawAdjustment) < YAW_THRESHOLD;
-  }
-
   public boolean isAligned() {
-    return isXAligned() && isYAligned() && isYawAligned();
+    return xPID.atSetpoint() && yPID.atSetpoint() && yawPID.atSetpoint();
   }
 
-  public static Command generateCommand(CommandSwerveDrivetrain swerve, PhotonCamera intakeCamera) {
-    return new PositionPIDCommand(swerve, intakeCamera);
+  public static Command generateCommand(CommandSwerveDrivetrain drive, PhotonCamera intakeCamera) {
+    return new PositionPIDCommand(drive, intakeCamera);
   }
 
   @Override
@@ -81,8 +74,9 @@ public class PositionPIDCommand extends Command {
 
     if (result.hasTargets()) {
       var target = result.getBestTarget();
-      // double yaw = target.getYaw(); // Horizontal offset to the AprilTag
+
       distanceX = target.getBestCameraToTarget().getX(); // Distance to the tag (forward)
+      distanceY = target.getBestCameraToTarget().getY();
       yaw = (target.getBestCameraToTarget().getRotation().getZ());
 
       if (yaw < 0) {
@@ -91,50 +85,16 @@ public class PositionPIDCommand extends Command {
         yaw -= Math.PI;
       }
 
-      distanceY = target.getBestCameraToTarget().getY();
-      SmartDashboard.putNumber("vision/Distance", distanceX);
-      SmartDashboard.putNumber("vision/Yaw", yaw);
-
       // Calculate adjustments for yaw and forward movement
-      yawAdjustment = rotationPidController.calculate(yaw, 0);
-      xAdjustment = drivePidControllerX.calculate(distanceX, TARGET_DISTANCE_METERS);
-      yAdjustment = drivePidControllerY.calculate(distanceY, TARGET_Y);
+      yawAdjustment = yawPID.calculate(yaw, TARGET_YAW);
+      xAdjustment = xPID.calculate(distanceX, TARGET_X);
+      yAdjustment = yPID.calculate(distanceY, TARGET_Y);
 
-      SmartDashboard.putNumber("vision/xAdjustment", xAdjustment);
-      SmartDashboard.putNumber("vision/yaw", yaw);
-      SmartDashboard.putNumber("vision/yAdjustment", yAdjustment);
-      SmartDashboard.putNumber("vision/rotationAdjustment", yawAdjustment);
+      xAdjustment = MathUtil.clamp(xAdjustment, -0.75, 0.75);
+      yAdjustment = MathUtil.clamp(yAdjustment, -0.75, 0.75);
+      yawAdjustment = MathUtil.clamp(yawAdjustment, -0.75, 0.75);
 
-      SmartDashboard.putBoolean("vision/isAligned", isAligned());
-      SmartDashboard.putBoolean("vision/isYawAligned", isYawAligned());
-      SmartDashboard.putBoolean("vision/isXAligned", isXAligned());
-      SmartDashboard.putBoolean("vision/isYAligned", isYAligned());
-
-      if (xAdjustment > .75) {
-        xAdjustment = .75;
-      }
-      if (xAdjustment < -.75) {
-        xAdjustment = -.75;
-      }
-      if (yAdjustment > .75) {
-        yAdjustment = .75;
-      }
-      if (yAdjustment < -.75) {
-        yAdjustment = -.75;
-      }
-      if (yawAdjustment > .75) {
-        yawAdjustment = .75;
-      }
-      if (yawAdjustment < -.75) {
-        yawAdjustment = -.75;
-      }
-      if (rotationPidController.atSetpoint()) {
-        yawAdjustment = 0;
-      }
-      if (rotationPidController.atSetpoint()) {
-        yawAdjustment = 0;
-      }
-      if (!isYawAligned()) {
+      if (!yawPID.atSetpoint()) {
         drivetrain.setControl(
             new SwerveRequest.RobotCentric()
                 .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
@@ -146,10 +106,22 @@ public class PositionPIDCommand extends Command {
             new SwerveRequest.RobotCentric()
                 .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
                 .withVelocityX(-xAdjustment)
-                .withVelocityY(-yAdjustment) // No lateral movement for alignment
+                .withVelocityY(-yAdjustment)
                 .withRotationalRate(-yawAdjustment));
       }
 
+      SmartDashboard.putNumber("vision/DistanceX", distanceX);
+      SmartDashboard.putNumber("vision/DistanceY", distanceY);
+      SmartDashboard.putNumber("vision/Yaw", yaw);
+
+      SmartDashboard.putNumber("vision/xAdjustment", xAdjustment);
+      SmartDashboard.putNumber("vision/yAdjustment", yAdjustment);
+      SmartDashboard.putNumber("vision/rotationAdjustment", yawAdjustment);
+
+      SmartDashboard.putBoolean("vision/isXAligned", xPID.atSetpoint());
+      SmartDashboard.putBoolean("vision/isYAligned", yPID.atSetpoint());
+      SmartDashboard.putBoolean("vision/isYawAligned", yawPID.atSetpoint());
+      SmartDashboard.putBoolean("vision/isAligned", isAligned());
     } else {
       // Stop the robot if no targets are found
       end(true);
@@ -158,7 +130,7 @@ public class PositionPIDCommand extends Command {
 
   @Override
   public boolean isFinished() {
-    return isAligned() || timer.hasElapsed(1);
+    return isAligned();
   }
 
   @Override

@@ -12,6 +12,7 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
@@ -40,9 +41,11 @@ public class CoralWrist extends SubsystemBase {
 
   private PIDController coralPID;
   private double ki, kp, kd;
+  private ArmFeedforward coralFF;
+  private double ks, kg, kv;
 
   private double wristSpeedDown = -0.1;
-  private double wristSpeedUp = 0.2;
+  private double wristSpeedUp = 0.1;
   private double error;
   private double intakeSpeed = 0.25;
 
@@ -76,9 +79,11 @@ public class CoralWrist extends SubsystemBase {
     // Initialize wrist motor and encoder
     coralWrist = new SparkMax(wristId, MotorType.kBrushless);
     wristEncoder = new CANcoder(wristEncoderId);
-    kp = 1;
+    kp = 2.5;
+    kv = 0.1;
+    kg = 0.08;
     coralPID = new PIDController(kp, ki, kd);
-
+    coralFF = new ArmFeedforward(ks, kg, kv);
     // Configure wrist motor settings
     coralWristConfig.inverted(false).idleMode(IdleMode.kBrake);
     // coralWristConfig.closedLoop.feedbackSensor(FeedbackSensor.kPrimaryEncoder).pid(1.0,
@@ -99,7 +104,7 @@ public class CoralWrist extends SubsystemBase {
   }
 
   public boolean atSetpoint(double targetPos) {
-    if (Math.abs(targetPos - position) < .02) {
+    if (Math.abs(targetPos - position) < .01) {
       return true;
     }
     return false;
@@ -131,21 +136,21 @@ public class CoralWrist extends SubsystemBase {
   }
 
   public Command moveWristToHP() {
-    return moveWristToPosition(-0.34).withName("Move Coral Wrist to HP");
+    return moveWristToPosition(-0.31).withName("Move Coral Wrist to HP");
   }
 
   public Command moveWristToL2() {
     // return moveWristToPosition(-0.38).withName("Move Coral Wrist to L2");
-    return moveWristToPosition(-0.36).withName("Move Coral Wrist to L2");
+    return moveWristToPosition(-0.53).withName("Move Coral Wrist to L2");
   }
 
   public Command moveWristToL3() {
-    return moveWristToPosition(-0.38).withName("Move Coral Wrist to L3");
+    return moveWristToPosition(-0.5).withName("Move Coral Wrist to L3");
   }
 
   public Command moveWristToL4() {
     // return moveWristToPosition(-0.48).withName("Move Coral Wrist to L4");
-    return moveWristToPosition(-0.44).withName("Move Coral Wrist to L4");
+    return moveWristToPosition(-0.53).withName("Move Coral Wrist to L4");
     // return moveWristToPosition(-0.46).withName("Move Coral Wrist to L4");
   }
 
@@ -164,9 +169,11 @@ public class CoralWrist extends SubsystemBase {
   }
 
   public void hold(double targetPos) {
-    // coralWrist.set(coralPID.calculate(position, targetPos) +
-    // coralFF.calculate(position, kv));
-    coralWrist.set(coralPID.calculate(position, targetPos));
+    if (position < -0.37) {
+      coralWrist.set(coralPID.calculate(position, targetPos) + coralFF.calculate(position, kv));
+    } else {
+      coralWrist.set(coralPID.calculate(position, targetPos));
+    }
   }
 
   @Override

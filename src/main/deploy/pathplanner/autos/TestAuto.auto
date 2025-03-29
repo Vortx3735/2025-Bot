@@ -5,46 +5,41 @@
     "data": {
       "commands": [
         {
-          "type": "named",
-          "data": {
-            "name": "moveElevatorToBottom"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "moveWristToHP"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "LeftStart"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "scoreL4"
-          }
-        },
-        {
           "type": "parallel",
           "data": {
             "commands": [
               {
                 "type": "path",
                 "data": {
-                  "pathName": "LeftReeftoHP"
+                  "pathName": "LeftStart"
+                }
+              },
+              {
+                "type": "sequential",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "moveWristToHP"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "intake"
+                      }
+                    }
+                  ]
                 }
               }
             ]
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "LeftHpToReef"
+            "name": "autoalign"
           }
         },
         {
