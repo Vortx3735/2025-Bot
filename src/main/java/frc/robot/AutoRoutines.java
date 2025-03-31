@@ -155,4 +155,32 @@ public class AutoRoutines {
                 CommandFactory.scoreL4Command()));
     return routine;
   }
+
+  public AutoRoutine twoL4LeftFAST() {
+    final AutoRoutine routine = m_factory.newRoutine("Two L4 Left Auton");
+    final AutoTrajectory startToReef = routine.trajectory("LeftStart");
+    final AutoTrajectory reefToHP = routine.trajectory("LeftReeftoHP");
+    final AutoTrajectory hpToReef = routine.trajectory("LeftHPtoReef");
+
+    routine
+        .active()
+        .onTrue(
+            Commands.sequence(
+                startToReef.resetOdometry().asProxy(),
+                Commands.parallel(
+                        Commands.sequence(
+                                RobotContainer.coralWrist.moveWristToHP().asProxy(),
+                                RobotContainer.coralIntake.intakeCommand().asProxy())
+                            .withName("Move Wrist and Intake Coral"),
+                        startToReef.cmd().asProxy())
+                    .withName("Move and Intake Coral"),
+                Commands.parallel(
+                    autoAlignL4().asProxy(), CommandFactory.scoreL4Command().asProxy()),
+                reefToHP.cmd().asProxy(),
+                RobotContainer.coralIntake.intakeCommand().asProxy(),
+                hpToReef.cmd().asProxy(),
+                Commands.parallel(
+                    autoAlignL4().asProxy(), CommandFactory.scoreL4Command().asProxy())));
+    return routine;
+  }
 }

@@ -16,17 +16,15 @@ package frc.robot;
 import static edu.wpi.first.units.Units.*;
 import static frc.robot.subsystems.vision.VisionConstants.robotToCamera0;
 
+import choreo.auto.AutoChooser;
+import choreo.auto.AutoFactory;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.auto.NamedCommands;
-import com.pathplanner.lib.commands.PathPlannerAuto;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -35,7 +33,6 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.CommandFactory;
 import frc.robot.commands.autoalign.PositionPIDCommand;
 import frc.robot.commands.defaultcommands.*;
@@ -119,7 +116,12 @@ public class RobotContainer {
   private final VorTXControllerXbox operator = new VorTXControllerXbox(1);
 
   // Dashboard inputs
-  private final SendableChooser<Command> autoChooser;
+  //   private final SendableChooser<Command> autoChooser;
+
+  /* Path follower */
+  private final AutoFactory autoFactory;
+  private final AutoRoutines autoRoutines;
+  private final AutoChooser autoChooser = new AutoChooser();
 
   public static final PhotonCamera reefCamera = new PhotonCamera("reefCamera");
 
@@ -163,41 +165,50 @@ public class RobotContainer {
         break;
     }
 
-    // Name commands
-    NamedCommands.registerCommand("moveElevatorToBottom", elevator.moveElevatorToBottom());
-    NamedCommands.registerCommand("moveWristToHP", coralWrist.moveWristToHP());
-    NamedCommands.registerCommand(
-        "zeroElevator", new InstantCommand(() -> elevator.zeroElevator()).withTimeout(0.05));
-    NamedCommands.registerCommand("scoreL4", CommandFactory.scoreL4Command());
-    NamedCommands.registerCommand("intake", coralIntake.intakeCommand().withTimeout(1.5));
-    NamedCommands.registerCommand(
-        "autoalign", PositionPIDCommand.generateCommand(drivetrain, reefCamera).withTimeout(4));
-    NamedCommands.registerCommand(
-        "hpCommandandVision",
-        CommandFactory.hpCommand()
-            .withDeadline(
-                PositionPIDCommand.generateCommand(drivetrain, reefCamera).withTimeout(4)));
+    // // Name commands
+    // NamedCommands.registerCommand("moveElevatorToBottom", elevator.moveElevatorToBottom());
+    // NamedCommands.registerCommand("moveWristToHP", coralWrist.moveWristToHP());
+    // NamedCommands.registerCommand(
+    //     "zeroElevator", new InstantCommand(() -> elevator.zeroElevator()).withTimeout(0.05));
+    // NamedCommands.registerCommand("scoreL4", CommandFactory.scoreL4Command());
 
-    autoChooser = AutoBuilder.buildAutoChooser();
-    // Set up SysId routines
-    autoChooser.addOption(
-        "Drive SysId (Quasistatic Forward)",
-        drivetrain.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Drive SysId (Quasistatic Reverse)",
-        drivetrain.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption(
-        "Drive SysId (Dynamic Forward)", drivetrain.sysIdDynamic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Drive SysId (Dynamic Reverse)", drivetrain.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption("TestAuto", new PathPlannerAuto("TestAuto"));
+    // autoChooser = AutoBuilder.buildAutoChooser();
+    // // Set up SysId routines
+    // autoChooser.addOption(
+    //     "Drive SysId (Quasistatic Forward)",
+    //     drivetrain.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+    // autoChooser.addOption(
+    //     "Drive SysId (Quasistatic Reverse)",
+    //     drivetrain.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+    // autoChooser.addOption(
+    //     "Drive SysId (Dynamic Forward)",
+    // drivetrain.sysIdDynamic(SysIdRoutine.Direction.kForward));
+    // autoChooser.addOption(
+    //     "Drive SysId (Dynamic Reverse)",
+    // drivetrain.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+    // autoChooser.addOption("TestAuto", new PathPlannerAuto("TestAuto"));
+
+    // SmartDashboard.putData("Auto Chooser", autoChooser);
+    // coralIntake.setDefaultCommand(new DefaultCoralIntakeCommand(coralIntake));
+    // coralWrist.setDefaultCommand(new DefaultCoralWristCommand(coralWrist));
+    // algaeIntake.setDefaultCommand(new DefaultAlgaeIntakeCommand(algaeIntake));
+    // algaeWrist.setDefaultCommand(new DefaultAlgaeWristCommand(algaeWrist));
+    // elevator.setDefaultCommand(new DefaultElevatorCommand(elevator));
+    // Auton
+
+    autoFactory = drivetrain.createAutoFactory();
+    autoRoutines = new AutoRoutines(autoFactory);
+
+    // autoChooser.addRoutine("Test Auto 4", autoRoutines::testAuto4);
+    // autoChooser.addRoutine("CenterReef", autoRoutines::centerRoutine);
+    autoChooser.addRoutine("One L4 Left", autoRoutines::oneL4Left);
+    autoChooser.addRoutine("Two L4 Left", autoRoutines::twoL4Left);
+    autoChooser.addRoutine("One L4 Right", autoRoutines::oneL4Right);
+    autoChooser.addRoutine("Two L4 Right", autoRoutines::twoL4Right);
+    autoChooser.addRoutine("One L4 Center", autoRoutines::oneL4Center);
+    autoChooser.addRoutine("AlignAndScore", autoRoutines::alignAndScore);
 
     SmartDashboard.putData("Auto Chooser", autoChooser);
-    coralIntake.setDefaultCommand(new DefaultCoralIntakeCommand(coralIntake));
-    coralWrist.setDefaultCommand(new DefaultCoralWristCommand(coralWrist));
-    algaeIntake.setDefaultCommand(new DefaultAlgaeIntakeCommand(algaeIntake));
-    algaeWrist.setDefaultCommand(new DefaultAlgaeWristCommand(algaeWrist));
-    elevator.setDefaultCommand(new DefaultElevatorCommand(elevator));
 
     // Configure the button bindings
     configureButtonBindings();
@@ -417,7 +428,7 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return autoChooser.getSelected();
+    return autoChooser.selectedCommand();
   }
 
   public void resetSimulationField() {

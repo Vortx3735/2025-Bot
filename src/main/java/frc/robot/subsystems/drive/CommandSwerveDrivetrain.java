@@ -2,6 +2,9 @@ package frc.robot.subsystems.drive;
 
 import static edu.wpi.first.units.Units.*;
 
+import choreo.Choreo.TrajectoryLogger;
+import choreo.auto.AutoFactory;
+import choreo.trajectory.SwerveSample;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
@@ -17,6 +20,7 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -70,9 +74,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   private final SwerveRequest.ApplyFieldSpeeds m_pathApplyFieldSpeeds =
       new SwerveRequest.ApplyFieldSpeeds();
 
-  private final PIDController m_pathXController = new PIDController(3.7, 0, 0);
-  private final PIDController m_pathYController = new PIDController(3.7, 0, 0);
-  private final PIDController m_pathThetaController = new PIDController(3.5, 0, 0);
+  private final PIDController xController = new PIDController(10.0, 0.0, 0.0);
+  private final PIDController yController = new PIDController(10.0, 0.0, 0.0);
+  private final PIDController headingController = new PIDController(7.5, 0.0, 0.0);
 
   public static final PPHolonomicDriveController kDriveController =
       new PPHolonomicDriveController(
@@ -87,7 +91,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   private final SwerveRequest.SysIdSwerveRotation m_rotationCharacterization =
       new SwerveRequest.SysIdSwerveRotation();
 
-  /* SysId routine for characterizing translation. This is used to find PID gains for the drive motors. */
+  /*
+   * SysId routine for characterizing translation. This is used to find PID gains
+   * for the drive motors.
+   */
   private final SysIdRoutine m_sysIdRoutineTranslation =
       new SysIdRoutine(
           new SysIdRoutine.Config(
@@ -99,7 +106,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
           new SysIdRoutine.Mechanism(
               output -> setControl(m_translationCharacterization.withVolts(output)), null, this));
 
-  /* SysId routine for characterizing steer. This is used to find PID gains for the steer motors. */
+  /*
+   * SysId routine for characterizing steer. This is used to find PID gains for
+   * the steer motors.
+   */
   @SuppressWarnings("unused")
   private final SysIdRoutine m_sysIdRoutineSteer =
       new SysIdRoutine(
@@ -114,8 +124,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
   /*
    * SysId routine for characterizing rotation.
-   * This is used to find PID gains for the FieldCentricFacingAngle HeadingController.
-   * See the documentation of SwerveRequest.SysIdSwerveRotation for info on importing the log to SysId.
+   * This is used to find PID gains for the FieldCentricFacingAngle
+   * HeadingController.
+   * See the documentation of SwerveRequest.SysIdSwerveRotation for info on
+   * importing the log to SysId.
    */
   @SuppressWarnings("unused")
   private final SysIdRoutine m_sysIdRoutineRotation =
@@ -184,6 +196,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       // simulation = new MapleSimSimulation(mapleSimConfig);
       startSimThread();
     }
+    headingController.enableContinuousInput(-Math.PI, Math.PI);
     configureAutoBuilder();
   }
 
@@ -207,6 +220,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       // simulation = new MapleSimSimulation(mapleSimConfig);
       startSimThread();
     }
+    headingController.enableContinuousInput(-Math.PI, Math.PI);
     configureAutoBuilder();
   }
 
@@ -241,7 +255,28 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       // simulation = new MapleSimSimulation(mapleSimConfig);
       startSimThread();
     }
+    headingController.enableContinuousInput(-Math.PI, Math.PI);
     configureAutoBuilder();
+  }
+
+  /**
+   * Creates a new auto factory for this drivetrain.
+   *
+   * @return AutoFactory for this drivetrain
+   */
+  public AutoFactory createAutoFactory() {
+    return createAutoFactory((sample, isStart) -> {});
+  }
+
+  /**
+   * Creates a new auto factory for this drivetrain with the given trajectory logger.
+   *
+   * @param trajLogger Logger for the trajectory
+   * @return AutoFactory for this drivetrain
+   */
+  public AutoFactory createAutoFactory(TrajectoryLogger<SwerveSample> trajLogger) {
+    return new AutoFactory(
+        () -> getState().Pose, this::resetPose, this::followTrajectory, true, this, trajLogger);
   }
 
   /**
@@ -280,10 +315,14 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   public void periodic() {
     /*
      * Periodically try to apply the operator perspective.
-     * If we haven't applied the operator perspective before, then we should apply it regardless of DS state.
-     * This allows us to correct the perspective in case the robot code restarts mid-match.
-     * Otherwise, only check and apply the operator perspective if the DS is disabled.
-     * This ensures driving behavior doesn't change until an explicit disable event occurs during testing.
+     * If we haven't applied the operator perspective before, then we should apply
+     * it regardless of DS state.
+     * This allows us to correct the perspective in case the robot code restarts
+     * mid-match.
+     * Otherwise, only check and apply the operator perspective if the DS is
+     * disabled.
+     * This ensures driving behavior doesn't change until an explicit disable event
+     * occurs during testing.
      */
     if (!m_hasAppliedOperatorPerspective || DriverStation.isDisabled()) {
       DriverStation.getAlliance()
@@ -317,12 +356,14 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     m_simNotifier.startPeriodic(kSimLoopPeriod);
   }
 
-  // New helper to update MapleSim simulation state; user to integrate actual simulation update
+  // New helper to update MapleSim simulation state; user to integrate actual
+  // simulation update
   // logic.
   private void simulateMapleSim(double deltaTime, double batteryVoltage) {
     // ...existing simulation updates...
     // Example: simulation.update(deltaTime, batteryVoltage);
-    // Optionally update module positions and robot state based on simulation outputs.
+    // Optionally update module positions and robot state based on simulation
+    // outputs.
   }
 
   public double getMaxSpeed() {
@@ -372,7 +413,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         kDriveController,
         config, // The robot configuration
         () -> {
-          // Boolean supplier that controls when the path will be mirrored for the red alliance
+          // Boolean supplier that controls when the path will be mirrored for the red
+          // alliance
           // This will flip the path being followed to the red side of the field.
           // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
 
@@ -405,5 +447,25 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       new Translation2d(TunerConstants.BackLeft.LocationX, TunerConstants.BackLeft.LocationY),
       new Translation2d(TunerConstants.BackRight.LocationX, TunerConstants.BackRight.LocationY)
     };
+  }
+
+  public void followTrajectory(SwerveSample sample) {
+    // Get the current pose of the robot
+    Pose2d pose = this.getState().Pose;
+
+    // Generate the next speeds for the robot
+    ChassisSpeeds speeds =
+        new ChassisSpeeds(
+            sample.vx + xController.calculate(pose.getX(), sample.x),
+            sample.vy + yController.calculate(pose.getY(), sample.y),
+            sample.omega
+                + headingController.calculate(pose.getRotation().getRadians(), sample.heading));
+
+    // Apply the generated speeds
+    setControl(
+        m_pathApplyFieldSpeeds
+            .withSpeeds(speeds)
+            .withWheelForceFeedforwardsX(sample.moduleForcesX())
+            .withWheelForceFeedforwardsY(sample.moduleForcesY()));
   }
 }
