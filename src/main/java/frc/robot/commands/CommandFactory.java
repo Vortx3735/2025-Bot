@@ -61,6 +61,7 @@ public class CommandFactory {
     CommandScheduler.getInstance().cancelAll();
     return Commands.sequence(
             movetoL4Command(),
+            new WaitCommand(1),
             Commands.race(
                 new WaitCommand(2), RobotContainer.coralIntake.outtakeCommand().asProxy()),
             idleCommand().asProxy())
