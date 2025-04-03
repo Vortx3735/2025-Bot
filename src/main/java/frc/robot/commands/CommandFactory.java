@@ -61,9 +61,9 @@ public class CommandFactory {
     CommandScheduler.getInstance().cancelAll();
     return Commands.sequence(
             movetoL4Command(),
-            new WaitCommand(1),
+            new WaitCommand(0.2),
             Commands.race(
-                new WaitCommand(2), RobotContainer.coralIntake.outtakeCommand().asProxy()),
+                new WaitCommand(0.5), RobotContainer.coralIntake.outtakeCommand().asProxy()),
             idleCommand().asProxy())
         .withName("Score L4 Command Group");
   }
@@ -102,8 +102,9 @@ public class CommandFactory {
     // new AutoAlignCommand(RobotContainer.drivetrain, RobotContainer.hpCamera);
     return Commands.parallel(
             // autoAlignCommand.asProxy(),
-            RobotContainer.elevator.moveElevatorToHP(), RobotContainer.coralWrist.moveWristToHP())
-        .andThen(RobotContainer.coralIntake.intakeCommand())
+            RobotContainer.elevator.moveElevatorToHP(),
+            RobotContainer.coralWrist.moveWristToHP(),
+            RobotContainer.coralIntake.intakeCommand())
         .withName("HP Command Group");
   }
 

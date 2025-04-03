@@ -42,6 +42,7 @@ import frc.robot.subsystems.AlgaeWrist;
 import frc.robot.subsystems.CoralIntake;
 import frc.robot.subsystems.CoralWrist;
 import frc.robot.subsystems.Elevator;
+import frc.robot.subsystems.LED;
 import frc.robot.subsystems.drive.CommandSwerveDrivetrain;
 import frc.robot.subsystems.vision.QuestNav;
 import frc.robot.subsystems.vision.Vision;
@@ -64,6 +65,8 @@ import org.photonvision.PhotonCamera;
  */
 public class RobotContainer {
   // Subsystems
+  public static LED led = new LED(0, 23); // LED port and length
+
   private final Vision vision;
 
   private double MaxSpeed =
@@ -112,8 +115,8 @@ public class RobotContainer {
   private SwerveDriveSimulation driveSimulation = null;
 
   // Controller
-  private final VorTXControllerXbox driver = new VorTXControllerXbox(0);
-  private final VorTXControllerXbox operator = new VorTXControllerXbox(1);
+  public static final VorTXControllerXbox driver = new VorTXControllerXbox(0);
+  public static final VorTXControllerXbox operator = new VorTXControllerXbox(1);
 
   // Dashboard inputs
   //   private final SendableChooser<Command> autoChooser;
@@ -312,10 +315,10 @@ public class RobotContainer {
     Trigger coralNotDetected = coralDetected.negate();
     coralNotDetected.whileTrue(coralWrist.moveWristToHP());
 
-    // leftCoralDetected.onTrue(new WaitCommand(.2).andThen(coralIntake.stopIntakeCommand()));
-    // rightCoralDetected.onTrue(new WaitCommand(.2).andThen(coralIntake.stopIntakeCommand()));
-    leftCoralDetected.onTrue(coralIntake.stopIntakeCommand());
-    rightCoralDetected.onTrue(coralIntake.stopIntakeCommand());
+    leftCoralDetected.onTrue(new WaitCommand(.05).andThen(coralIntake.stopIntakeCommand()));
+    rightCoralDetected.onTrue(new WaitCommand(.05).andThen(coralIntake.stopIntakeCommand()));
+    // leftCoralDetected.onTrue(coralIntake.stopIntakeCommand());
+    // rightCoralDetected.onTrue(coralIntake.stopIntakeCommand());
     leftCoralDetected.onFalse(
         new WaitCommand(.4).andThen(coralIntake.stopIntakeCommand().withName("Left Trigger Stop")));
     rightCoralDetected.onFalse(

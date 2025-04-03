@@ -19,6 +19,7 @@ import edu.wpi.first.units.measure.*;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.simulation.RobotSim;
@@ -39,8 +40,6 @@ public class Robot extends LoggedRobot {
   private Command autonomousCommand;
   private RobotContainer robotContainer;
   private RobotSim robotSim;
-
-  // all hues at maximum saturation and half brightness
 
   public Robot() {
     // Record metadata
@@ -120,7 +119,7 @@ public class Robot extends LoggedRobot {
   /** This function is called periodically when disabled. */
   @Override
   public void disabledPeriodic() {
-    // m_led.setData(m_ledBuffer);
+    RobotContainer.led.vorTXStreak();
   }
 
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
@@ -164,7 +163,14 @@ public class Robot extends LoggedRobot {
 
   /** This function is called periodically during test mode. */
   @Override
-  public void testPeriodic() {}
+  public void testPeriodic() {
+    if (RobotContainer.operator.lt.getAsBoolean()
+        || RobotContainer.operator.aButton.getAsBoolean()) {
+      RobotContainer.led.blinkColor(Color.kRed);
+    } else {
+      RobotContainer.led.coralCheck();
+    }
+  }
 
   /** This function is called once when the robot is first started up. */
   @Override

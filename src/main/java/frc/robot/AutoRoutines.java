@@ -103,16 +103,12 @@ public class AutoRoutines {
             Commands.sequence(
                 startToReef.resetOdometry().asProxy(),
                 Commands.parallel(
-                        Commands.sequence(
-                                RobotContainer.coralWrist.moveWristToHP().asProxy(),
-                                RobotContainer.coralIntake.intakeCommand().asProxy())
-                            .withName("Move Wrist and Intake Coral"),
-                        startToReef.cmd().asProxy())
-                    .withName("Move and Intake Coral"),
+                    RobotContainer.coralWrist.moveWristToHP().asProxy(),
+                    startToReef.cmd().asProxy()),
                 autoAlignL4().asProxy(),
                 CommandFactory.scoreL4Command().asProxy(),
                 reefToHP.cmd().asProxy(),
-                RobotContainer.coralIntake.intakeCommand().asProxy(),
+                Commands.parallel(RobotContainer.coralIntake.intakeCommand().asProxy()),
                 hpToReef.cmd().asProxy(),
                 autoAlignL4().asProxy(),
                 CommandFactory.scoreL4Command().asProxy()));

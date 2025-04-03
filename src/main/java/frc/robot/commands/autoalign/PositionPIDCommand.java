@@ -29,7 +29,7 @@ public class PositionPIDCommand extends Command {
 
   private double TARGET_X; // Target distance in meters 0.42
   private final double TARGET_Y = 0; // Target distance in meters
-  private final double TARGET_YAW = -0.01; // Target rotation
+  private final double TARGET_YAW = 0.01; // Target rotation
 
   private double yawAdjustment;
   private double xAdjustment;
@@ -40,7 +40,7 @@ public class PositionPIDCommand extends Command {
   private double distanceY;
 
   public PositionPIDCommand(CommandSwerveDrivetrain drivetrain, PhotonCamera intakeCamera) {
-    TARGET_X = 0.42;
+    TARGET_X = 0.40;
 
     this.drivetrain = drivetrain;
     this.intakeCamera = intakeCamera;
