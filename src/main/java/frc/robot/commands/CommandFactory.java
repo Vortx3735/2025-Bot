@@ -61,7 +61,7 @@ public class CommandFactory {
     CommandScheduler.getInstance().cancelAll();
     return Commands.sequence(
             movetoL4Command(),
-            new WaitCommand(0.2),
+            new WaitCommand(1),
             Commands.race(
                 new WaitCommand(0.5), RobotContainer.coralIntake.outtakeCommand().asProxy()),
             idleCommand().asProxy())
@@ -107,6 +107,31 @@ public class CommandFactory {
             RobotContainer.coralIntake.intakeCommand())
         .withName("HP Command Group");
   }
+
+  public static Command hpCommandSlightlyHigher() {
+    CommandScheduler.getInstance().cancelAll();
+    // AutoAlignCommand autoAlignCommand =
+    // new AutoAlignCommand(RobotContainer.drivetrain, RobotContainer.hpCamera);
+    return Commands.parallel(
+            // autoAlignCommand.asProxy(),
+            RobotContainer.elevator.moveElevatorToHPHigher(),
+            RobotContainer.coralWrist.moveWristToHpHigher(),
+            RobotContainer.coralIntake.intakeCommand())
+        .withName("HP Command Group");
+  }
+
+  public static Command hpCommandSlightlyLower() {
+    CommandScheduler.getInstance().cancelAll();
+    // AutoAlignCommand autoAlignCommand =
+    // new AutoAlignCommand(RobotContainer.drivetrain, RobotContainer.hpCamera);
+    return Commands.parallel(
+            // autoAlignCommand.asProxy(),
+            RobotContainer.elevator.moveElevatorToHPLower(),
+            RobotContainer.coralWrist.moveWristToHpLower(),
+            RobotContainer.coralIntake.intakeCommand())
+        .withName("HP Command Group");
+  }
+
 
   public static Command idleCommand() {
     return Commands.parallel(

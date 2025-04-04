@@ -5,7 +5,9 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.RobotContainer;
 import frc.robot.subsystems.drive.CommandSwerveDrivetrain;
 import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonPipelineResult;
@@ -25,7 +27,7 @@ public class PositionPIDCommand extends Command {
 
   private final double YAW_THRESHOLD = 0.12; // Degrees threshold for alignment
   private final double X_THRESHOLD = 0.03; // Meters threshold for alignment
-  private final double Y_THRESHOLD = 0.01; // Meters threshold for alignment
+  private final double Y_THRESHOLD = 0.003; // Meters threshold for alignment
 
   private double TARGET_X; // Target distance in meters 0.42
   private final double TARGET_Y = 0; // Target distance in meters
@@ -55,7 +57,7 @@ public class PositionPIDCommand extends Command {
     yawPID.setSetpoint(TARGET_YAW);
     xPID.setSetpoint(TARGET_X);
     yPID.setSetpoint(TARGET_Y);
-
+    RobotContainer.led.setColor(Color.kGreen);
     addRequirements(drivetrain);
   }
 
@@ -70,8 +72,13 @@ public class PositionPIDCommand extends Command {
   @Override
   public void execute() {
     // Get the latest result from the camera
-    PhotonPipelineResult result = intakeCamera.getLatestResult();
+    // if (isAligned()) {
+    //   RobotContainer.led.setColor(Color.kRed);
+    // } else {
+    //   RobotContainer.led.setColor(Color.kGreen);
+    // }
 
+    PhotonPipelineResult result = intakeCamera.getLatestResult();
     if (result.hasTargets()) {
       var target = result.getBestTarget();
 
@@ -135,7 +142,9 @@ public class PositionPIDCommand extends Command {
 
   @Override
   public void end(boolean interrupted) {
+
     // Stop the robot
+    // RobotContainer.led.setColor(Color.kRed);
     drivetrain.setControl(
         new SwerveRequest.FieldCentric()
             .withVelocityX(0.0)

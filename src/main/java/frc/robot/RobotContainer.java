@@ -65,7 +65,7 @@ import org.photonvision.PhotonCamera;
  */
 public class RobotContainer {
   // Subsystems
-  public static LED led = new LED(0, 23); // LED port and length
+  public static LED led = new LED(0, 59); // LED port and length
 
   private final Vision vision;
 
@@ -129,6 +129,8 @@ public class RobotContainer {
   private final AutoFactory autoFactory;
   private final AutoRoutines autoRoutines;
   private final AutoChooser autoChooser = new AutoChooser();
+
+  public static boolean globalIsAligned = false;
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -332,13 +334,13 @@ public class RobotContainer {
     operator.aButton.whileTrue(CommandFactory.hpCommand());
 
     // Coral Intake with Beam
-    operator.lt.whileTrue(coralIntake.intakeCommand(.7));
+    operator.lt.whileTrue(CommandFactory.hpCommandSlightlyHigher());
 
     // Coral Outtake
     operator.rt.whileTrue(coralIntake.outtakeCommand());
 
     // Algae Intake
-    operator.lb.whileTrue(algaeIntake.intakeCommand());
+    operator.lb.whileTrue(CommandFactory.hpCommandSlightlyLower());
     // Algae Outtake
     operator.rb.whileTrue(algaeIntake.outtakeCommand());
 

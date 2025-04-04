@@ -126,7 +126,8 @@ public class Robot extends LoggedRobot {
   @Override
   public void autonomousInit() {
     autonomousCommand = robotContainer.getAutonomousCommand();
-    // If the autonomous command is built with PathPlannerAuto, reset the drivetrain pose to its
+    // If the autonomous command is built with PathPlannerAuto, reset the drivetrain
+    // pose to its
     // starting pose.
     // schedule the autonomous command
     if (autonomousCommand != null) {
@@ -136,7 +137,9 @@ public class Robot extends LoggedRobot {
 
   /** This function is called periodically during autonomous. */
   @Override
-  public void autonomousPeriodic() {}
+  public void autonomousPeriodic() {
+    RobotContainer.led.rainbow();
+  }
 
   /** This function is called once when teleop is enabled. */
   @Override
@@ -152,7 +155,9 @@ public class Robot extends LoggedRobot {
 
   /** This function is called periodically during operator control. */
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
+    RobotContainer.led.vorTXStreak();
+  }
 
   /** This function is called once when test mode is enabled. */
   @Override
