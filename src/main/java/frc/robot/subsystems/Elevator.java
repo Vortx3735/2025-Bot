@@ -103,9 +103,9 @@ public class Elevator extends SubsystemBase {
     fx_cfg.Slot0.kG = 0.368;
 
     // Motion Magic settings
-    fx_cfg.MotionMagic.MotionMagicCruiseVelocity = 12;
-    fx_cfg.MotionMagic.MotionMagicAcceleration = 23;
-    fx_cfg.MotionMagic.MotionMagicJerk = 200;
+    fx_cfg.MotionMagic.MotionMagicCruiseVelocity = 26;
+    fx_cfg.MotionMagic.MotionMagicAcceleration = 60;
+    fx_cfg.MotionMagic.MotionMagicJerk = 330;
 
     leftElevatorMotor.setPosition(0);
     rightElevatorMotor.setPosition(0);

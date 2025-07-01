@@ -132,7 +132,6 @@ public class CommandFactory {
         .withName("HP Command Group");
   }
 
-
   public static Command idleCommand() {
     return Commands.parallel(
             RobotContainer.elevator.moveElevatorToHP().asProxy(),

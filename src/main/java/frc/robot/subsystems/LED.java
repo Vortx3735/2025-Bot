@@ -1,8 +1,13 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Centimeters;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Second;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
+import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -14,20 +19,23 @@ public class LED extends SubsystemBase {
   private final AddressableLEDBuffer m_ledBuffer;
   private int m_rainbowFirstPixelHue;
   private double startOfStreak, endOfStreak;
+  private int breatheIndex;
+
   Color dimBlue, dimGreen;
 
   public LED(int port, int length) {
     m_rainbowFirstPixelHue = 0;
     startOfStreak = 0.0;
     endOfStreak = 0.0;
+    breatheIndex = 0;
     m_led = new AddressableLED(port);
     m_ledBuffer = new AddressableLEDBuffer(length);
     m_led.setLength(m_ledBuffer.getLength());
     m_led.setData(m_ledBuffer);
     m_led.start();
 
-    dimBlue = new Color(0, 0, 20);
-    dimGreen = new Color(20, 0, 0);
+    dimBlue = new Color(0, 0, 90);
+    dimGreen = new Color(110, 0, 0);
   }
 
   public void blinkColor(Color color) {
@@ -73,6 +81,15 @@ public class LED extends SubsystemBase {
     m_led.setData(m_ledBuffer);
   }
 
+  public void VorTXGradient() {
+    LEDPattern gradient =
+        LEDPattern.gradient(LEDPattern.GradientType.kContinuous, dimBlue, dimGreen);
+    LEDPattern scroll =
+        gradient.scrollAtAbsoluteSpeed(Centimeters.per(Second).of(50.0), Meters.of(1.0 / 142.0));
+    scroll.applyTo(m_ledBuffer);
+    m_led.setData(m_ledBuffer);
+  }
+
   public Command vorTXStreakCom() {
     return new RunCommand(() -> vorTXStreak(), this);
   }
@@ -83,8 +100,18 @@ public class LED extends SubsystemBase {
       m_ledBuffer.setLED(i % m_ledBuffer.getLength(), dimGreen);
       m_ledBuffer.setLED((i + (m_ledBuffer.getLength() / 2)) % m_ledBuffer.getLength(), dimBlue);
     }
-    startOfStreak += 0.25;
+    startOfStreak += 0.5;
     startOfStreak %= m_ledBuffer.getLength();
+
+    m_led.setData(m_ledBuffer);
+  }
+
+  public void VorTXBreathe() {
+    for (int i = 0; i < m_ledBuffer.getLength(); i++) {
+      m_ledBuffer.setRGB(i, Math.abs(breatheIndex - 50), 0, 50 - Math.abs(breatheIndex - 50));
+    }
+    breatheIndex += 1;
+    breatheIndex %= 50;
 
     m_led.setData(m_ledBuffer);
   }
@@ -124,12 +151,18 @@ public class LED extends SubsystemBase {
   }
 
   public void funny() {
-    int r = (int) Math.abs(MathUtil.applyDeadband(RobotContainer.operator.getLeftX(), 0.1) * 255);
-    int g = (int) Math.abs(MathUtil.applyDeadband(RobotContainer.operator.getLeftY(), 0.1) * 255);
-    int b = (int) Math.abs(MathUtil.applyDeadband(RobotContainer.operator.getRightX(), 0.1) * 255);
-    for (int i = 0; i < m_ledBuffer.getLength(); i++) {
-      m_ledBuffer.setRGB(i, r, g, b);
+    if (MathUtil.applyDeadband(RobotContainer.operator.getLeftX(), 0.1) == 0
+        && MathUtil.applyDeadband(RobotContainer.operator.getLeftY(), 0.1) == 0
+        && MathUtil.applyDeadband(RobotContainer.operator.getRightX(), 0.1) == 0) {
+      vorTXStreak();
+    } else {
+      int r = (int) Math.abs(MathUtil.applyDeadband(RobotContainer.operator.getLeftX(), 0.1) * 50);
+      int g = (int) Math.abs(MathUtil.applyDeadband(RobotContainer.operator.getLeftY(), 0.1) * 50);
+      int b = (int) Math.abs(MathUtil.applyDeadband(RobotContainer.operator.getRightX(), 0.1) * 50);
+      for (int i = 0; i < m_ledBuffer.getLength(); i++) {
+        m_ledBuffer.setRGB(i, r, g, b);
+      }
+      m_led.setData(m_ledBuffer);
     }
-    m_led.setData(m_ledBuffer);
   }
 }

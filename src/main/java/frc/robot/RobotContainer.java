@@ -65,7 +65,7 @@ import org.photonvision.PhotonCamera;
  */
 public class RobotContainer {
   // Subsystems
-  public static LED led = new LED(0, 59); // LED port and length
+  public static LED led = new LED(0, 50); // LED port and length
 
   private final Vision vision;
 
@@ -207,6 +207,7 @@ public class RobotContainer {
     algaeIntake.setDefaultCommand(new DefaultAlgaeIntakeCommand(algaeIntake));
     algaeWrist.setDefaultCommand(new DefaultAlgaeWristCommand(algaeWrist));
     elevator.setDefaultCommand(new DefaultElevatorCommand(elevator));
+    led.setDefaultCommand(new RunCommand(() -> led.VorTXGradient(), led));
 
     autoFactory = drivetrain.createAutoFactory();
     autoRoutines = new AutoRoutines(autoFactory);
@@ -342,7 +343,8 @@ public class RobotContainer {
     // Algae Intake
     operator.lb.whileTrue(CommandFactory.hpCommandSlightlyLower());
     // Algae Outtake
-    operator.rb.whileTrue(algaeIntake.outtakeCommand());
+    // operator.rb.whileTrue(new RunCommand(() -> led.funny(), led));
+    operator.rb.whileTrue(new RunCommand(() -> led.VorTXBreathe(), led));
 
     // elevator up
     operator.povUp.whileTrue(

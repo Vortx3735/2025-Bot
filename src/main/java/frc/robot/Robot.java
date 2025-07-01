@@ -18,8 +18,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.*;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Threads;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.simulation.RobotSim;
@@ -104,8 +102,6 @@ public class Robot extends LoggedRobot {
     CommandScheduler.getInstance().run();
     Logger.recordOutput("RobotPose/RobotPosition", RobotContainer.drivetrain.getState().Pose);
     Logger.recordOutput("RobotPose/QuestNav", RobotContainer.questNav.getPose());
-    RobotContainer.drivetrain.addVisionMeasurement(
-        RobotContainer.questNav.getPose(), Timer.getTimestamp());
     // Return to normal thread priority
     Threads.setCurrentThreadPriority(false, 10);
   }
@@ -119,7 +115,7 @@ public class Robot extends LoggedRobot {
   /** This function is called periodically when disabled. */
   @Override
   public void disabledPeriodic() {
-    RobotContainer.led.vorTXStreak();
+    RobotContainer.led.VorTXGradient();
   }
 
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
@@ -137,9 +133,7 @@ public class Robot extends LoggedRobot {
 
   /** This function is called periodically during autonomous. */
   @Override
-  public void autonomousPeriodic() {
-    RobotContainer.led.rainbow();
-  }
+  public void autonomousPeriodic() {}
 
   /** This function is called once when teleop is enabled. */
   @Override
@@ -155,9 +149,7 @@ public class Robot extends LoggedRobot {
 
   /** This function is called periodically during operator control. */
   @Override
-  public void teleopPeriodic() {
-    RobotContainer.led.vorTXStreak();
-  }
+  public void teleopPeriodic() {}
 
   /** This function is called once when test mode is enabled. */
   @Override
@@ -169,12 +161,12 @@ public class Robot extends LoggedRobot {
   /** This function is called periodically during test mode. */
   @Override
   public void testPeriodic() {
-    if (RobotContainer.operator.lt.getAsBoolean()
-        || RobotContainer.operator.aButton.getAsBoolean()) {
-      RobotContainer.led.blinkColor(Color.kRed);
-    } else {
-      RobotContainer.led.coralCheck();
-    }
+    // if (RobotContainer.operator.lt.getAsBoolean()
+    //     || RobotContainer.operator.aButton.getAsBoolean()) {
+    //   RobotContainer.led.blinkColor(Color.kRed);
+    // } else {
+    //   RobotContainer.led.coralCheck();
+    // }
   }
 
   /** This function is called once when the robot is first started up. */

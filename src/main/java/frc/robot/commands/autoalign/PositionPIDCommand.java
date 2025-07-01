@@ -42,7 +42,7 @@ public class PositionPIDCommand extends Command {
   private double distanceY;
 
   public PositionPIDCommand(CommandSwerveDrivetrain drivetrain, PhotonCamera intakeCamera) {
-    TARGET_X = 0.40;
+    TARGET_X = 0.39;
 
     this.drivetrain = drivetrain;
     this.intakeCamera = intakeCamera;
