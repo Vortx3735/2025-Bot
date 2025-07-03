@@ -200,7 +200,7 @@ public class Elevator extends SubsystemBase {
   }
 
   public Command moveElevatorToL3() {
-    double setpoint = 2.39;
+    double setpoint = 2.69;
     return new RunCommand(() -> moveElevatorToPosition(setpoint), this)
         .until(() -> this.atSetpoint(setpoint))
         .withName("Move Elevator to L3");
