@@ -115,11 +115,7 @@ public class Elevator extends SubsystemBase {
   }
 
   public boolean isSafe() {
-    if (position > 1) {
-      return true;
-    } else {
-      return false;
-    }
+    return position > 1;
   }
 
   public boolean atSetpoint(double setpoint) {

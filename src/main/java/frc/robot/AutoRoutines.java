@@ -16,12 +16,12 @@ public class AutoRoutines {
   }
 
   public Command autoAlignL4() {
-    return new PositionPIDCommand(RobotContainer.drivetrain, RobotContainer.reefCamera)
+    return new PositionPIDCommand(RobotContainer.drivetrain, RobotContainer.reefCamera,false,false)
         .withTimeout(7);
   }
 
   public Command autoAlignL3() {
-    return new PositionPIDCommand(RobotContainer.drivetrain, RobotContainer.reefCamera)
+    return new PositionPIDCommand(RobotContainer.drivetrain, RobotContainer.reefCamera,false,false)
         .withTimeout(7);
   }
 

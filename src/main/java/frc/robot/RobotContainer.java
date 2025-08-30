@@ -305,7 +305,7 @@ public class RobotContainer {
     // gyro
     driver.menu.onTrue(Commands.runOnce(resetGyro, drivetrain).ignoringDisable(true));
 
-    driver.xButton.whileTrue(PositionPIDCommand.generateCommand(drivetrain, reefCamera));
+    driver.xButton.whileTrue(PositionPIDCommand.generateCommand(drivetrain, reefCamera,false,false));
 
     // Beam Break
     Trigger coralDetected = new Trigger(() -> coralIntake.hasCoral());
