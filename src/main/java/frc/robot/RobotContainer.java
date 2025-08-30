@@ -305,7 +305,16 @@ public class RobotContainer {
     // gyro
     driver.menu.onTrue(Commands.runOnce(resetGyro, drivetrain).ignoringDisable(true));
 
+    //autoalign
     driver.xButton.whileTrue(PositionPIDCommand.generateCommand(drivetrain, reefCamera,false,false));
+    // decide which side to align to based on which coral is detected by beambreak
+    // driver.xButton.whileTrue(coralIntake.hasLeftCoral() ?
+    //                             PositionPIDCommand.generateCommand(drivetrain, reefCamera,true,false)
+    //                         : coralIntake.hasRightCoral() ?
+    //                             PositionPIDCommand.generateCommand(drivetrain, reefCamera,false,true)
+    //                         : PositionPIDCommand.generateCommand(drivetrain, reefCamera,false,false)
+    //                         );
+
 
     // Beam Break
     Trigger coralDetected = new Trigger(() -> coralIntake.hasCoral());
@@ -313,6 +322,7 @@ public class RobotContainer {
     Trigger rightCoralDetected = new Trigger(() -> coralIntake.hasRightCoral());
 
     Trigger coralNotDetected = coralDetected.negate();
+
     coralNotDetected.whileTrue(coralWrist.moveWristToHP());
 
     leftCoralDetected.onTrue(new WaitCommand(.05).andThen(coralIntake.stopIntakeCommand()));
