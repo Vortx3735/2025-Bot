@@ -31,8 +31,6 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.CommandFactory;
 import frc.robot.commands.autoalign.PositionPIDCommand;
 import frc.robot.commands.defaultcommands.*;
@@ -305,35 +303,40 @@ public class RobotContainer {
     // gyro
     driver.menu.onTrue(Commands.runOnce(resetGyro, drivetrain).ignoringDisable(true));
 
-    //autoalign
-    driver.xButton.whileTrue(PositionPIDCommand.generateCommand(drivetrain, reefCamera,false,false));
+    // autoalign
+    driver.xButton.whileTrue(
+        PositionPIDCommand.generateCommand(drivetrain, reefCamera, false, false));
     // decide which side to align to based on which coral is detected by beambreak
+    // why was this commented out?
     // driver.xButton.whileTrue(coralIntake.hasLeftCoral() ?
-    //                             PositionPIDCommand.generateCommand(drivetrain, reefCamera,true,false)
+    //                             PositionPIDCommand.generateCommand(drivetrain,
+    // reefCamera,true,false)
     //                         : coralIntake.hasRightCoral() ?
-    //                             PositionPIDCommand.generateCommand(drivetrain, reefCamera,false,true)
-    //                         : PositionPIDCommand.generateCommand(drivetrain, reefCamera,false,false)
+    //                             PositionPIDCommand.generateCommand(drivetrain,
+    // reefCamera,false,true)
+    //                         : PositionPIDCommand.generateCommand(drivetrain,
+    // reefCamera,false,false)
     //                         );
 
-
     // Beam Break
-    Trigger coralDetected = new Trigger(() -> coralIntake.hasCoral());
-    Trigger leftCoralDetected = new Trigger(() -> coralIntake.hasLeftCoral());
-    Trigger rightCoralDetected = new Trigger(() -> coralIntake.hasRightCoral());
+    // Trigger coralDetected = new Trigger(() -> coralIntake.hasCoral());
+    // Trigger leftCoralDetected = new Trigger(() -> coralIntake.hasLeftCoral());
+    // Trigger rightCoralDetected = new Trigger(() -> coralIntake.hasRightCoral());
 
-    Trigger coralNotDetected = coralDetected.negate();
+    // Trigger coralNotDetected = coralDetected.negate();
 
-    coralNotDetected.whileTrue(coralWrist.moveWristToHP());
+    // coralNotDetected.whileTrue(coralWrist.moveWristToHP());
 
-    leftCoralDetected.onTrue(new WaitCommand(.05).andThen(coralIntake.stopIntakeCommand()));
-    rightCoralDetected.onTrue(new WaitCommand(.05).andThen(coralIntake.stopIntakeCommand()));
-    // leftCoralDetected.onTrue(coralIntake.stopIntakeCommand());
-    // rightCoralDetected.onTrue(coralIntake.stopIntakeCommand());
-    leftCoralDetected.onFalse(
-        new WaitCommand(.4).andThen(coralIntake.stopIntakeCommand().withName("Left Trigger Stop")));
-    rightCoralDetected.onFalse(
-        new WaitCommand(.4)
-            .andThen(coralIntake.stopIntakeCommand().withName("Right Trigger Stop")));
+    // leftCoralDetected.onTrue(new WaitCommand(.05).andThen(coralIntake.stopIntakeCommand()));
+    // rightCoralDetected.onTrue(new WaitCommand(.05).andThen(coralIntake.stopIntakeCommand()));
+    // // leftCoralDetected.onTrue(coralIntake.stopIntakeCommand());
+    // // rightCoralDetected.onTrue(coralIntake.stopIntakeCommand());
+    // leftCoralDetected.onFalse(
+    //     new WaitCommand(.4).andThen(coralIntake.stopIntakeCommand().withName("Left Trigger
+    // Stop")));
+    // rightCoralDetected.onFalse(
+    //     new WaitCommand(.4)
+    //         .andThen(coralIntake.stopIntakeCommand().withName("Right Trigger Stop")));
 
     operator.povLeft.whileTrue(coralWrist.moveWristUp());
     operator.povRight.whileTrue(coralWrist.moveWristDown());
@@ -367,7 +370,8 @@ public class RobotContainer {
     operator.view.onTrue(
         new InstantCommand(() -> elevator.zeroElevator(), elevator).withName("Zero Elevator"));
 
-    // SIM CODEEEEEE
+    // SIM CODEEEEEE(what he means is the if commands is the setpoint keybinds for simulation while
+    // the else commands is for teleopIRL)
     if (Constants.currentMode == Constants.Mode.SIM) {
       // L4 placement
       driver.yButton.onTrue(
@@ -423,7 +427,7 @@ public class RobotContainer {
       // L4
       operator.bButton.onTrue(CommandFactory.ScoreL4CommandSim(driveSimulation));
     } else {
-      // L2
+      // L2 (THESE ARE THE KEYBINDS FOR THE ACTUAL COMMANDS FOR WHEN WE'RE DOING TELEOP IRLk)
       operator
           .xButton
           .onTrue(CommandFactory.movetoL2Command())

@@ -39,9 +39,13 @@ public class PositionPIDCommand extends Command {
   private double distanceX;
   private double distanceY;
 
-  private double xOffset=0; //CHANGE THIS TO ACTUAL OFFSET
+  private double xOffset = 0; // CHANGE THIS TO ACTUAL OFFSET
 
-  public PositionPIDCommand(CommandSwerveDrivetrain drivetrain, PhotonCamera intakeCamera, boolean isLeftBranch, boolean isRightBranch) {
+  public PositionPIDCommand(
+      CommandSwerveDrivetrain drivetrain,
+      PhotonCamera intakeCamera,
+      boolean isLeftBranch,
+      boolean isRightBranch) {
     TARGET_X = 0.40;
 
     this.drivetrain = drivetrain;
@@ -59,9 +63,9 @@ public class PositionPIDCommand extends Command {
     yPID.setSetpoint(TARGET_Y);
 
     addRequirements(drivetrain);
-    if(isLeftBranch&&isRightBranch||!isLeftBranch&&!isRightBranch){
+    if (isLeftBranch && isRightBranch || !isLeftBranch && !isRightBranch) {
       xOffset = 0;
-    }else if(isLeftBranch){
+    } else if (isLeftBranch) {
       xOffset *= -1;
     }
   }
@@ -70,7 +74,11 @@ public class PositionPIDCommand extends Command {
     return xPID.atSetpoint() && yPID.atSetpoint() && yawPID.atSetpoint();
   }
 
-  public static Command generateCommand(CommandSwerveDrivetrain drive, PhotonCamera intakeCamera, boolean isLeftBranch, boolean isRightBranch) {
+  public static Command generateCommand(
+      CommandSwerveDrivetrain drive,
+      PhotonCamera intakeCamera,
+      boolean isLeftBranch,
+      boolean isRightBranch) {
     return new PositionPIDCommand(drive, intakeCamera, isLeftBranch, isRightBranch);
   }
 
@@ -94,7 +102,7 @@ public class PositionPIDCommand extends Command {
 
       // Calculate adjustments for yaw and forward movement
       yawAdjustment = yawPID.calculate(yaw, TARGET_YAW);
-      xAdjustment = xPID.calculate(distanceX, TARGET_X+xOffset);
+      xAdjustment = xPID.calculate(distanceX, TARGET_X + xOffset);
       yAdjustment = yPID.calculate(distanceY, TARGET_Y);
 
       xAdjustment = MathUtil.clamp(xAdjustment, -0.75, 0.75);

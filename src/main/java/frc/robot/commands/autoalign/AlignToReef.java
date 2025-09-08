@@ -109,7 +109,7 @@ public class AlignToReef {
     if (waypoints.get(0).anchor().getDistance(waypoints.get(1).anchor()) < 0.2) {
       return Commands.sequence(
           Commands.print("start position PID loop"),
-          PositionPIDCommand.generateCommand(mSwerve, intakeCamera,false,false),
+          PositionPIDCommand.generateCommand(mSwerve, intakeCamera, false, false),
           Commands.print("end position PID loop"));
     }
 
@@ -127,7 +127,7 @@ public class AlignToReef {
     return AutoBuilder.followPath(path)
         .andThen(
             Commands.print("start position PID loop"),
-            PositionPIDCommand.generateCommand(mSwerve, intakeCamera,false,false),
+            PositionPIDCommand.generateCommand(mSwerve, intakeCamera, false, false),
             Commands.print("end position PID loop"));
   }
 
