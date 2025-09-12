@@ -5,9 +5,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.RobotContainer;
 import frc.robot.subsystems.drive.CommandSwerveDrivetrain;
 import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonPipelineResult;
@@ -46,23 +44,24 @@ public class PositionPIDCommand extends Command {
 
     this.drivetrain = drivetrain;
     this.intakeCamera = intakeCamera;
-    yawPID = new PIDController(kP_Yaw, 0, 0);
+    // yawPID = new PIDController(kP_Yaw, 0, 0);
     xPID = new PIDController(kP_X, 0, 0.25);
-    yPID = new PIDController(kP_Y, 0, 0.25);
+    // yPID = new PIDController(kP_Y, 0, 0.25);
 
-    yawPID.setTolerance(YAW_THRESHOLD);
+    // yawPID.setTolerance(YAW_THRESHOLD);
     xPID.setTolerance(X_THRESHOLD);
-    yPID.setTolerance(Y_THRESHOLD);
+    // yPID.setTolerance(Y_THRESHOLD);
 
-    yawPID.setSetpoint(TARGET_YAW);
+    // yawPID.setSetpoint(TARGET_YAW);
     xPID.setSetpoint(TARGET_X);
-    yPID.setSetpoint(TARGET_Y);
-    RobotContainer.led.setColor(Color.kGreen);
+    // yPID.setSetpoint(TARGET_Y);
+    // RobotContainer.led.setColor(Color.kGreen);
     addRequirements(drivetrain);
   }
 
   public boolean isAligned() {
-    return xPID.atSetpoint() && yPID.atSetpoint() && yawPID.atSetpoint();
+    // return xPID.atSetpoint() && yPID.atSetpoint() && yawPID.atSetpoint();
+    return xPID.atSetpoint();
   }
 
   public static Command generateCommand(CommandSwerveDrivetrain drive, PhotonCamera intakeCamera) {
@@ -80,57 +79,68 @@ public class PositionPIDCommand extends Command {
 
     PhotonPipelineResult result = intakeCamera.getLatestResult();
     if (result.hasTargets()) {
+      SmartDashboard.putBoolean("vision/noHasTarget", false);
+
       var target = result.getBestTarget();
 
       distanceX = target.getBestCameraToTarget().getX(); // Distance to the tag (forward)
-      distanceY = target.getBestCameraToTarget().getY();
-      yaw = (target.getBestCameraToTarget().getRotation().getZ());
+      SmartDashboard.putNumber("vision/DistanceX", distanceX);
 
-      if (yaw < 0) {
-        yaw += Math.PI;
-      } else {
-        yaw -= Math.PI;
-      }
+      // distanceY = target.getBestCameraToTarget().getY();
+      // yaw = (target.getBestCameraToTarget().getRotation().getZ());
+
+      // if (yaw < 0) {
+      //   yaw += Math.PI;
+      // } else {
+      //   yaw -= Math.PI;
+      // }
 
       // Calculate adjustments for yaw and forward movement
-      yawAdjustment = yawPID.calculate(yaw, TARGET_YAW);
+      // yawAdjustment = yawPID.calculate(yaw, TARGET_YAW);
       xAdjustment = xPID.calculate(distanceX, TARGET_X);
-      yAdjustment = yPID.calculate(distanceY, TARGET_Y);
+      // yAdjustment = yPID.calculate(distanceY, TARGET_Y);
 
       xAdjustment = MathUtil.clamp(xAdjustment, -0.75, 0.75);
-      yAdjustment = MathUtil.clamp(yAdjustment, -0.75, 0.75);
-      yawAdjustment = MathUtil.clamp(yawAdjustment, -0.75, 0.75);
+      // yAdjustment = MathUtil.clamp(yAdjustment, -0.75, 0.75);
+      // yawAdjustment = MathUtil.clamp(yawAdjustment, -0.75, 0.75);
 
-      if (!yawPID.atSetpoint()) {
-        drivetrain.setControl(
-            new SwerveRequest.RobotCentric()
-                .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
-                .withVelocityX(0)
-                .withVelocityY(0) // No lateral movement for alignment
-                .withRotationalRate(-yawAdjustment));
-      } else {
-        drivetrain.setControl(
-            new SwerveRequest.RobotCentric()
-                .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
-                .withVelocityX(-xAdjustment)
-                .withVelocityY(-yAdjustment)
-                .withRotationalRate(-yawAdjustment));
-      }
-
-      SmartDashboard.putNumber("vision/DistanceX", distanceX);
-      SmartDashboard.putNumber("vision/DistanceY", distanceY);
-      SmartDashboard.putNumber("vision/Yaw", yaw);
+      // if (!yawPID.atSetpoint()) {
+      //   drivetrain.setControl(
+      //       new SwerveRequest.RobotCentric()
+      //           .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+      //           .withVelocityX(0)
+      //           .withVelocityY(0) // No lateral movement for alignment
+      //           .withRotationalRate(-yawAdjustment));
+      // } else {
+      // drivetrain.setControl(
+      //     new SwerveRequest.RobotCentric()
+      //         .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+      //         .withVelocityX(-xAdjustment)
+      //         .withVelocityY(-yAdjustment)
+      //         .withRotationalRate(-yawAdjustment));
+      // }
+      drivetrain.setControl(
+          new SwerveRequest.RobotCentric()
+              .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+              .withVelocityX(-xAdjustment)
+              .withVelocityY(0)
+              .withRotationalRate(0));
+      // SmartDashboard.putNumber("vision/DistanceY", distanceY);
+      // SmartDashboard.putNumber("vision/Yaw", yaw);
 
       SmartDashboard.putNumber("vision/xAdjustment", xAdjustment);
-      SmartDashboard.putNumber("vision/yAdjustment", yAdjustment);
-      SmartDashboard.putNumber("vision/rotationAdjustment", yawAdjustment);
+      // SmartDashboard.putNumber("vision/yAdjustment", yAdjustment);
+      // SmartDashboard.putNumber("vision/rotationAdjustment", yawAdjustment);
 
       SmartDashboard.putBoolean("vision/isXAligned", xPID.atSetpoint());
-      SmartDashboard.putBoolean("vision/isYAligned", yPID.atSetpoint());
-      SmartDashboard.putBoolean("vision/isYawAligned", yawPID.atSetpoint());
+      // SmartDashboard.putBoolean("vision/isYAligned", yPID.atSetpoint());
+      // SmartDashboard.putBoolean("vision/isYawAligned", yawPID.atSetpoint());
       SmartDashboard.putBoolean("vision/isAligned", isAligned());
     } else {
+      SmartDashboard.putBoolean("vision/noHasTarget", true);
+
       // Stop the robot if no targets are found
+
       end(true);
     }
   }
