@@ -56,7 +56,9 @@ public class PositionPIDCommand extends Command {
     xPID.setSetpoint(TARGET_X);
     // yPID.setSetpoint(TARGET_Y);
     // RobotContainer.led.setColor(Color.kGreen);
-    addRequirements(drivetrain);
+
+    //change back
+    // addRequirements(drivetrain);
   }
 
   public boolean isAligned() {
@@ -97,10 +99,15 @@ public class PositionPIDCommand extends Command {
 
       // Calculate adjustments for yaw and forward movement
       // yawAdjustment = yawPID.calculate(yaw, TARGET_YAW);
-      xAdjustment = xPID.calculate(distanceX, TARGET_X);
+
+      //change back
+      // xAdjustment = xPID.calculate(distanceX, TARGET_X);
+
       // yAdjustment = yPID.calculate(distanceY, TARGET_Y);
 
-      xAdjustment = MathUtil.clamp(xAdjustment, -0.75, 0.75);
+      //change back
+      // xAdjustment = MathUtil.clamp(xAdjustment, -0.75, 0.75);
+
       // yAdjustment = MathUtil.clamp(yAdjustment, -0.75, 0.75);
       // yawAdjustment = MathUtil.clamp(yawAdjustment, -0.75, 0.75);
 
@@ -119,12 +126,16 @@ public class PositionPIDCommand extends Command {
       //         .withVelocityY(-yAdjustment)
       //         .withRotationalRate(-yawAdjustment));
       // }
-      drivetrain.setControl(
-          new SwerveRequest.RobotCentric()
-              .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
-              .withVelocityX(-xAdjustment)
-              .withVelocityY(0)
-              .withRotationalRate(0));
+
+      //change back
+      // drivetrain.setControl(
+      //     new SwerveRequest.RobotCentric()
+      //         .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+      //         .withVelocityX(-xAdjustment)
+      //         .withVelocityY(0)
+      //         .withRotationalRate(0));
+
+
       // SmartDashboard.putNumber("vision/DistanceY", distanceY);
       // SmartDashboard.putNumber("vision/Yaw", yaw);
 
@@ -141,7 +152,8 @@ public class PositionPIDCommand extends Command {
 
       // Stop the robot if no targets are found
 
-      end(true);
+      //change back
+      // end(true);
     }
   }
 

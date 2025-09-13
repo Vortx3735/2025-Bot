@@ -361,7 +361,7 @@ public class RobotContainer {
     operator.view.onTrue(
         new InstantCommand(() -> elevator.zeroElevator(), elevator).withName("Zero Elevator"));
 
-    // SIM CODEEEEEE
+    // SIM CODEEEEEE (the if is the sim code the else is for real robot)
     if (Constants.currentMode == Constants.Mode.SIM) {
       // L4 placement
       driver.yButton.onTrue(
