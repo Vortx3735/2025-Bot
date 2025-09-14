@@ -136,7 +136,7 @@ public class CoralWrist extends SubsystemBase {
   }
 
   public Command moveWristToHP() {
-    return moveWristToPosition(-0.31).withName("Move Coral Wrist to HP");
+    return moveWristToPosition(-0.335).withName("Move Coral Wrist to HP");
   }
 
   public Command moveWristToHpHigher() {
@@ -158,7 +158,7 @@ public class CoralWrist extends SubsystemBase {
 
   public Command moveWristToL4() {
     // return moveWristToPosition(-0.48).withName("Move Coral Wrist to L4");
-    return moveWristToPosition(-0.53).withName("Move Coral Wrist to L4");
+    return moveWristToPosition(-0.531).withName("Move Coral Wrist to L4");
     // return moveWristToPosition(-0.46).withName("Move Coral Wrist to L4");
   }
 

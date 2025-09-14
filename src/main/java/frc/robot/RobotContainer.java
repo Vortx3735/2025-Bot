@@ -37,8 +37,6 @@ import frc.robot.commands.CommandFactory;
 import frc.robot.commands.autoalign.PositionPIDCommand;
 import frc.robot.commands.defaultcommands.*;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.AlgaeIntake;
-import frc.robot.subsystems.AlgaeWrist;
 import frc.robot.subsystems.CoralIntake;
 import frc.robot.subsystems.CoralWrist;
 import frc.robot.subsystems.Elevator;
@@ -95,16 +93,6 @@ public class RobotContainer {
       new CoralWrist(
           Constants.CoralConstants.CORAL_WRISTPIVOT_MOTOR_ID,
           Constants.CoralConstants.CORAL_WRISTPIVOT_ENCODER_ID);
-
-  public static final AlgaeIntake algaeIntake =
-      new AlgaeIntake(
-          Constants.AlgaeConstants.LEFTINTAKE_MOTOR_ID,
-          Constants.AlgaeConstants.RIGHTINTAKE_MOTOR_ID);
-
-  public static final AlgaeWrist algaeWrist =
-      new AlgaeWrist(
-          Constants.AlgaeConstants.WRISTPIVOT_MOTOR_ID,
-          Constants.AlgaeConstants.WRISTPIVOT_ENCODER_ID);
 
   public static final Elevator elevator =
       new Elevator(
@@ -204,8 +192,6 @@ public class RobotContainer {
     // SmartDashboard.putData("Auto Chooser", autoChooser);
     coralIntake.setDefaultCommand(new DefaultCoralIntakeCommand(coralIntake));
     coralWrist.setDefaultCommand(new DefaultCoralWristCommand(coralWrist));
-    algaeIntake.setDefaultCommand(new DefaultAlgaeIntakeCommand(algaeIntake));
-    algaeWrist.setDefaultCommand(new DefaultAlgaeWristCommand(algaeWrist));
     elevator.setDefaultCommand(new DefaultElevatorCommand(elevator));
     led.setDefaultCommand(new RunCommand(() -> led.VorTXGradient(), led));
 
@@ -335,7 +321,7 @@ public class RobotContainer {
     operator.aButton.whileTrue(CommandFactory.hpCommand());
 
     // Coral Intake with Beam
-    operator.lt.whileTrue(CommandFactory.hpCommandSlightlyHigher());
+    operator.lt.whileTrue(coralIntake.intakeCommand());
 
     // Coral Outtake
     operator.rt.whileTrue(coralIntake.outtakeCommand());
@@ -353,11 +339,6 @@ public class RobotContainer {
     operator.povDown.whileTrue(
         new RunCommand(() -> elevator.moveElevatorDown(), elevator).withName("Move Elevator Down"));
 
-    operator.rs.whileTrue(
-        new RunCommand(() -> algaeWrist.moveWristDown(), algaeWrist)
-            .withName("Move Algae Wrist Down"));
-    operator.ls.whileTrue(
-        new RunCommand(() -> algaeWrist.moveWristUp(), algaeWrist).withName("Move Algae Wrist Up"));
     operator.view.onTrue(
         new InstantCommand(() -> elevator.zeroElevator(), elevator).withName("Zero Elevator"));
 

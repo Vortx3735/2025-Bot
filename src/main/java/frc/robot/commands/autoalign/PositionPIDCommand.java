@@ -1,8 +1,6 @@
 package frc.robot.commands.autoalign;
 
-import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -57,7 +55,7 @@ public class PositionPIDCommand extends Command {
     // yPID.setSetpoint(TARGET_Y);
     // RobotContainer.led.setColor(Color.kGreen);
 
-    //change back
+    // change back
     // addRequirements(drivetrain);
   }
 
@@ -100,12 +98,12 @@ public class PositionPIDCommand extends Command {
       // Calculate adjustments for yaw and forward movement
       // yawAdjustment = yawPID.calculate(yaw, TARGET_YAW);
 
-      //change back
+      // change back
       // xAdjustment = xPID.calculate(distanceX, TARGET_X);
 
       // yAdjustment = yPID.calculate(distanceY, TARGET_Y);
 
-      //change back
+      // change back
       // xAdjustment = MathUtil.clamp(xAdjustment, -0.75, 0.75);
 
       // yAdjustment = MathUtil.clamp(yAdjustment, -0.75, 0.75);
@@ -127,14 +125,13 @@ public class PositionPIDCommand extends Command {
       //         .withRotationalRate(-yawAdjustment));
       // }
 
-      //change back
+      // change back
       // drivetrain.setControl(
       //     new SwerveRequest.RobotCentric()
       //         .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
       //         .withVelocityX(-xAdjustment)
       //         .withVelocityY(0)
       //         .withRotationalRate(0));
-
 
       // SmartDashboard.putNumber("vision/DistanceY", distanceY);
       // SmartDashboard.putNumber("vision/Yaw", yaw);
@@ -152,7 +149,7 @@ public class PositionPIDCommand extends Command {
 
       // Stop the robot if no targets are found
 
-      //change back
+      // change back
       // end(true);
     }
   }

@@ -14,6 +14,7 @@ import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.ironmaple.simulation.seasonspecific.reefscape2025.ReefscapeCoralOnFly;
 
 public class CommandFactory {
+
   public static Command movetoL2Command() {
     CommandScheduler.getInstance().cancelAll();
     return Commands.parallel(

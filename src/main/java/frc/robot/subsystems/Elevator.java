@@ -165,7 +165,7 @@ public class Elevator extends SubsystemBase {
   }
 
   public Command moveElevatorToHP() {
-    double setpoint = 0.64;
+    double setpoint = 0.724;
     return new RunCommand(() -> moveElevatorToPosition(setpoint), this)
         .until(() -> this.atSetpoint(setpoint))
         .withName("Move Elevator to HP");
@@ -193,21 +193,21 @@ public class Elevator extends SubsystemBase {
   }
 
   public Command moveElevatorToL2() {
-    double setpoint = 1.4;
+    double setpoint = 1.18;
     return new RunCommand(() -> moveElevatorToPosition(setpoint), this)
         .until(() -> this.atSetpoint(setpoint))
         .withName("Move Elevator to L2");
   }
 
   public Command moveElevatorToL3() {
-    double setpoint = 2.5;
+    double setpoint = 2.26;
     return new RunCommand(() -> moveElevatorToPosition(setpoint), this)
         .until(() -> this.atSetpoint(setpoint))
         .withName("Move Elevator to L3");
   }
 
   public Command moveElevatorToL4() {
-    double setpoint = 5;
+    double setpoint = 4.95;
     // double setpoint = 4.95;
     return new RunCommand(() -> moveElevatorToPosition(setpoint), this)
         .until(() -> this.atSetpoint(setpoint))
