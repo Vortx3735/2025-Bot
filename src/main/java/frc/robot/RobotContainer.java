@@ -80,6 +80,12 @@ public class RobotContainer {
           .withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
           .withDriveRequestType(
               DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
+  private final SwerveRequest.RobotCentric rdrive =
+      new SwerveRequest.RobotCentric()
+          .withDeadband(MaxSpeed * 0.1)
+          .withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
+          .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+  ; // Use open-loop control for drive motors
 
   // Replace Drive with CommandSwerveDrivetrain via TunerConstants
   public static CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
@@ -227,7 +233,7 @@ public class RobotContainer {
                 () ->
                     driver.rb.getAsBoolean()
                         ? // if right bumper is pressed then reduce speed of robot
-                        drive // coefficients can be changed to driver preferences
+                        rdrive // coefficients can be changed to driver preferences
                             .withVelocityX(
                                 -driver.getLeftY()
                                     * drivetrain.getMaxSpeed()
@@ -243,20 +249,21 @@ public class RobotContainer {
                                     * drivetrain.getMaxRotation()
                                     / 4) // divide turn sppeed by 3
                         : driver.lb.getAsBoolean()
-                            ? drive
+                            ? rdrive
                                 .withVelocityX(
                                     -driver.getLeftY()
                                         * drivetrain.getMaxSpeed()
-                                        * elevator.getElevatorCoefficient()
-                                        / 3) // Drive forward with negative Y
+                                        * elevator.getElevatorCoefficient()) // Drive forward with
+                                // negative Y
                                 // (forward)
                                 .withVelocityY(
                                     -driver.getLeftX()
                                         * drivetrain.getMaxSpeed()
-                                        * elevator.getElevatorCoefficient()
-                                        / 3) // Drive left with negative X (left)
+                                        * elevator
+                                            .getElevatorCoefficient()) // Drive left with negative X
+                                // (left)
                                 .withRotationalRate(
-                                    -driver.getRightX() * drivetrain.getMaxRotation() / 2)
+                                    -driver.getRightX() * drivetrain.getMaxRotation())
                             : drive
                                 .withVelocityX(
                                     -driver.getLeftY()

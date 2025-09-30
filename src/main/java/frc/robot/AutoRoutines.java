@@ -93,9 +93,9 @@ public class AutoRoutines {
 
   public AutoRoutine twoL4Right() {
     final AutoRoutine routine = m_factory.newRoutine("Two L4 Right Auton");
-    final AutoTrajectory startToReef = routine.trajectory("RightStart");
-    final AutoTrajectory reefToHP = routine.trajectory("RightReeftoHP");
-    final AutoTrajectory hpToReef = routine.trajectory("RightHPtoReef");
+    final AutoTrajectory startToReef = routine.trajectory("RightStart(remix)");
+    // final AutoTrajectory reefToHP = routine.trajectory("RightReeftoHP");
+    // final AutoTrajectory hpToReef = routine.trajectory("RightHPtoReef");
 
     routine
         .active()
@@ -106,12 +106,13 @@ public class AutoRoutines {
                     RobotContainer.coralWrist.moveWristToHP().asProxy(),
                     startToReef.cmd().asProxy()),
                 autoAlignL4().asProxy(),
-                CommandFactory.scoreL4Command().asProxy(),
-                reefToHP.cmd().asProxy(),
-                Commands.parallel(RobotContainer.coralIntake.intakeCommand().asProxy()),
-                hpToReef.cmd().asProxy(),
-                autoAlignL4().asProxy(),
-                CommandFactory.scoreL4Command().asProxy()));
+                CommandFactory.scoreL4CommandSlow().asProxy()
+                // reefToHP.cmd().asProxy(),
+                // Commands.parallel(RobotContainer.coralIntake.intakeCommand().asProxy()),
+                // hpToReef.cmd().asProxy(),
+                // autoAlignL4().asProxy(),
+                // CommandFactory.scoreL4Command().asProxy()
+                ));
     return routine;
   }
 

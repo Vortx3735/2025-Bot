@@ -69,6 +69,17 @@ public class CommandFactory {
         .withName("Score L4 Command Group");
   }
 
+  public static Command scoreL4CommandSlow() {
+    CommandScheduler.getInstance().cancelAll();
+    return Commands.sequence(
+            movetoL4Command(),
+            new WaitCommand(3),
+            Commands.race(
+                new WaitCommand(0.5), RobotContainer.coralIntake.outtakeCommand().asProxy()),
+            idleCommand().asProxy())
+        .withName("Score L4 Command Group");
+  }
+
   public static Command ScoreL4CommandSim(SwerveDriveSimulation driveSimulation) {
     CommandScheduler.getInstance().cancelAll();
     return Commands.sequence(

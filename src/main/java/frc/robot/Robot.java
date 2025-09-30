@@ -18,10 +18,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.*;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Threads;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.commands.autoalign.PositionPIDCommand;
 import frc.robot.simulation.RobotSim;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
@@ -107,14 +105,14 @@ public class Robot extends LoggedRobot {
     // Return to normal thread priority
     Threads.setCurrentThreadPriority(false, 10);
 
-    SmartDashboard.putNumber(
-        "swerve/turn0", robotContainer.drivetrain.getModule(0).getSteerMotor().get());
-    SmartDashboard.putNumber(
-        "swerve/turn1", robotContainer.drivetrain.getModule(1).getSteerMotor().get());
-    SmartDashboard.putNumber(
-        "swerve/turn2", robotContainer.drivetrain.getModule(2).getSteerMotor().get());
-    SmartDashboard.putNumber(
-        "swerve/turn3", robotContainer.drivetrain.getModule(3).getSteerMotor().get());
+    // SmartDashboard.putNumber(
+    //     "swerve/turn0", robotContainer.drivetrain.getModule(0).getSteerMotor().get());
+    // SmartDashboard.putNumber(
+    //     "swerve/turn1", robotContainer.drivetrain.getModule(1).getSteerMotor().get());
+    // SmartDashboard.putNumber(
+    //     "swerve/turn2", robotContainer.drivetrain.getModule(2).getSteerMotor().get());
+    // SmartDashboard.putNumber(
+    //     "swerve/turn3", robotContainer.drivetrain.getModule(3).getSteerMotor().get());
   }
 
   /** This function is called once when the robot is disabled. */
@@ -126,10 +124,6 @@ public class Robot extends LoggedRobot {
   /** This function is called periodically when disabled. */
   @Override
   public void disabledPeriodic() {
-    CommandScheduler.getInstance()
-        .schedule(
-            PositionPIDCommand.generateCommand(robotContainer.drivetrain, robotContainer.reefCamera)
-                .withName("readFromCamera"));
     RobotContainer.led.VorTXGradient();
   }
 
