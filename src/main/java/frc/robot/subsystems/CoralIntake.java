@@ -60,7 +60,7 @@ public class CoralIntake extends SubsystemBase {
   }
 
   public boolean hasRightCoral() {
-    return !rightCoralBeamBreak.get();
+    return rightCoralBeamBreak.get();
   }
 
   public Command intakeCommand(double speed) {

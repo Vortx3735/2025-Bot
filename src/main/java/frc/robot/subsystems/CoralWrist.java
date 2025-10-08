@@ -79,7 +79,7 @@ public class CoralWrist extends SubsystemBase {
     // Initialize wrist motor and encoder
     coralWrist = new SparkMax(wristId, MotorType.kBrushless);
     wristEncoder = new CANcoder(wristEncoderId);
-    kp = 2.5;
+    kp = 1.85;
     kv = 0.1;
     kg = 0.08;
     coralPID = new PIDController(kp, ki, kd);

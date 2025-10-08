@@ -21,14 +21,14 @@ public class PositionPIDCommand extends Command {
 
   private final double kP_Yaw = 2.5; // Proportional constant for yaw correction
   private final double kP_X = 4;
-  private final double kP_Y = 6;
+  private final double kP_Y = 7;
 
   private final double YAW_THRESHOLD = 0.12; // Degrees threshold for alignment
   private final double X_THRESHOLD = 0.03; // Meters threshold for alignment
   private final double Y_THRESHOLD = 0.003; // Meters threshold for alignment
 
   private double TARGET_X; // Target distance in meters 0.42
-  private final double TARGET_Y = 0.02; // Target distance in meters
+  private double TARGET_Y; // Target distance in meters
   private final double TARGET_YAW = 0.01; // Target rotation
   // private final double TARGET_Y = 0.373; // right
 
@@ -42,6 +42,7 @@ public class PositionPIDCommand extends Command {
 
   public PositionPIDCommand(CommandSwerveDrivetrain drivetrain, PhotonCamera intakeCamera) {
     TARGET_X = 0.4;
+    TARGET_Y = -0.1;
 
     this.drivetrain = drivetrain;
     this.intakeCamera = intakeCamera;
